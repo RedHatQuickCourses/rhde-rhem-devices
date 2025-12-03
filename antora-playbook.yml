@@ -1,10 +1,11 @@
 site:
-  title: FIXME Course Title
-  start_page: REPLACEREPONAME::index.adoc
+  title: Deploying Red Hat Edge Manager and Managing Edge Devices
+  start_page: rhde-rhem-devices::index.adoc
 
 content:
   sources:
   - url: ./
+  - url: https://github.com/RedHatQuickCourses/rhde-rhem-samples.git
 
 asciidoc:
   attributes:

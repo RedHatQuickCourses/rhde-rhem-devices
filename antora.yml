@@ -1,6 +1,9 @@
-name: REPLACEREPONAME
-title: FIXME Course Title
+name: rhde-rhem-devices
+title: Deploying Red Hat Edge Manager and Managing Edge Devices
 version: 1
+asciidoc:
+  attributes:
+    experimental: true
 nav:
 - modules/ROOT/nav.adoc
 - modules/LABENV/nav.adoc
