@@ -1,0 +1,26 @@
+:time_estimate: 5
+
+= Red Hat Edge Manager Services and Installation
+
+_Estimated reading time: *{time_estimate} minutes*._
+
+Objective::
+
+Describe the main services that comprise RHEM and how to deploy them as quadlets in RHEL servers, without dependencies on external services such as ACM, AAP, or Keycloack.
+
+WARNING: Not started yet
+
+Lorem ipsum dolor sit amet
+
+////
+
+* Architectural components (slide #13) and services of RHEM: microservices/API, inventory, web UI (on server) and agent (on managed devices) https://docs.google.com/presentation/d/17cWSUdQnS5mSHaiLQieJO24tiPp3VzAu9dIsKc-fyAw/edit?slide=id.g33d0db3e9fb_0_2408#slide=id.g33d0db3e9fb_0_2408
+
+* Mention supported configuration and authentication providers, and their purpose, how they enable seamless integration with ACM or AAP, but focus on the ones to be used in the course: inline, Git, and sssd.
+
+* Overview of the process of deploying containerized RHEM (quadlets) from RPM Packages.
+
+* If there are issues configuring the sssd authentitcaion provider, or if it does not support RBAC, it may become necessary to include Keycloack.
+
+
+////

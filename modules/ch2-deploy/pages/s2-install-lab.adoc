@@ -1,0 +1,56 @@
+:time_estimate: 5
+
+= Lab: Install Red Hat Edge Manager Standalone
+
+_Estimated reading time: *{time_estimate} minutes*._
+
+Objective::
+
+Deploy RHEM on RHEL with minimal requirements.
+
+WARNING: Not started yet
+
+== Before you begin
+
+You need a _development machine_ running RHEL, to which you have unrestricted sudo access.
+The _development machine_ has access to mirrors of RHEL package repositories and bootc container images.
+
+These instructions were tested on RHEL 10.0 but should work with minimal or no changes on newer and older RHEL releases, since 9.6.
+
+If you are using the course classroom, log in on the `workstation` VM as the user `student` with password `student`.
+If not, please adapt the instructions to your test environment.
+
+IMPORTANT: This activity is a continuation of the xref:ch2-online:s2-update-lab.adoc[previous lab] of this course.
+You must perform the two activities in sequence, without destroying your classroom environment or its VMs.
+
+== Instructions
+
+////
+
+* Verify availability of all required packages and container images.
+
+* Install RHEM using dnf
+
+* Configure DNF to use sssd (if not default) and hostname for the UI.
+
+* Generate and use a TLS certificate using the virtual classroom CA, or add the self-signed certificate to the trust store of the development machine. Avoid disabling TLS validation for CLI and web access.
+
+* Check the health of all RHEM systemd services/quadlets/containers.
+
+* Connect to RHEM using CLI and Web interface to assess it is healthy and running.
+
+////
+
+Lorem ipsum dolor sit amet
+
+1. Do something
+
+.. Do a piece of something
++
+[source,subs="verbatim,quotes"]
+--
+$ *cd*
+$ *ls rhde-rhem-samples*
+[ GRAB OUTPUT ]
+...
+--
