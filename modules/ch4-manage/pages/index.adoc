@@ -1,0 +1,7 @@
+= Manage Edge Devices with Red Hat Edge Manager
+
+Goal::
+
+Onboard, update, and repurpose managed devices.
+
+WARNING: Not started yet

@@ -1,0 +1,7 @@
+= Remove Edge Devices from Red Hat Edge Manager
+
+Goal::
+
+Decommission managed devices.
+
+WARNING: Not started yet

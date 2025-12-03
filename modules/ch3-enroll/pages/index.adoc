@@ -1,0 +1,7 @@
+= Add Edge Devices to Red Hat Edge Manager
+
+Goal::
+
+Enroll managed devices on RHEM.
+
+WARNING: Not started yet

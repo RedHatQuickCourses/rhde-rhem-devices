@@ -1,0 +1,7 @@
+= Install Red Hat Edge Manager as Quadlets
+
+Goal::
+
+Deploy RHEM standalone on RHEL from RPM packages.
+
+WARNING: Not started yet

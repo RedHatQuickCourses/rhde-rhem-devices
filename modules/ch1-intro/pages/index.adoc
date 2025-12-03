@@ -1,0 +1,7 @@
+= Introduction to Red Hat Edge Manager
+
+Goal::
+
+Understand the purpose of Red Hat Edge Manager (RHEM) and how it relates to other infrastructure management tools from Red Hat.
+
+WARNING: Not started yet
