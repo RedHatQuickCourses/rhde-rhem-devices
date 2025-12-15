@@ -1,0 +1,99 @@
+:time_estimate: 5
+
+= Lab: Enroll Edge Devices Using Late Binding
+
+_Estimated reading time: *{time_estimate} minutes*._
+
+Objective::
+
+Provision and enroll devices on RHEM from an installation ISO.
+
+WARNING: Work in progress
+
+== Before you begin
+
+You need a customer portal account with access to a Red Hat Enterprise Linux (RHEL) subscription.
+It could be a https://developers.redhat.com/products/rhel/download[Red Hat Developer program] free subscription.
+
+You need a _development machine_ running RHEL, to which you have unrestricted sudo access.
+//On the next activities, you will use the _development machine_ to run test VMs that stand in for edge devices to be managed by RHEM.
+
+You also need a _server machine_ running RHEL, to which you also have unrestricted sudo access.
+
+Finally, you need a _private registry_ to store bootc container images for your managed edge devices.
+
+Both your _development machine_ and _server machine_ require internet access to download RPM and container images packages.
+
+If you are using the course classroom, your _development machine_ is the `workstation` VM.
+Log in as the user `student` with password `student`.
+From that machine, you may start SSH sessions to the `servera` VM, which is your _server_ machine, using the same user.
+Alternatively, you can open a shell or a console directly on the `servera` VM.
+
+== Instructions
+
+////
+
+* Build a generic RHEM enrollment image with bootc.
+
+* Build an installable ISO with bootc image builder.
+
+* Create a number of local VMs using virt-install and the same ISO, to show that each becomes a different device and each gets its own per-device certificate, after enrollment.
+
+* Create/boot all VMs/devices at once (or all remaining devices, after the first one) to demonstrate the issue of identifying each individual device, so they can be assigned the right labels.
+
+* Demonstrate both CLI and web-based workflows for approving device enrollment.
+
+* To keep this lab short and simple, devices are left “naked”, undifferentiated in terms of configurations, application, sites, and fleets.
+
+* Prefer late binding, as the recommended approach, unless there are issues with adding the RHEM agent data to the kickstart on the ISO.
+
+* Do NOT include any initial user, to demonstrate that you can access devices though RHEM, without a SSH key or user/password.
+
+[ Could have two generic enrollment images, one with early binding data, but this basically makes the lab twice as long relative to its wall time. Building images and ISOs are not quick operations. ]
+
+[ This is looking like a long lab, maybe break the image/ISO building as a lab before the actual device enrollment and provisioning? ]
+
+////
+
+You will build a minimal bootc container image which contains the RHEM agent and create an installable ISO which contains enrollment credentials.
+Then you will use that ISO to provision a test VM, which stands in for a managed edge device, and verify that it attempts to enroll in your RHEM server.
+Finally, you will approve that device enrollment request, and verify that you can use the same ISO, unchanged, to provision multiple edge devices.
+
+1. Create a bootc container image including the RHEM agent.
+
+.. TBD
++
+[source,subs="verbatim,quotes"]
+--
+$ *hostname*
+servera
+--
+
+2. Create an installable ISO containing the bootc container image from the previous step
+
+.. TBD
+
+3. Create a test VM using the installable ISO.
+
+.. TBD
+
+4. Verify and approve the enrollment request
+
+.. TBD
+
+5. Verify that the test VM is now managed by RHEM.
+
+.. TBD
+
+6. Provision another test VM using the same installable ISO, and enroll it on RHEM.
+
+.. TBD
+
+7. Verify that, despite being provisioned from the same enrollment request data, each VM retains its own identity and configuration from RHEM.
+
+.. TBD
+
+
+== What's next
+
+In the next activity, you will exercise management of edge devices from RHEM, by changing and updating their operating system images and system configurations.

@@ -1,0 +1,24 @@
+:time_estimate: 5
+
+= Enroll Edge Devices in RHEM
+
+_Estimated reading time: *{time_estimate} minutes*._
+
+Objective::
+
+Install the RHEM agent in managed devices, as part of their system images, and enroll managed devices in a RHEM server.
+
+WARNING: Not started yet
+
+Lorem ipsum dolor sit amet
+
+////
+
+How to include the RHEM agent in a bootc container image and complete the enrollment process using the RHEM CLI and its web UI.
+RHEM agent, enrollment configuration, and enrollment certificate.
+
+* Early vs late binding.
+* Device information.
+* Assigning labels to devices.
+
+////

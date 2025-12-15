@@ -66,6 +66,8 @@ servera
 $ *sudo dnf config-manager --add-repo https://rpm.flightctl.io/flightctl-epel.repo*
 GRAB OUTPUT
 --
++
+NOTE: There is no need to register `servera` because the RHEM services package contains no dependencies other than a container engine (Podman) and the classroom environment contains a mirror of the RHEL 10 packages.
 
 .. Install the RHEM services.
 +
@@ -190,7 +192,7 @@ f204d574cd11  quay.io/flightctl/flightctl-periodic:1.0.0-rc2            /bin/sh 
 aac92db2a9a6  quay.io/flightctl/flightctl-cli-artifacts:1.0.0-rc2                             2 minutes ago  Up 2 minutes  0.0.0.0:8090->8090/tcp                          flightctl-cli-artifacts
 --
 
-.. You can also get logs directly from the containers
+.. You can also get logs directly from the containers, or enter then with `podman exec` for deeper troubleshooting.
 +
 [source,subs="verbatim,quotes"]
 --
@@ -332,7 +334,6 @@ If you get a "CSRF error", just try again.
 .. You should get the RHEM Overview page, with three gray circles because there are no managed devices to report a status summary.
 
 .. On the left panel, click on *Devices* to verify that there are indeed no managed devices.
-
 
 == What's next
 
