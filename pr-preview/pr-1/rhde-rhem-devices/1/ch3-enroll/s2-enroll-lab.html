@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Lab: Enroll Edge Devices Using Late Binding :: Deploying Red Hat Edge Manager and Managing Edge Devices</title>
+    <link rel="prev" href="s1-enroll.html">
+    <link rel="next" href="../ch4-manage/index.html">
+    <meta name="generator" content="Antora 3.1.3">
+    <link rel="stylesheet" href="../../../_/css/site.css">
+    <script>var uiRootPath = '../../../_'</script>
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="https://www.redhat.com" target="_blank"><img src="../../../_/img/redhat-logo.png" height="40px" alt="Red Hat"></a>
+      <a class="navbar-item" style="font-size: 24px; color: white" href="../../..">Deploying Red Hat Edge Manager and Managing Edge Devices</a>
+      <button class="navbar-burger" data-target="topbar-nav">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <a class="navbar-item" href="https://github.com/RedHatQuickCourses/rhde-rhem-devices/issues" target="_blank">Report Issues</a>
+      </div>
+    </div>
+  </nav>
+</header>
+<div class="body">
+<div class="nav-container" data-component="rhde-rhem-devices" data-version="1">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <h3 class="title"><a href="../index.html">Deploying Red Hat Edge Manager and Managing Edge Devices</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../index.html">Home</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../LABENV/index.html">Lab Environment</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../ch1-intro/index.html">Introduction to Red Hat Edge Manager</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../ch2-deploy/index.html">Install Red Hat Edge Manager as Quadlets</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../ch2-deploy/s1-quadlets.html">Red Hat Edge Manager Services and Installation</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../ch2-deploy/s2-install-lab.html">Lab: Install Red Hat Edge Manager Standalone</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="index.html">Add Edge Devices to Red Hat Edge Manager</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="s1-enroll.html">Enroll Edge Devices in RHEM</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="2">
+    <a class="nav-link" href="s2-enroll-lab.html">Lab: Enroll Edge Devices Using Late Binding</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../ch4-manage/index.html">Manage Edge Devices with Red Hat Edge Manager</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../ch5-decomission/index.html">Remove Edge Devices from Red Hat Edge Manager</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Deploying Red Hat Edge Manager and Managing Edge Devices</span>
+    <span class="version">1</span>
+  </div>
+  <ul class="components">
+    <li class="component is-current">
+      <a class="title" href="../index.html">Deploying Red Hat Edge Manager and Managing Edge Devices</a>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="../index.html">1</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <a class="title" href="../../../samples/1/index.html">samples</a>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../samples/1/index.html">1</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../index.html">Deploying Red Hat Edge Manager and Managing Edge Devices</a></li>
+    <li><a href="index.html">Add Edge Devices to Red Hat Edge Manager</a></li>
+    <li><a href="s2-enroll-lab.html">Lab: Enroll Edge Devices Using Late Binding</a></li>
+  </ul>
+</nav>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Lab: Enroll Edge Devices Using Late Binding</h1>
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p><em>Estimated reading time: <strong>5 minutes</strong>.</em></p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Objective</dt>
+<dd>
+<p>Provision and enroll devices on RHEM from an installation ISO.</p>
+</dd>
+</dl>
+</div>
+<div class="admonitionblock warning">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-warning" title="Warning"></i>
+</td>
+<td class="content">
+Work in progress
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_before_you_begin"><a class="anchor" href="#_before_you_begin"></a>Before you begin</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>You need a customer portal account with access to a Red Hat Enterprise Linux (RHEL) subscription.
+It could be a <a href="https://developers.redhat.com/products/rhel/download">Red Hat Developer program</a> free subscription.</p>
+</div>
+<div class="paragraph">
+<p>You need a <em>development machine</em> running RHEL, to which you have unrestricted sudo access.</p>
+</div>
+<div class="paragraph">
+<p>You also need a <em>server machine</em> running RHEL, to which you also have unrestricted sudo access.</p>
+</div>
+<div class="paragraph">
+<p>Finally, you need a <em>private registry</em> to store bootc container images for your managed edge devices.</p>
+</div>
+<div class="paragraph">
+<p>Both your <em>development machine</em> and <em>server machine</em> require internet access to download RPM and container images packages.</p>
+</div>
+<div class="paragraph">
+<p>If you are using the course classroom, your <em>development machine</em> is the <code>workstation</code> VM.
+Log in as the user <code>student</code> with password <code>student</code>.
+From that machine, you may start SSH sessions to the <code>servera</code> VM, which is your <em>server</em> machine, using the same user.
+Alternatively, you can open a shell or a console directly on the <code>servera</code> VM.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_instructions"><a class="anchor" href="#_instructions"></a>Instructions</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>You will build a minimal bootc container image which contains the RHEM agent and create an installable ISO which contains enrollment credentials.
+Then you will use that ISO to provision a test VM, which stands in for a managed edge device, and verify that it attempts to enroll in your RHEM server.
+Finally, you will approve that device enrollment request, and verify that you can use the same ISO, unchanged, to provision multiple edge devices.</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Create a bootc container image including the RHEM agent.</p>
+<div class="olist loweralpha">
+<ol class="loweralpha" type="a">
+<li>
+<p>TBD</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>hostname</strong>
+servera</code></pre>
+</div>
+</div>
+</li>
+</ol>
+</div>
+</li>
+<li>
+<p>Create an installable ISO containing the bootc container image from the previous step</p>
+<div class="olist loweralpha">
+<ol class="loweralpha" type="a">
+<li>
+<p>TBD</p>
+</li>
+</ol>
+</div>
+</li>
+<li>
+<p>Create a test VM using the installable ISO.</p>
+<div class="olist loweralpha">
+<ol class="loweralpha" type="a">
+<li>
+<p>TBD</p>
+</li>
+</ol>
+</div>
+</li>
+<li>
+<p>Verify and approve the enrollment request</p>
+<div class="olist loweralpha">
+<ol class="loweralpha" type="a">
+<li>
+<p>TBD</p>
+</li>
+</ol>
+</div>
+</li>
+<li>
+<p>Verify that the test VM is now managed by RHEM.</p>
+<div class="olist loweralpha">
+<ol class="loweralpha" type="a">
+<li>
+<p>TBD</p>
+</li>
+</ol>
+</div>
+</li>
+<li>
+<p>Provision another test VM using the same installable ISO, and enroll it on RHEM.</p>
+<div class="olist loweralpha">
+<ol class="loweralpha" type="a">
+<li>
+<p>TBD</p>
+</li>
+</ol>
+</div>
+</li>
+<li>
+<p>Verify that, despite being provisioned from the same enrollment request data, each VM retains its own identity and configuration from RHEM.</p>
+<div class="olist loweralpha">
+<ol class="loweralpha" type="a">
+<li>
+<p>TBD</p>
+</li>
+</ol>
+</div>
+</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_whats_next"><a class="anchor" href="#_whats_next"></a>What&#8217;s next</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>In the next activity, you will exercise management of edge devices from RHEM, by changing and updating their operating system images and system configurations.</p>
+</div>
+</div>
+</div>
+<nav class="pagination">
+  <span class="prev"><a href="s1-enroll.html">Enroll Edge Devices in RHEM</a></span>
+  <span class="next"><a href="../ch4-manage/index.html">Manage Edge Devices with Red Hat Edge Manager</a></span>
+</nav>
+</article>
+  </div>
+</main>
+</div>
+<footer class="footer">
+  <img src="../../../_/img/rhl-logo-red.png" height="40px" alt="Red Hat"  href="https://redhat.com" >
+</footer><script id="site-script" src="../../../_/js/site.js" data-ui-root-path="../../../_"></script>
+<script async src="../../../_/js/vendor/highlight.js"></script>
+  </body>
+</html>

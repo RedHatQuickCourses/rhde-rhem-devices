@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Lab: Install Red Hat Edge Manager Standalone :: Deploying Red Hat Edge Manager and Managing Edge Devices</title>
+    <link rel="prev" href="s1-quadlets.html">
+    <link rel="next" href="../ch3-enroll/index.html">
+    <meta name="generator" content="Antora 3.1.3">
+    <link rel="stylesheet" href="../../../_/css/site.css">
+    <script>var uiRootPath = '../../../_'</script>
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="https://www.redhat.com" target="_blank"><img src="../../../_/img/redhat-logo.png" height="40px" alt="Red Hat"></a>
+      <a class="navbar-item" style="font-size: 24px; color: white" href="../../..">Deploying Red Hat Edge Manager and Managing Edge Devices</a>
+      <button class="navbar-burger" data-target="topbar-nav">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <a class="navbar-item" href="https://github.com/RedHatQuickCourses/rhde-rhem-devices/issues" target="_blank">Report Issues</a>
+      </div>
+    </div>
+  </nav>
+</header>
+<div class="body">
+<div class="nav-container" data-component="rhde-rhem-devices" data-version="1">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <h3 class="title"><a href="../index.html">Deploying Red Hat Edge Manager and Managing Edge Devices</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../index.html">Home</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../LABENV/index.html">Lab Environment</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../ch1-intro/index.html">Introduction to Red Hat Edge Manager</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="index.html">Install Red Hat Edge Manager as Quadlets</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="s1-quadlets.html">Red Hat Edge Manager Services and Installation</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="2">
+    <a class="nav-link" href="s2-install-lab.html">Lab: Install Red Hat Edge Manager Standalone</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../ch3-enroll/index.html">Add Edge Devices to Red Hat Edge Manager</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../ch3-enroll/s1-enroll.html">Enroll Edge Devices in RHEM</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../ch3-enroll/s2-enroll-lab.html">Lab: Enroll Edge Devices Using Late Binding</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../ch4-manage/index.html">Manage Edge Devices with Red Hat Edge Manager</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../ch5-decomission/index.html">Remove Edge Devices from Red Hat Edge Manager</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Deploying Red Hat Edge Manager and Managing Edge Devices</span>
+    <span class="version">1</span>
+  </div>
+  <ul class="components">
+    <li class="component is-current">
+      <a class="title" href="../index.html">Deploying Red Hat Edge Manager and Managing Edge Devices</a>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="../index.html">1</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <a class="title" href="../../../samples/1/index.html">samples</a>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../samples/1/index.html">1</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../index.html">Deploying Red Hat Edge Manager and Managing Edge Devices</a></li>
+    <li><a href="index.html">Install Red Hat Edge Manager as Quadlets</a></li>
+    <li><a href="s2-install-lab.html">Lab: Install Red Hat Edge Manager Standalone</a></li>
+  </ul>
+</nav>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Lab: Install Red Hat Edge Manager Standalone</h1>
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p><em>Estimated reading time: <strong>5 minutes</strong>.</em></p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Objective</dt>
+<dd>
+<p>Deploy RHEM on RHEL with minimal requirements.</p>
+</dd>
+</dl>
+</div>
+<div class="admonitionblock warning">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-warning" title="Warning"></i>
+</td>
+<td class="content">
+Work in progress
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_before_you_begin"><a class="anchor" href="#_before_you_begin"></a>Before you begin</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>You need a customer portal account with access to a Red Hat Enterprise Linux (RHEL) subscription.
+It could be a <a href="https://developers.redhat.com/products/rhel/download">Red Hat Developer program</a> free subscription.</p>
+</div>
+<div class="paragraph">
+<p>You need a <em>development machine</em> running RHEL, to which you have unrestricted sudo access.</p>
+</div>
+<div class="paragraph">
+<p>You also need a <em>server machine</em> running RHEL, to which you also have unrestricted sudo access.</p>
+</div>
+<div class="paragraph">
+<p>Both your <em>development machine</em> and <em>server machine</em> require internet access to download RPM and container images packages.</p>
+</div>
+<div class="paragraph">
+<p>If you are using the course classroom, your <em>development machine</em> is the <code>workstation</code> VM.
+Log in as the user <code>student</code> with password <code>student</code>.
+From that machine, you may start SSH sessions to the <code>servera</code> VM, which is your <em>server</em> machine, using the same user.
+Alternatively, you can open a shell or a console directly on the <code>servera</code> VM.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_instructions"><a class="anchor" href="#_instructions"></a>Instructions</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>You will install and configure RHEM on your <em>server machine</em>, and then you will use your <em>development machine</em> to run the web UI and the CLI of RHEM to verify that your new RHEM instance is up and running.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+The instructions here use the community artifacts from the flightctl projects, but are expected to work with the product artifacts from RHEM, when they become available, by just switching from the community repository to the RHEM product repository.
+</td>
+</tr>
+</table>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Install the RHEM services on your <em>server machine</em>.</p>
+<div class="olist loweralpha">
+<ol class="loweralpha" type="a">
+<li>
+<p>Make sure your current shell is on the right machine.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>hostname</strong>
+servera</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Enable the Flightctl repository from EPEL.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>sudo dnf config-manager --add-repo https://rpm.flightctl.io/flightctl-epel.repo</strong>
+GRAB OUTPUT</code></pre>
+</div>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+There is no need to register <code>servera</code> because the RHEM services package contains no dependencies other than a container engine (Podman) and the classroom environment contains a mirror of the RHEL 10 packages.
+</td>
+</tr>
+</table>
+</div>
+</li>
+<li>
+<p>Install the RHEM services.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>sudo dnf install -y flightctl-services</strong>
+GRAB OUTPUT</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Edit the RHEM configuration in <code>/etc/flightctl/service-config.yaml</code> to use the fully qualified domain (FQDN)</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">global:
+  baseDomain: <strong>servera.lab.example.com</strong>
+  auth:
+...</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Start the RHEM services</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>sudo systemctl enable --now flightctl.target</strong>
+Created symlink '/etc/systemd/system/multi-user.target.wants/flightctl.target' → '/usr/lib/systemd/system/flightctl.target'.</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Verify that the RHEM services are up and running.</p>
+<div class="paragraph">
+<p>Be patient, it may take a while until all container images required by RHEM are downloaded from the internet and it initializes its database and cache services.
+When it is all done, it is expected that some services will display <code>exited</code> as their substatus.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>systemctl list-units 'flightctl</strong>' --all*
+  UNIT                                 LOAD   ACTIVE SUB     DESCRIPTION
+  flightctl-alert-exporter.service     loaded active running Flight Control Alert Exporter service
+  flightctl-alertmanager-proxy.service loaded active running Flight Control Alertmanager Proxy service
+  flightctl-alertmanager.service       loaded active running Flight Control Alertmanager service
+  flightctl-api-init.service           loaded active exited  Flight Control API Initialization
+  flightctl-api.service                loaded active running Flight Control API server
+  flightctl-certs-init.service         loaded active exited  Flight Control Certificates Initialization
+  flightctl-cli-artifacts-init.service loaded active exited  Flight Control CLI Artifacts Certificates Initialization
+  flightctl-cli-artifacts.service      loaded active running Flight Control CLI Artifacts service
+  flightctl-db-migrate.service         loaded active exited  Flight Control Database Migration service
+  flightctl-db-users-init.service      loaded active exited  Flight Control Database Users Initialization
+  flightctl-db-wait.service            loaded active exited  Flight Control Database Wait
+  flightctl-db.service                 loaded active running PostgreSQL Database for Flightctl
+  flightctl-kv.service                 loaded active running Flight Control Key Value service
+  flightctl-network.service            loaded active exited  flightctl-network.service
+  flightctl-pam-issuer.service         loaded active running Flight Control PAM OIDC Issuer server
+  flightctl-periodic.service           loaded active running Flight Control Periodic service
+  flightctl-ui-init.service            loaded active exited  Flight Control UI Initialization
+  flightctl-ui.service                 loaded active running Flight Control UI
+  flightctl-worker.service             loaded active running Flight Control Worker service
+  flightctl.target                     loaded active active  Flight Control Services Group
+
+Legend: LOAD   → Reflects whether the unit definition was properly loaded.
+        ACTIVE → The high-level unit activation state, i.e. generalization of SUB.
+        SUB    → The low-level unit activation state, values depend on unit type.
+
+20 loaded units listed.
+To show all installed unit files use 'systemctl list-unit-files'.</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>If some of services do not start, you can check their status and log messages, for example:</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>sudo systemctl status flightctl-api</strong>
+[sudo] password for student:
+● flightctl-api.service - Flight Control API server
+     Loaded: loaded (/usr/share/containers/systemd/flightctl-api.container; generated)
+...
+$ <strong>sudo journalctl -u flightctl-api</strong>
+Dec 15 13:45:24 servera systemd[1]: Starting flightctl-api.service - Flight Control API server...
+Dec 15 13:45:26 servera flightctl-api[2032]: Trying to pull quay.io/flightctl/flightctl-api:1.0.0-rc2...
+..</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Verify that the RHEM containers are up and running.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>sudo podman ps</strong>
+CONTAINER ID  IMAGE                                                     COMMAND               CREATED        STATUS        PORTS                                           NAMES
+88fee8adbc8a  docker.io/library/redis:7.4.1                             /bin/sh -c redis-...  2 minutes ago  Up 2 minutes  6379/tcp                                        flightctl-kv
+dcec17e5ce36  quay.io/sclorg/postgresql-16-c9s:20250214                 run-postgresql        2 minutes ago  Up 2 minutes  5432/tcp                                        flightctl-db
+ae375cbd787d  quay.io/prometheus/alertmanager:v0.28.1                   --config.file=/us...  2 minutes ago  Up 2 minutes  9093/tcp                                        flightctl-alertmanager
+6735c35b4c94  quay.io/flightctl/flightctl-alert-exporter:1.0.0-rc2      /bin/sh -c ./flig...  2 minutes ago  Up 2 minutes                                                  flightctl-alert-exporter
+4adbea0863c4  quay.io/flightctl/flightctl-pam-issuer:1.0.0-rc2          ./flightctl-pam-i...  2 minutes ago  Up 2 minutes  0.0.0.0:8444-&gt;8444/tcp                          flightctl-pam-issuer
+f7bc10df3b84  quay.io/flightctl/flightctl-worker:1.0.0-rc2              /bin/sh -c ./flig...  2 minutes ago  Up 2 minutes                                                  flightctl-worker
+ef129d3b0ba0  quay.io/flightctl/flightctl-alertmanager-proxy:1.0.0-rc2  /bin/sh -c ./flig...  2 minutes ago  Up 2 minutes  0.0.0.0:8443-&gt;8443/tcp                          flightctl-alertmanager-proxy
+25603c3e2bd3  quay.io/flightctl/flightctl-api:1.0.0-rc2                 /bin/sh -c ./flig...  2 minutes ago  Up 2 minutes  0.0.0.0:3443-&gt;3443/tcp, 0.0.0.0:7443-&gt;7443/tcp  flightctl-api
+b4f26b0f4fa4  quay.io/flightctl/flightctl-ui:1.0.0-rc2                  /bin/sh -c ./flig...  2 minutes ago  Up 2 minutes  0.0.0.0:443-&gt;8080/tcp                           flightctl-ui
+f204d574cd11  quay.io/flightctl/flightctl-periodic:1.0.0-rc2            /bin/sh -c ./flig...  2 minutes ago  Up 2 minutes                                                  flightctl-periodic
+aac92db2a9a6  quay.io/flightctl/flightctl-cli-artifacts:1.0.0-rc2                             2 minutes ago  Up 2 minutes  0.0.0.0:8090-&gt;8090/tcp                          flightctl-cli-artifacts</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>You can also get logs directly from the containers, or enter then with <code>podman exec</code> for deeper troubleshooting.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>sudo podman logs flightctl-api</strong>
+time="2025-12-15T13:45:34Z" level=info msg="Starting API service" func=main.main file="/app/cmd/flightctl-api/main.go:40"
+..</code></pre>
+</div>
+</div>
+</li>
+</ol>
+</div>
+</li>
+<li>
+<p>For simplicity, configure local users for the RHEM services, on the PAM issuer container.</p>
+<div class="olist loweralpha">
+<ol class="loweralpha" type="a">
+<li>
+<p>Create groups which correspond to the <code>admin</code>, <code>operator</code>, and <code>viewer</code> roles.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>sudo podman exec -i flightctl-pam-issuer groupadd flightctl-admin</strong>
+$ <strong>sudo podman exec -i flightctl-pam-issuer groupadd flightctl-operator</strong>
+$ <strong>sudo podman exec -i flightctl-pam-issuer groupadd flightctl-viewer</strong></code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Create a user named <code>student</code> and grant it the <code>operator</code> role.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>sudo podman exec flightctl-pam-issuer adduser student</strong>
+$ <strong>sudo podman exec -i flightctl-pam-issuer sh -c 'echo "student:student" | chpasswd'</strong>
+$ <strong>sudo podman exec -i flightctl-pam-issuer usermod -aG flightctl-operator student</strong></code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Create a user named <code>admin</code> and grant it the <code>admin</code> role.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>sudo podman exec flightctl-pam-issuer adduser admin</strong>
+$ <strong>sudo podman exec -i flightctl-pam-issuer sh -c 'echo "admin:redhat" | chpasswd'</strong>
+$ <strong>sudo podman exec -i flightctl-pam-issuer usermod -aG flightctl-admin admin</strong></code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Verify you have the requires users and groups on the PAM issuer container.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>sudo podman exec -i flightctl-pam-issuer groups student</strong>
+student : student flightctl-operator
+$ <strong>sudo podman exec -i flightctl-pam-issuer groups admin</strong>
+admin : admin flightctl-admin</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>If you would rather be more throughout verifying users and groups on the PAM issue container.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>sudo podman exec -i flightctl-pam-issuer getent passwd student</strong>
+student:x:1000:1003::/home/student:/bin/bash
+$ <strong>sudo podman exec -i flightctl-pam-issuer getent passwd admin</strong>
+admin:x:1001:1004::/home/admin:/bin/bash
+$ <strong>sudo podman exec -i flightctl-pam-issuer getent group flightctl-admin</strong>
+flightctl-admin:x:1000:admin
+$ <strong>sudo podman exec -i flightctl-pam-issuer getent group flightctl-operator</strong>
+flightctl-operator:x:1001:student</code></pre>
+</div>
+</div>
+</li>
+</ol>
+</div>
+</li>
+<li>
+<p>Install the RHEM CLI on your <em>development machine</em></p>
+<div class="olist loweralpha">
+<ol class="loweralpha" type="a">
+<li>
+<p>Make sure your current shell is on the right machine.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>hostname</strong>
+workstation</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Enable the flight repository from EPEL and install its CLI package.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>sudo dnf config-manager --add-repo https://rpm.flightctl.io/flightctl-epel.repo</strong>
+GRAB OUTPUT
+$ <strong>sudo dnf install -y flightctl-cli</strong>
+GRAB OUTPUT</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Verify that the <code>flightctl</code> command is in your command PATH.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>flightctl version</strong>
+Client Version: v1.0.0-rc2
+Server Version: Could not read server version</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Copy the self-signed certificate of the RHEM server and add it to the system&#8217;s trusted CA set.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>scp servera:/etc/flightctl/pki/ca-bundle.crt ~</strong>
+ca-bundle.crt             100% 1222   128.6KB/s   00:00
+$ <strong>sudo cp ca-bundle.crt /etc/pki/ca-trust/source/anchors/</strong>
+$ <strong>sudo update-ca-trust extract</strong></code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Log in on the RHEM server.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>flightctl login -u admin -p redhat https://servera.lab.example.com:3443</strong>
+Login successful.</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Verify that the CLI can now get the server&#8217;s version, and that there are no managed devices yet.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>flightctl version</strong>
+Client Version: v1.0.0-rc2
+Server Version: v1.0.0-rc2
+$ <strong>flightctl get dev</strong>
+NAME    ALIAS   OWNER   SYSTEM  UPDATED APPLICATIONS</code></pre>
+</div>
+</div>
+</li>
+</ol>
+</div>
+</li>
+<li>
+<p>Access the RHEM web UI.</p>
+<div class="olist loweralpha">
+<ol class="loweralpha" type="a">
+<li>
+<p>Open a web browser and visit <code><a href="https://servera.lab.example.com" class="bare">https://servera.lab.example.com</a></code>.
+You should get a login screen without any web browser warnings about certificate issues.</p>
+</li>
+<li>
+<p>Log in as the <code>student</code> user, with password <code>student</code>.</p>
+<div class="paragraph">
+<p>If you get a "CSRF error", just try again.</p>
+</div>
+</li>
+<li>
+<p>You should get the RHEM Overview page, with three gray circles because there are no managed devices to report a status summary.</p>
+</li>
+<li>
+<p>On the left panel, click on <strong>Devices</strong> to verify that there are indeed no managed devices.</p>
+</li>
+</ol>
+</div>
+</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_whats_next"><a class="anchor" href="#_whats_next"></a>What&#8217;s next</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>In the next activity, you will create a bootc container image containing the RHEM client and use it to provision and enroll a test VM which stands in for a managed edge device.</p>
+</div>
+</div>
+</div>
+<nav class="pagination">
+  <span class="prev"><a href="s1-quadlets.html">Red Hat Edge Manager Services and Installation</a></span>
+  <span class="next"><a href="../ch3-enroll/index.html">Add Edge Devices to Red Hat Edge Manager</a></span>
+</nav>
+</article>
+  </div>
+</main>
+</div>
+<footer class="footer">
+  <img src="../../../_/img/rhl-logo-red.png" height="40px" alt="Red Hat"  href="https://redhat.com" >
+</footer><script id="site-script" src="../../../_/js/site.js" data-ui-root-path="../../../_"></script>
+<script async src="../../../_/js/vendor/highlight.js"></script>
+  </body>
+</html>
