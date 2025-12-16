@@ -20,7 +20,7 @@ You need a _development machine_ running RHEL, to which you have unrestricted su
 
 You also need a _server machine_ running RHEL, to which you also have unrestricted sudo access.
 
-Both your _development machine_ and _server machine_ require internet access to download RPM and container images packages.
+Both your _development machine_ and _server machine_ require internet access to download RPM packages and container images.
 
 If you are using the course classroom, your _development machine_ is the `workstation` VM.
 Log in as the user `student` with password `student`.
@@ -47,7 +47,7 @@ Alternatively, you can open a shell or a console directly on the `servera` VM.
 
 You will install and configure RHEM on your _server machine_, and then you will use your _development machine_ to run the web UI and the CLI of RHEM to verify that your new RHEM instance is up and running.
 
-NOTE: The instructions here use the community artifacts from the flightctl projects, but are expected to work with the product artifacts from RHEM, when they become available, by just switching from the community repository to the RHEM product repository.
+NOTE: The instructions here use the community artifacts from the flightctl projects, but are expected to work with the product artifacts from RHEM, when they become available, by just switching from the community repository to the RHEM product repository and using the Red Hat subscription manager.
 
 1. Install the RHEM services on your _server machine_.
 
@@ -67,17 +67,19 @@ $ *sudo dnf config-manager --add-repo https://rpm.flightctl.io/flightctl-epel.re
 GRAB OUTPUT
 --
 +
-NOTE: There is no need to register `servera` because the RHEM services package contains no dependencies other than a container engine (Podman) and the classroom environment contains a mirror of the RHEL 10 packages.
+NOTE: There is no need to register `servera` because the RHEM services package contains no dependencies other than a container engine (Podman) and the classroom environment contains a mirror of the RHEL 10 packages, which the `sererva` machine is preconfigured to use.
 
 .. Install the RHEM services.
 +
 [source,subs="verbatim,quotes"]
 --
-$ *sudo dnf install -y flightctl-services*
+$ *sudo dnf install -y flightctl-services-1.0.0~rc2*
 GRAB OUTPUT
 --
++
+NOTE: If you want to try the current lastest release from the upstream project, remove the version component `-1.0.0-rc2` from the package `flightctl-services` in the command above.
 
-.. Edit the RHEM configuration in `/etc/flightctl/service-config.yaml` to use the fully qualified domain (FQDN)
+.. Edit the RHEM configuration in `/etc/flightctl/service-config.yaml` to use the fully qualified domain (FQDN) of your _server machine_.
 +
 [source,subs="verbatim,quotes"]
 --
