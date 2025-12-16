@@ -193,7 +193,7 @@ It could be a <a href="https://developers.redhat.com/products/rhel/download">Red
 <p>You also need a <em>server machine</em> running RHEL, to which you also have unrestricted sudo access.</p>
 </div>
 <div class="paragraph">
-<p>Both your <em>development machine</em> and <em>server machine</em> require internet access to download RPM and container images packages.</p>
+<p>Both your <em>development machine</em> and <em>server machine</em> require internet access to download RPM packages and container images.</p>
 </div>
 <div class="paragraph">
 <p>If you are using the course classroom, your <em>development machine</em> is the <code>workstation</code> VM.
@@ -216,7 +216,7 @@ Alternatively, you can open a shell or a console directly on the <code>servera</
 <i class="fa icon-note" title="Note"></i>
 </td>
 <td class="content">
-The instructions here use the community artifacts from the flightctl projects, but are expected to work with the product artifacts from RHEM, when they become available, by just switching from the community repository to the RHEM product repository.
+The instructions here use the community artifacts from the flightctl projects, but are expected to work with the product artifacts from RHEM, when they become available, by just switching from the community repository to the RHEM product repository and using the Red Hat subscription manager.
 </td>
 </tr>
 </table>
@@ -251,7 +251,7 @@ GRAB OUTPUT</code></pre>
 <i class="fa icon-note" title="Note"></i>
 </td>
 <td class="content">
-There is no need to register <code>servera</code> because the RHEM services package contains no dependencies other than a container engine (Podman) and the classroom environment contains a mirror of the RHEL 10 packages.
+There is no need to register <code>servera</code> because the RHEM services package contains no dependencies other than a container engine (Podman) and the classroom environment contains a mirror of the RHEL 10 packages, which the <code>sererva</code> machine is preconfigured to use.
 </td>
 </tr>
 </table>
@@ -261,13 +261,25 @@ There is no need to register <code>servera</code> because the RHEM services pack
 <p>Install the RHEM services.</p>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>sudo dnf install -y flightctl-services</strong>
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>sudo dnf install -y flightctl-services-1.0.0~rc2</strong>
 GRAB OUTPUT</code></pre>
 </div>
 </div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+If you want to try the current lastest release from the upstream project, remove the version component <code>-1.0.0-rc2</code> from the package <code>flightctl-services</code> in the command above.
+</td>
+</tr>
+</table>
+</div>
 </li>
 <li>
-<p>Edit the RHEM configuration in <code>/etc/flightctl/service-config.yaml</code> to use the fully qualified domain (FQDN)</p>
+<p>Edit the RHEM configuration in <code>/etc/flightctl/service-config.yaml</code> to use the fully qualified domain (FQDN) of your <em>server machine</em>.</p>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-none hljs">global:
