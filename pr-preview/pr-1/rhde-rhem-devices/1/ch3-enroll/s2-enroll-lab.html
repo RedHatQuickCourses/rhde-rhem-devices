@@ -93,7 +93,16 @@
   <li class="nav-item" data-depth="0">
 <ul class="nav-list">
   <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
     <a class="nav-link" href="../ch4-manage/index.html">Manage Edge Devices with Red Hat Edge Manager</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../ch4-manage/s1-manage.html">Manage Edge Devices with RHEM</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../ch4-manage/s2-manage-lab.html">Lab: Configure and Update Edge Devices</a>
+  </li>
+</ul>
   </li>
 </ul>
   </li>
@@ -187,7 +196,7 @@ Work in progress
 It could be a <a href="https://developers.redhat.com/products/rhel/download">Red Hat Developer program</a> free subscription.</p>
 </div>
 <div class="paragraph">
-<p>You need a <em>development machine</em> running RHEL, to which you have unrestricted sudo access.</p>
+<p>You need a <em>development machine</em> running RHEL, to which you have unrestricted sudo access, and enough capacity to run a few VMs.</p>
 </div>
 <div class="paragraph">
 <p>You also need a <em>server machine</em> running RHEL, to which you also have unrestricted sudo access, which was already configured with RHEM by the <a href="../ch2-deploy/s2-install-lab.html" class="xref page">previous lab</a>.</p>
@@ -200,9 +209,7 @@ It could be a <a href="https://developers.redhat.com/products/rhel/download">Red
 </div>
 <div class="paragraph">
 <p>If you are using the course classroom, your <em>development machine</em> is the <code>workstation</code> VM.
-Log in as the user <code>student</code> with password <code>student</code>.
-From that machine, you may start SSH sessions to the <code>servera</code> VM, which is your <em>server</em> machine, using the same user.
-Alternatively, you can open a shell or a console directly on the <code>servera</code> VM.</p>
+Log in as the user <code>student</code> with password <code>student</code>.</p>
 </div>
 </div>
 </div>
@@ -902,7 +909,8 @@ You can then see information about the device, such as its MAC address, if you m
 </li>
 <li>
 <p>Type <code>rhel=9.6</code> and press <kbd>Tab</kbd> to display the <strong>Add label</strong> link.
-Repeat the process to add another label, and type <code>type=noapps</code>.</p>
+Repeat the process to add another label, and type <code>type=noapps</code>.
+Feel free to add more labels, but be sure to include those two.</p>
 <div class="paragraph">
 <p>GRAB SCREENSHOT</p>
 </div>
@@ -964,9 +972,9 @@ Click <strong>Approve</strong>.</p>
 </div>
 <div class="paragraph">
 <p>You now have two test VMs enrolled in RHEM as managed devices.
-You know how to identify each one and saw that you can access these devices, to run troubleshooting commands, directly though RHEM.
-You also saw that you can perform most actions by using either the CLI or the web interface.
-One of the few actions which requires using the CLI is fetching enrollment request data.</p>
+You also know how to identify each one and saw that you can access these devices, to run troubleshooting commands, directly through RHEM.
+Finally, you know that you can perform most actions by using either the CLI or the web interface.
+One of the few exceptions, which requires using the CLI, is fetching enrollment request data.</p>
 </div>
 <div class="admonitionblock important">
 <table>

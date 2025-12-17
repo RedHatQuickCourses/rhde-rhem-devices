@@ -3,7 +3,9 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Lab Environment :: Deploying Red Hat Edge Manager and Managing Edge Devices</title>
+    <title>Lab: Configure and Update Edge Devices :: Deploying Red Hat Edge Manager and Managing Edge Devices</title>
+    <link rel="prev" href="s1-manage.html">
+    <link rel="next" href="../ch5-decomission/index.html">
     <meta name="generator" content="Antora 3.1.3">
     <link rel="stylesheet" href="../../../_/css/site.css">
     <script>var uiRootPath = '../../../_'</script>
@@ -45,7 +47,7 @@
   <li class="nav-item" data-depth="0">
 <ul class="nav-list">
   <li class="nav-item" data-depth="1">
-    <a class="nav-link" href="index.html">Lab Environment</a>
+    <a class="nav-link" href="../LABENV/index.html">Lab Environment</a>
   </li>
 </ul>
   </li>
@@ -92,13 +94,13 @@
 <ul class="nav-list">
   <li class="nav-item" data-depth="1">
     <button class="nav-item-toggle"></button>
-    <a class="nav-link" href="../ch4-manage/index.html">Manage Edge Devices with Red Hat Edge Manager</a>
+    <a class="nav-link" href="index.html">Manage Edge Devices with Red Hat Edge Manager</a>
 <ul class="nav-list">
   <li class="nav-item" data-depth="2">
-    <a class="nav-link" href="../ch4-manage/s1-manage.html">Manage Edge Devices with RHEM</a>
+    <a class="nav-link" href="s1-manage.html">Manage Edge Devices with RHEM</a>
   </li>
-  <li class="nav-item" data-depth="2">
-    <a class="nav-link" href="../ch4-manage/s2-manage-lab.html">Lab: Configure and Update Edge Devices</a>
+  <li class="nav-item is-current-page" data-depth="2">
+    <a class="nav-link" href="s2-manage-lab.html">Lab: Configure and Update Edge Devices</a>
   </li>
 </ul>
   </li>
@@ -148,7 +150,8 @@
 <nav class="breadcrumbs" aria-label="breadcrumbs">
   <ul>
     <li><a href="../index.html">Deploying Red Hat Edge Manager and Managing Edge Devices</a></li>
-    <li><a href="index-lab-other.html">Lab Environment</a></li>
+    <li><a href="index.html">Manage Edge Devices with Red Hat Edge Manager</a></li>
+    <li><a href="s2-manage-lab.html">Lab: Configure and Update Edge Devices</a></li>
   </ul>
 </nav>
 </div>
@@ -157,10 +160,109 @@
   <div class="toc-menu"></div>
 </aside>
 <article class="doc">
-<h1 class="page">Lab Environment</h1>
+<h1 class="page">Lab: Configure and Update Edge Devices</h1>
+<div id="preamble">
+<div class="sectionbody">
 <div class="paragraph">
-<p>FIXME: Instructions for accessing the lab environment on any other platform, for this hands-on based training.</p>
+<p><em>Estimated reading time: <strong>5 minutes</strong>.</em></p>
 </div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Objective</dt>
+<dd>
+<p>Provision and enroll devices on RHEM from an installation ISO.</p>
+</dd>
+</dl>
+</div>
+<div class="admonitionblock warning">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-warning" title="Warning"></i>
+</td>
+<td class="content">
+Not started yet
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_before_you_begin"><a class="anchor" href="#_before_you_begin"></a>Before you begin</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>You need a customer portal account with access to a Red Hat Enterprise Linux (RHEL) subscription.
+It could be a <a href="https://developers.redhat.com/products/rhel/download">Red Hat Developer program</a> free subscription.</p>
+</div>
+<div class="paragraph">
+<p>You need a <em>development machine</em> running RHEL, which contains two test VMs already enrolled into your RHEM server by a <a href="../ch3-enroll/s2-enroll-lab.html" class="xref page">previous lab</a>.</p>
+</div>
+<div class="paragraph">
+<p>You also need a <em>server machine</em> running RHEL, to which you also have unrestricted sudo access, which was already configured with RHEM.</p>
+</div>
+<div class="paragraph">
+<p>Finally, you need a <em>private registry</em> to store bootc container images for your managed edge devices.</p>
+</div>
+<div class="paragraph">
+<p>Your <em>development machine</em> requires internet access to download RPM packages and container images. [ ONLY IF WE DO UPDATE HERE ]</p>
+</div>
+<div class="paragraph">
+<p>If you are using the course classroom, your <em>development machine</em> is the <code>workstation</code> VM.
+Log in as the user <code>student</code> with password <code>student</code>.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_instructions"><a class="anchor" href="#_instructions"></a>Instructions</h2>
+<div class="sectionbody">
+<div class="admonitionblock important">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-important" title="Important"></i>
+</td>
+<td class="content">
+SPLIT THIS INTO A CONFIGURE AND AN UPDATE LAB?
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>You will configure your managed devices with basic settings, such as hostname and other configuration files in the <code>/etc</code> directory, as inline configurations in each device manifest.
+Then you will exercise RHEM&#8217;s ability to detect and correct configuration drift, by making manual changes to configuration files, and observing that RHEM restores the configurations set for each device.</p>
+</div>
+<div class="paragraph">
+<p>You will also configure your managed devices with secrets required to access a private OCI container registry, so they can fetch bootc container images, and update them to use a different image than the one used during enrollment, which contains an embedded application.</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Lorem ipsum</p>
+<div class="olist loweralpha">
+<ol class="loweralpha" type="a">
+<li>
+<p>TBD</p>
+</li>
+</ol>
+</div>
+</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_whats_next"><a class="anchor" href="#_whats_next"></a>What&#8217;s next</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>In the next activity, you will decomission devices so they are not managed by RHEM anymore.</p>
+</div>
+</div>
+</div>
+<nav class="pagination">
+  <span class="prev"><a href="s1-manage.html">Manage Edge Devices with RHEM</a></span>
+  <span class="next"><a href="../ch5-decomission/index.html">Remove Edge Devices from Red Hat Edge Manager</a></span>
+</nav>
 </article>
   </div>
 </main>
