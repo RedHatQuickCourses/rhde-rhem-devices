@@ -4,4 +4,4 @@ Goal::
 
 Enroll managed devices on RHEM.
 
-WARNING: Not started yet
+WARNING: Work in progress

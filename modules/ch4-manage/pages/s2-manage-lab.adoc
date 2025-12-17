@@ -1,0 +1,73 @@
+:time_estimate: 5
+:edge-1-uuid-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa: 1u63hvsgtua9tjjbmla9bgh5h2s77cb8esepphnf68m3ocf8qfng
+:edge-2-uuid-bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb: g7ombcqk46tqq458j9uju454441mf1lgt9qqqva8ti0fnvosm57g
+:rhem-enroll-v1-shaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa: 503f839113b376c55ceee225a8cbfdc9bf1496f3342385ce171f2cf2e01f1333
+
+= Lab: Configure and Update Edge Devices
+
+_Estimated reading time: *{time_estimate} minutes*._
+
+Objective::
+
+Provision and enroll devices on RHEM from an installation ISO.
+
+WARNING: Not started yet
+
+== Before you begin
+
+You need a customer portal account with access to a Red Hat Enterprise Linux (RHEL) subscription.
+It could be a https://developers.redhat.com/products/rhel/download[Red Hat Developer program] free subscription.
+
+You need a _development machine_ running RHEL, which contains two test VMs already enrolled into your RHEM server by a xref:ch3-enroll:s2-enroll-lab.adoc[previous lab].
+
+You also need a _server machine_ running RHEL, to which you also have unrestricted sudo access, which was already configured with RHEM.
+
+Finally, you need a _private registry_ to store bootc container images for your managed edge devices.
+
+Your _development machine_ requires internet access to download RPM packages and container images. [ ONLY IF WE DO UPDATE HERE ]
+
+If you are using the course classroom, your _development machine_ is the `workstation` VM.
+Log in as the user `student` with password `student`.
+
+== Instructions
+
+IMPORTANT: SPLIT THIS INTO A CONFIGURE AND AN UPDATE LAB?
+
+////
+
+Configure devices so they can access a private OCI container registry, and switch the OS image to one which includes an embedded application.
+
+* Build a new bootc container image which contains an application, such as a web server, and minimal required settings, such as enabling it in systemd and firewalld.
+
+* No need to build an update or installation media, because the update will be performed by RHEM directly from a container registry.
+
+* The previous lab, provisioning devices from ISO (a disconnected workflow), or from QCOW2, left devices without secrets to access the private container registry.
+
+* Try to switch those devices to a different image and notice it fails.
+
+* Add the registry TLS certificate and credentials as inline device configurations, and now they successfully update to the new image.
+
+* The previous bullet requires an afterupdate hook to run the update-ca-trust command
+
+* Access the device and verify the application works as intended.
+
+* Prove other devices were left untouched.
+
+* (tentative) Change a file which is managed by RHEM and verify that RHEM reverts the change, to demonstrate it works as a “kubernetes-style” reconciliation loop and prevents configuration drift
+
+* Update another different device (to the same image and settings) to demonstrate it done from both the CLI and web UI?
+
+////
+
+You will configure your managed devices with basic settings, such as hostname and other configuration files in the `/etc` directory, as inline configurations in each device manifest.
+Then you will exercise RHEM's ability to detect and correct configuration drift, by making manual changes to configuration files, and observing that RHEM restores the configurations set for each device.
+
+You will also configure your managed devices with secrets required to access a private OCI container registry, so they can fetch bootc container images, and update them to use a different image than the one used during enrollment, which contains an embedded application.
+
+1. Lorem ipsum
+
+.. TBD
+
+== What's next
+
+In the next activity, you will decomission devices so they are not managed by RHEM anymore.

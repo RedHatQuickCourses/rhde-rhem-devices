@@ -1,0 +1,27 @@
+:time_estimate: 5
+
+= Manage Edge Devices with RHEM
+
+_Estimated reading time: *{time_estimate} minutes*._
+
+Objective::
+
+Configure and update managed devices using RHEM.
+
+WARNING: Not started yet
+
+Lorem ipsum dolor sit amet
+
+////
+
+How to inject system configurations, including sensitive configurations (secrets), on a device after or during enrollment.
+
+* Discussion of what to configure at image build time, at device provisioning time (from kickstart or cloud-init) and at day-2.
+
+* Introduce the concept of onboarding as adding configurations which make a device able to function, for example secrets to connect to other edge or corporate network services, which are not recommended to bake at build or installation time.
+
+* Updating the SO/image in a device, updating settings, onboarding, or repurposing a device to serve a different purpose are all the same in the bootc/RHEM world. It’s about the intent, but use the same YAML/APIs/commands in RHEM.
+
+* Mention common issues with updating or switching bootc images and refer to the image mode quick course series.
+
+////

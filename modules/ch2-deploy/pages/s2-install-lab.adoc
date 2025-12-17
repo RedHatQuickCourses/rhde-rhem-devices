@@ -14,9 +14,10 @@ WARNING: Work in progress
 
 You need a customer portal account with access to a Red Hat Enterprise Linux (RHEL) subscription.
 It could be a https://developers.redhat.com/products/rhel/download[Red Hat Developer program] free subscription.
++
+IMPORTANT: The GA release of RHEM may require a RHDE subscription and NOT be part of the developer program individual subscription.
 
-You need a _development machine_ running RHEL, to which you have unrestricted sudo access.
-//On the next activities, you will use the _development machine_ to run test VMs that stand in for edge devices to be managed by RHEM.
+You need a _development machine_ running RHEL, to which you have unrestricted sudo access, and enough capacity to run a few VMs.
 
 You also need a _server machine_ running RHEL, to which you also have unrestricted sudo access.
 

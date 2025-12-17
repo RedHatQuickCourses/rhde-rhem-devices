@@ -18,8 +18,7 @@ WARNING: Work in progress
 You need a customer portal account with access to a Red Hat Enterprise Linux (RHEL) subscription.
 It could be a https://developers.redhat.com/products/rhel/download[Red Hat Developer program] free subscription.
 
-You need a _development machine_ running RHEL, to which you have unrestricted sudo access.
-//On the next activities, you will use the _development machine_ to run test VMs that stand in for edge devices to be managed by RHEM.
+You need a _development machine_ running RHEL, to which you have unrestricted sudo access, and enough capacity to run a few VMs.
 
 You also need a _server machine_ running RHEL, to which you also have unrestricted sudo access, which was already configured with RHEM by the xref:ch2-deploy:s2-install-lab.adoc[previous lab].
 
@@ -29,8 +28,6 @@ Your _development machine_ requires internet access to download RPM packages and
 
 If you are using the course classroom, your _development machine_ is the `workstation` VM.
 Log in as the user `student` with password `student`.
-From that machine, you may start SSH sessions to the `servera` VM, which is your _server_ machine, using the same user.
-Alternatively, you can open a shell or a console directly on the `servera` VM.
 
 == Instructions
 
@@ -577,6 +574,7 @@ GRAB SCREENSHOT
 
 .. Type `rhel=9.6` and press kbd:[Tab] to display the *Add label* link.
 Repeat the process to add another label, and type `type=noapps`.
+Feel free to add more labels, but be sure to include those two.
 +
 GRAB SCREENSHOT
 
@@ -612,9 +610,9 @@ GRAB SCREENSHOT
 GRAB SCREENSHOT
 
 You now have two test VMs enrolled in RHEM as managed devices.
-You know how to identify each one and saw that you can access these devices, to run troubleshooting commands, directly though RHEM.
-You also saw that you can perform most actions by using either the CLI or the web interface.
-One of the few actions which requires using the CLI is fetching enrollment request data.
+You also know how to identify each one and saw that you can access these devices, to run troubleshooting commands, directly through RHEM.
+Finally, you know that you can perform most actions by using either the CLI or the web interface.
+One of the few exceptions, which requires using the CLI, is fetching enrollment request data.
 
 IMPORTANT: Grab screenshots with the latest RC or the GA release, whatever is the one for this course initial release.
 Not taking screen shots right now to avoid changes to UI, styling, and branding.

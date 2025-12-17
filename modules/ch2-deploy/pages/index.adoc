@@ -4,4 +4,4 @@ Goal::
 
 Deploy RHEM standalone on RHEL from RPM packages.
 
-WARNING: Not started yet
+WARNING: Work in progress
