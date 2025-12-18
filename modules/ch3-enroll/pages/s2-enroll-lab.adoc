@@ -1,7 +1,4 @@
 :time_estimate: 5
-:edge-1-uuid-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa: 1u63hvsgtua9tjjbmla9bgh5h2s77cb8esepphnf68m3ocf8qfng
-:edge-2-uuid-bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb: g7ombcqk46tqq458j9uju454441mf1lgt9qqqva8ti0fnvosm57g
-:rhem-enroll-v1-shaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa: 503f839113b376c55ceee225a8cbfdc9bf1496f3342385ce171f2cf2e01f1333
 
 = Lab: Enroll Edge Devices Using Late Binding
 
@@ -131,7 +128,7 @@ Successfully tagged localhost/rhem-enroll:latest
 
 .. Publish the container image in the private registry.
 +
-[source,subs="verbatim,quotes"]
+[source,subs="verbatim,quotes,attributes"]
 --
 $ *podman login -u student -p redhat registry.lab.example.com:5000*
 Login Succeeded!
@@ -221,8 +218,6 @@ Results saved in .
 --
 $ *cp output/bootiso/install.iso rhem-enroll.iso*
 --
-
-.. PAUSED HERE
 
 .. Use the provided script to invoke `virt-install` to create a local test VM, booting it from the ISO.
 +
@@ -535,7 +530,7 @@ $ *exit*
 
 7. Enroll your second test VM on RHEM, but this time using its web interface and a non-administrator user.
 
-.. Open a web browser and visit `https://servera.lab.example.com`.
+.. Open a web browser and visit `\https://servera.lab.example.com`.
 
 .. Log in as the `admin` user with the `redhat` password.
 Notice we are NOT using the `student` user, because you need full administrator privileges on RHEM to approve managed devices.

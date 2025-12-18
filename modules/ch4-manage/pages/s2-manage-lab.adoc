@@ -9,7 +9,7 @@ _Estimated reading time: *{time_estimate} minutes*._
 
 Objective::
 
-Provision and enroll devices on RHEM from an installation ISO.
+Configure managed devices by using inline configuration in the device specification[, and update the operating system image on managed devices].
 
 WARNING: Not started yet
 
@@ -59,14 +59,255 @@ Configure devices so they can access a private OCI container registry, and switc
 
 ////
 
-You will configure your managed devices with basic settings, such as hostname and other configuration files in the `/etc` directory, as inline configurations in each device manifest.
+At the end of the previous lab, you had two managed devices which were provisioned from the same installation disk.
+//Right now, they have identical settings, and you must distinguish them by indirect means, such as files that you created on each device, or the local port forwarded to each test VM.
+Right now, they have identical settings, among them a well-known SSH key, which is considered insecure because it's available to any field personel with possess an installation media.
+You will remediate this by configuring your managed devices with different SSH keys, provided as inline configurations in each device manifest.
+
+//You will remediate this by configuring your managed devices with basic settings, such as hostname and other configuration files in the `/etc` directory, as inline configurations in each device manifest.
+
 Then you will exercise RHEM's ability to detect and correct configuration drift, by making manual changes to configuration files, and observing that RHEM restores the configurations set for each device.
 
+// This is for the second lab, if I decide to split
 You will also configure your managed devices with secrets required to access a private OCI container registry, so they can fetch bootc container images, and update them to use a different image than the one used during enrollment, which contains an embedded application.
 
-1. Lorem ipsum
+1. Verify that you have the outcomes of previous labs.
+If you do not, go back and complete them, because you need their outcomes to continue with this course.
+
+.. There is a clone of the course samples repository on your home directory.
++
+[source,subs="verbatim,quotes"]
+--
+$ *cd*
+$ *ls rhde-rhem-samples*
+LICENSE  README.md  antora.yml  enroll  modules  webapp
+--
+
+.. There are two local test VMs, named `edge-1` and `edge-2`.
++
+[source,subs="verbatim,quotes"]
+--
+$ *virsh list --all*
+ Id   Name     State
+-------------------------
+ -    edge-1   shut off
+ -    edge-2   shut off
+--
+
+.. If your test VMs are not started, because you stopped your classroom environment since completing the previous lab, start them now.
++
+[source,subs="verbatim,quotes"]
+--
+$ *virsh start edge-1*
+Domain 'edge-1' started
+$ *virsh start edge-2*
+Domain 'edge-2' started
+--
+
+.. Enter the `test-enroll` directory, which contains the Containerfile, kickstart script, and SSH key used to provision the two test VMs.
++
+[source,subs="verbatim,quotes"]
+--
+$ *cd temp-enroll*
+$ *ls*
+Containerfile  bib-iso.sh  config.toml  config.yaml  edge-key  edge-key.pub  output  rhem-enroll.iso  virt-install.sh
+--
+
+.. Log in on RHEM, as an administrator, and verify that there are two managed devices, which correspond to the two test VMs.
++
+[source,subs="verbatim,quotes,attributes"]
+--
+$ *flightctl login -u admin -p redhat https://servera.lab.example.com:3443*
+Login successful.
+$ *flightctl get device -o wide*
+NAME                                                    ALIAS   OWNER   SYSTEM  UPDATED         APPLICATIONS    LABELS
+{edge-1-uuid-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}    edge-1  <none>  Online  UpToDate        NoApplications  alias=edge-1,rhel=9.6,type=noapps
+{edge-2-uuid-bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb}    edge-2  <none>  Unknown Unknown         Unknown         rhel=9.6,type=noapps,alias=edge-2
+--
+
+.. Wait a few moments and repeat the latest command until both managed devices return as `OnLine` and `UpToDate`.
+
+2. Configure the second test VM using the RHEM web UI.
+
+.. Open a web browser and visit `\https://servera.lab.example.com`
+
+.. Log in as the `student` user with the `student` password.
+Notice we are NOT using the `admin` user, because you do NOT require full administrator privileges on RHEM to manage devices.
++
+GRAB SCREENSHOT
+
+.. On the left panel, click *Devices* and click the icon with three vertical icons in the row of the `edge-2` device. 
+Then click *Edit device configurations*.
+NOTE: The same option is available from the *Actions* button in the device details page.
++
+GRAB SCREENSHOT
+
+.. On the *General info* tab of the *Edit device* page, click *Next*.
++
+GRAB SCREENSHOT
+
+.. On the *Device template* tab, click *Add configuration* and fill the form as follows:
++
+--
+...  *Source name*: `ssh-key`
+
+... *Source type*: `Inline configuration`
+--
++
+GRAB SCREENSHOT
+
+.. When you select the source type, the page expands to show the *File 1* heading with a couple additional fields.
+Leave the form as it is, do not click anywhere else, because we have to generate the content for the ssk-key file.
+
+.. Now switch from the web browser to a terminal, but do NOT close your web browser, and run the following command to create a new SSH key pair which is exclusive to the second device.
++
+[source,subs="verbatim,quotes"]
+--
+$ *ssh-keygen -N '' -f edge-2-key -C 'key for the edge-2 managed device'*
+Generating public/private rsa key pair.
+...
+--
+
+.. Display the public key file and copy its contents to the clipboard, so you can paste it on your web browser.
+Of course, your SSH key will have different contents than the ones listed here.
++
+[source,subs="verbatim,quotes"]
+--
+$ *cat edge-2-key.pub *
+ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILy6lU52yOY7IZ2BFpQhCQaQNBvyo1ydbsd5uyzPZBNq key for the edge-2 managed device
+--
+
+.. When you select the source type, the page expands to show the *File 1* heading with a couple additional fields.
+Fill them as follows:
++
+--
+...  *File path on the device*: `/home/core/.ssh/authorized_keys`
+
+... *Content*: <paste here the contents of your SSH key public file>
+--
++
+NOTE: Instead of doing cut-and-paste from the terminal to the web browser, you could use the *Browse* button to select the `~/temp/enroll/edge-2-key.pub` file in the *Content* field.
++
+GRAB SCREENSHOT
+
+.. Scroll down, not changing any of the other fields from *File 1*, and click *Add configuration* again.
++
+You could add multiple files to the same configuration, but when the files are not directly related to each other, it improves readability and maintainability of the configuration having files as distinct inline configuration items.
+
+.. fill the fields inside *Configuration 2* as follows:
++
+--
+...  *Source name*: `motd`
+
+... *Source type*: `Inline configuration`
+--
++
+GRAB SCREENSHOT
+
+
+.. And fill the fields from the new *File 1* panel as follows:
++
+--
+...  *File path on the device*: `/etc/motd`
+
+... *Content*: `Under new management!`
+--
++
+GRAB SCREENSHOT
+
+.. Do not make any change to applications nor services, and click *Next*
+
+.. On the *Updates* tab, leave *Use basic configurations* checked, and click *Next*
+
+.. On the *Review and save* tab, verify that two configurations are listed, named `hostname` and `motd`, and click *Save*.
+
+3. Verify that the managed device synchronizes with RHEM and receives the new configurations.
+
+.. After clicking *Save*, you are in the details page for the `edge-2` device.
+Its *System status* panel should display an *Update status* of `Out-of-date`.
++
+GRAB SCREENSHOT
+
+.. Wait until the *Update status* changes to `Up-to-date` and switch to a terminal window.
++
+GRAB SCREENSHOT
+
+.. Open a SSH session using the new key.
++
+Notice that, if you reuse a previous `ssh` command from your history, you would use the old key and it would ask for the password for the `core` user.
+Also notice the message from `/etc/motd`.
++
+[source,subs="verbatim,quotes"]
+--
+$ *ssh -i edge-2-key -p 8222 core@127.0.0.1*
+Under new management!
+Last login: Thu Dec 18 20:03:46 2025 from 172.25.250.254
+[core@enroll ~]$ 
+--
+
+.. Logs from the RHEM agent would indicate there was a reconciliation of the device configuration.
++
+[source,subs="verbatim,quotes"]
+--
+$ *sudo journalctl -u flightctl-agent | tail -n 2*
+Dec 18 20:02:52 enroll flightctl-agent[820]: time="2025-12-18T20:02:52.191095Z" level=info msg="Version updated from '13' to '14'"
+Dec 18 20:03:22 enroll flightctl-agent[820]: time="2025-12-18T20:03:22.434238Z" level=info msg="Spec reconciliation complete: current version 14"
+--
+
+4. Change a configuration file and verify that RHEM will undo your edits.
+
+.. If you didn't notice on your lastest SSH log in, there is "a message of day".
++
+[source,subs="verbatim,quotes"]
+--
+$ *cat /etc/motd*
+Under new management!
+--
+
+.. Change it to something else.
++
+[source,subs="verbatim,quotes"]
+--
+$ *sudo bash -c "echo 'Sysadmin doing nasty things' > /etc/motd"*
+$ *cat /etc/motd*
+Sysadmin doing nasty things
+--
+
+.. Wait a few moments and verify that the message reverts to the one set by RHEM.
++
+[source,subs="verbatim,quotes"]
+--
+$ *cat /etc/motd*
+Under new management!
+--
 
 .. TBD
+
+77. If, by any reason, an agent fails to apply a configuration update, it will NOT retry. 
+You must apply another configuration change to the RHEM server so the agent fetches a new rendered config to apply.
+
+88. Need another simple scenario to replace the hostname change.
+Anything easy to see in a basic RHEL, which wouldn't require adding an HTTP server and other services to the bootc image?
+
+99. Change the TimeZone to show that you can still make changes on non-managed files and RHEM would not interfere with them.
+
+.. TBD
+
+////
+
+The agent has insufficient permissions (on its SELinux policy) to set the hostname.
+https://issues.redhat.com/browse/EDM-2833
+
+I could workaround with 'setenforce 0' and wait for an update... but maybe I should have a "plan B" to not depend on it.
+
+Create feature requests in the RHEM project (EDM?) -- recover the conversation, I tried it long ago and it failed because of improper configuration in JIRA. Anyway, I'd have other requests, such as:
+
+- explain command
+- whoamI command (to get a token)
+- cp command (derived from console + redirection, see the sos report blob)
+https://github.com/flightctl/flightctl/blob/724dfaeef04cbc4b891864908b1398fce2b0bc3c/docs/user/using/troubleshooting.md#generating-and-downloading-an-sos-report
+
+////
 
 == What's next
 
