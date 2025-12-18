@@ -170,7 +170,7 @@
 <dl>
 <dt class="hdlist1">Objective</dt>
 <dd>
-<p>Provision and enroll devices on RHEM from an installation ISO.</p>
+<p>Configure managed devices by using inline configuration in the device specification[, and update the operating system image on managed devices].</p>
 </dd>
 </dl>
 </div>
@@ -229,8 +229,12 @@ SPLIT THIS INTO A CONFIGURE AND AN UPDATE LAB?
 </table>
 </div>
 <div class="paragraph">
-<p>You will configure your managed devices with basic settings, such as hostname and other configuration files in the <code>/etc</code> directory, as inline configurations in each device manifest.
-Then you will exercise RHEM&#8217;s ability to detect and correct configuration drift, by making manual changes to configuration files, and observing that RHEM restores the configurations set for each device.</p>
+<p>At the end of the previous lab, you had two managed devices which were provisioned from the same installation disk.
+Right now, they have identical settings, among them a well-known SSH key, which is considered insecure because it&#8217;s available to any field personel with possess an installation media.
+You will remediate this by configuring your managed devices with different SSH keys, provided as inline configurations in each device manifest.</p>
+</div>
+<div class="paragraph">
+<p>Then you will exercise RHEM&#8217;s ability to detect and correct configuration drift, by making manual changes to configuration files, and observing that RHEM restores the configurations set for each device.</p>
 </div>
 <div class="paragraph">
 <p>You will also configure your managed devices with secrets required to access a private OCI container registry, so they can fetch bootc container images, and update them to use a different image than the one used during enrollment, which contains an embedded application.</p>
@@ -238,7 +242,328 @@ Then you will exercise RHEM&#8217;s ability to detect and correct configuration 
 <div class="olist arabic">
 <ol class="arabic">
 <li>
-<p>Lorem ipsum</p>
+<p>Verify that you have the outcomes of previous labs.
+If you do not, go back and complete them, because you need their outcomes to continue with this course.</p>
+<div class="olist loweralpha">
+<ol class="loweralpha" type="a">
+<li>
+<p>There is a clone of the course samples repository on your home directory.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>cd</strong>
+$ <strong>ls rhde-rhem-samples</strong>
+LICENSE  README.md  antora.yml  enroll  modules  webapp</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>There are two local test VMs, named <code>edge-1</code> and <code>edge-2</code>.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>virsh list --all</strong>
+ Id   Name     State
+-------------------------
+ -    edge-1   shut off
+ -    edge-2   shut off</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>If your test VMs are not started, because you stopped your classroom environment since completing the previous lab, start them now.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>virsh start edge-1</strong>
+Domain 'edge-1' started
+$ <strong>virsh start edge-2</strong>
+Domain 'edge-2' started</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Enter the <code>test-enroll</code> directory, which contains the Containerfile, kickstart script, and SSH key used to provision the two test VMs.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>cd temp-enroll</strong>
+$ <strong>ls</strong>
+Containerfile  bib-iso.sh  config.toml  config.yaml  edge-key  edge-key.pub  output  rhem-enroll.iso  virt-install.sh</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Log in on RHEM, as an administrator, and verify that there are two managed devices, which correspond to the two test VMs.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>flightctl login -u admin -p redhat https://servera.lab.example.com:3443</strong>
+Login successful.
+$ <strong>flightctl get device -o wide</strong>
+NAME                                                    ALIAS   OWNER   SYSTEM  UPDATED         APPLICATIONS    LABELS
+1u63hvsgtua9tjjbmla9bgh5h2s77cb8esepphnf68m3ocf8qfng    edge-1  &lt;none&gt;  Online  UpToDate        NoApplications  alias=edge-1,rhel=9.6,type=noapps
+g7ombcqk46tqq458j9uju454441mf1lgt9qqqva8ti0fnvosm57g    edge-2  &lt;none&gt;  Unknown Unknown         Unknown         rhel=9.6,type=noapps,alias=edge-2</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Wait a few moments and repeat the latest command until both managed devices return as <code>OnLine</code> and <code>UpToDate</code>.</p>
+</li>
+</ol>
+</div>
+</li>
+<li>
+<p>Configure the second test VM using the RHEM web UI.</p>
+<div class="olist loweralpha">
+<ol class="loweralpha" type="a">
+<li>
+<p>Open a web browser and visit <code>https://servera.lab.example.com</code></p>
+</li>
+<li>
+<p>Log in as the <code>student</code> user with the <code>student</code> password.
+Notice we are NOT using the <code>admin</code> user, because you do NOT require full administrator privileges on RHEM to manage devices.</p>
+<div class="paragraph">
+<p>GRAB SCREENSHOT</p>
+</div>
+</li>
+<li>
+<p>On the left panel, click <strong>Devices</strong> and click the icon with three vertical icons in the row of the <code>edge-2</code> device.
+Then click <strong>Edit device configurations</strong>.
+NOTE: The same option is available from the <strong>Actions</strong> button in the device details page.</p>
+<div class="paragraph">
+<p>GRAB SCREENSHOT</p>
+</div>
+</li>
+<li>
+<p>On the <strong>General info</strong> tab of the <strong>Edit device</strong> page, click <strong>Next</strong>.</p>
+<div class="paragraph">
+<p>GRAB SCREENSHOT</p>
+</div>
+</li>
+<li>
+<p>On the <strong>Device template</strong> tab, click <strong>Add configuration</strong> and fill the form as follows:</p>
+<div class="openblock">
+<div class="content">
+<div class="olist lowerroman">
+<ol class="lowerroman" type="i">
+<li>
+<p><strong>Source name</strong>: <code>ssh-key</code></p>
+</li>
+<li>
+<p><strong>Source type</strong>: <code>Inline configuration</code></p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="paragraph">
+<p>GRAB SCREENSHOT</p>
+</div>
+</li>
+<li>
+<p>When you select the source type, the page expands to show the <strong>File 1</strong> heading with a couple additional fields.
+Leave the form as it is, do not click anywhere else, because we have to generate the content for the ssk-key file.</p>
+</li>
+<li>
+<p>Now switch from the web browser to a terminal, but do NOT close your web browser, and run the following command to create a new SSH key pair which is exclusive to the second device.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>ssh-keygen -N '' -f edge-2-key -C 'key for the edge-2 managed device'</strong>
+Generating public/private rsa key pair.
+...</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Display the public key file and copy its contents to the clipboard, so you can paste it on your web browser.
+Of course, your SSH key will have different contents than the ones listed here.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ *cat edge-2-key.pub *
+ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILy6lU52yOY7IZ2BFpQhCQaQNBvyo1ydbsd5uyzPZBNq key for the edge-2 managed device</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>When you select the source type, the page expands to show the <strong>File 1</strong> heading with a couple additional fields.
+Fill them as follows:</p>
+<div class="openblock">
+<div class="content">
+<div class="olist lowerroman">
+<ol class="lowerroman" type="i">
+<li>
+<p><strong>File path on the device</strong>: <code>/home/core/.ssh/authorized_keys</code></p>
+</li>
+<li>
+<p><strong>Content</strong>: &lt;paste here the contents of your SSH key public file&gt;</p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+Instead of doing cut-and-paste from the terminal to the web browser, you could use the <strong>Browse</strong> button to select the <code>~/temp/enroll/edge-2-key.pub</code> file in the <strong>Content</strong> field.
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>GRAB SCREENSHOT</p>
+</div>
+</li>
+<li>
+<p>Scroll down, not changing any of the other fields from <strong>File 1</strong>, and click <strong>Add configuration</strong> again.</p>
+<div class="paragraph">
+<p>You could add multiple files to the same configuration, but when the files are not directly related to each other, it improves readability and maintainability of the configuration having files as distinct inline configuration items.</p>
+</div>
+</li>
+<li>
+<p>fill the fields inside <strong>Configuration 2</strong> as follows:</p>
+<div class="openblock">
+<div class="content">
+<div class="olist lowerroman">
+<ol class="lowerroman" type="i">
+<li>
+<p><strong>Source name</strong>: <code>motd</code></p>
+</li>
+<li>
+<p><strong>Source type</strong>: <code>Inline configuration</code></p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="paragraph">
+<p>GRAB SCREENSHOT</p>
+</div>
+</li>
+<li>
+<p>And fill the fields from the new <strong>File 1</strong> panel as follows:</p>
+<div class="openblock">
+<div class="content">
+<div class="olist lowerroman">
+<ol class="lowerroman" type="i">
+<li>
+<p><strong>File path on the device</strong>: <code>/etc/motd</code></p>
+</li>
+<li>
+<p><strong>Content</strong>: <code>Under new management!</code></p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="paragraph">
+<p>GRAB SCREENSHOT</p>
+</div>
+</li>
+<li>
+<p>Do not make any change to applications nor services, and click <strong>Next</strong></p>
+</li>
+<li>
+<p>On the <strong>Updates</strong> tab, leave <strong>Use basic configurations</strong> checked, and click <strong>Next</strong></p>
+</li>
+<li>
+<p>On the <strong>Review and save</strong> tab, verify that two configurations are listed, named <code>hostname</code> and <code>motd</code>, and click <strong>Save</strong>.</p>
+</li>
+</ol>
+</div>
+</li>
+<li>
+<p>Verify that the managed device synchronizes with RHEM and receives the new configurations.</p>
+<div class="olist loweralpha">
+<ol class="loweralpha" type="a">
+<li>
+<p>After clicking <strong>Save</strong>, you are in the details page for the <code>edge-2</code> device.
+Its <strong>System status</strong> panel should display an <strong>Update status</strong> of <code>Out-of-date</code>.</p>
+<div class="paragraph">
+<p>GRAB SCREENSHOT</p>
+</div>
+</li>
+<li>
+<p>Wait until the <strong>Update status</strong> changes to <code>Up-to-date</code> and switch to a terminal window.</p>
+<div class="paragraph">
+<p>GRAB SCREENSHOT</p>
+</div>
+</li>
+<li>
+<p>Open a SSH session using the new key.</p>
+<div class="paragraph">
+<p>Notice that, if you reuse a previous <code>ssh</code> command from your history, you would use the old key and it would ask for the password for the <code>core</code> user.
+Also notice the message from <code>/etc/motd</code>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>ssh -i edge-2-key -p 8222 core@127.0.0.1</strong>
+Under new management!
+Last login: Thu Dec 18 20:03:46 2025 from 172.25.250.254
+[core@enroll ~]$</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Logs from the RHEM agent would indicate there was a reconciliation of the device configuration.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>sudo journalctl -u flightctl-agent | tail -n 2</strong>
+Dec 18 20:02:52 enroll flightctl-agent[820]: time="2025-12-18T20:02:52.191095Z" level=info msg="Version updated from '13' to '14'"
+Dec 18 20:03:22 enroll flightctl-agent[820]: time="2025-12-18T20:03:22.434238Z" level=info msg="Spec reconciliation complete: current version 14"</code></pre>
+</div>
+</div>
+</li>
+</ol>
+</div>
+</li>
+<li>
+<p>Change a configuration file and verify that RHEM will undo your edits.</p>
+<div class="olist loweralpha">
+<ol class="loweralpha" type="a">
+<li>
+<p>If you didn&#8217;t notice on your lastest SSH log in, there is "a message of day".</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>cat /etc/motd</strong>
+Under new management!</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Change it to something else.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>sudo bash -c "echo 'Sysadmin doing nasty things' &gt; /etc/motd"</strong>
+$ <strong>cat /etc/motd</strong>
+Sysadmin doing nasty things</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Wait a few moments and verify that the message reverts to the one set by RHEM.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>cat /etc/motd</strong>
+Under new management!</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>TBD</p>
+</li>
+</ol>
+</div>
+</li>
+<li>
+<p>If, by any reason, an agent fails to apply a configuration update, it will NOT retry.
+You must apply another configuration change to the RHEM server so the agent fetches a new rendered config to apply.</p>
+</li>
+<li>
+<p>Need another simple scenario to replace the hostname change.
+Anything easy to see in a basic RHEL, which wouldn&#8217;t require adding an HTTP server and other services to the bootc image?</p>
+</li>
+<li>
+<p>Change the TimeZone to show that you can still make changes on non-managed files and RHEM would not interfere with them.</p>
 <div class="olist loweralpha">
 <ol class="loweralpha" type="a">
 <li>
