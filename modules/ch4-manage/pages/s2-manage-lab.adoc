@@ -1,17 +1,14 @@
 :time_estimate: 5
-:edge-1-uuid-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa: 1u63hvsgtua9tjjbmla9bgh5h2s77cb8esepphnf68m3ocf8qfng
-:edge-2-uuid-bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb: g7ombcqk46tqq458j9uju454441mf1lgt9qqqva8ti0fnvosm57g
-:rhem-enroll-v1-shaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa: 503f839113b376c55ceee225a8cbfdc9bf1496f3342385ce171f2cf2e01f1333
 
-= Lab: Configure and Update Edge Devices
+= Lab: Configure Edge Devices
 
 _Estimated reading time: *{time_estimate} minutes*._
 
 Objective::
 
-Configure managed devices by using inline configuration in the device specification[, and update the operating system image on managed devices].
+Configure managed devices by using inline configuration in their device specifications.
 
-WARNING: Not started yet
+WARNING: Work in progress
 
 == Before you begin
 
@@ -24,14 +21,10 @@ You also need a _server machine_ running RHEL, to which you also have unrestrict
 
 Finally, you need a _private registry_ to store bootc container images for your managed edge devices.
 
-Your _development machine_ requires internet access to download RPM packages and container images. [ ONLY IF WE DO UPDATE HERE ]
-
 If you are using the course classroom, your _development machine_ is the `workstation` VM.
 Log in as the user `student` with password `student`.
 
 == Instructions
-
-IMPORTANT: SPLIT THIS INTO A CONFIGURE AND AN UPDATE LAB?
 
 ////
 
@@ -53,23 +46,17 @@ Configure devices so they can access a private OCI container registry, and switc
 
 * Prove other devices were left untouched.
 
-* (tentative) Change a file which is managed by RHEM and verify that RHEM reverts the change, to demonstrate it works as a “kubernetes-style” reconciliation loop and prevents configuration drift
+* Change a file which is managed by RHEM and verify that RHEM reverts the change, to demonstrate it works as a “kubernetes-style” reconciliation loop and prevents configuration drift
 
 * Update another different device (to the same image and settings) to demonstrate it done from both the CLI and web UI?
 
 ////
 
 At the end of the previous lab, you had two managed devices which were provisioned from the same installation disk.
-//Right now, they have identical settings, and you must distinguish them by indirect means, such as files that you created on each device, or the local port forwarded to each test VM.
 Right now, they have identical settings, among them a well-known SSH key, which is considered insecure because it's available to any field personel with possess an installation media.
 You will remediate this by configuring your managed devices with different SSH keys, provided as inline configurations in each device manifest.
 
-//You will remediate this by configuring your managed devices with basic settings, such as hostname and other configuration files in the `/etc` directory, as inline configurations in each device manifest.
-
 Then you will exercise RHEM's ability to detect and correct configuration drift, by making manual changes to configuration files, and observing that RHEM restores the configurations set for each device.
-
-// This is for the second lab, if I decide to split
-You will also configure your managed devices with secrets required to access a private OCI container registry, so they can fetch bootc container images, and update them to use a different image than the one used during enrollment, which contains an embedded application.
 
 1. Verify that you have the outcomes of previous labs.
 If you do not, go back and complete them, because you need their outcomes to continue with this course.
@@ -173,7 +160,7 @@ Of course, your SSH key will have different contents than the ones listed here.
 +
 [source,subs="verbatim,quotes"]
 --
-$ *cat edge-2-key.pub *
+$ *cat edge-2-key.pub*
 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILy6lU52yOY7IZ2BFpQhCQaQNBvyo1ydbsd5uyzPZBNq key for the edge-2 managed device
 --
 
@@ -273,6 +260,17 @@ $ *cat /etc/motd*
 Sysadmin doing nasty things
 --
 
+.. Also change the system time zone.
++
+[source,subs="verbatim,quotes"]
+--
+$ *timedatectl show -p Timezone*
+Timezone=UTC
+$ *sudo timedatectl set-timezone "Europe/Rome"*
+$ timedatectl show -p Timezone
+Timezone=Europe/Rome
+--
+
 .. Wait a few moments and verify that the message reverts to the one set by RHEM.
 +
 [source,subs="verbatim,quotes"]
@@ -281,17 +279,94 @@ $ *cat /etc/motd*
 Under new management!
 --
 
-.. TBD
+.. Notice that the time zone change will NOT revert, because RHEM is not managing the file `/etc/localtime`, so you must revert that change manually.
++
+[source,subs="verbatim,quotes"]
+--
+$ timedatectl show -p Timezone
+Timezone=Europe/Rome
+$ *sudo timedatectl set-timezone UTC*
+--
 
-77. If, by any reason, an agent fails to apply a configuration update, it will NOT retry. 
-You must apply another configuration change to the RHEM server so the agent fetches a new rendered config to apply.
+5. Apply similar configurations to the `edge-1` managed device, but this time using the CLI.
 
-88. Need another simple scenario to replace the hostname change.
-Anything easy to see in a basic RHEL, which wouldn't require adding an HTTP server and other services to the bootc image?
+.. Copy and inspect the template manifest from the course samples repository.
++
+If you compare it with the complete YAML manifest form devices, which you already saw in the previous lab, you will notice the absense of some metadata fields and of all status fields.
+Manifests which you apply should focus on the device specification, and provide just the device UUID and labels on its metadata.
++
+[source,subs="verbatim,quotes"]
+--
+$ *cp ../rhde-rhem-samples/config/edge-1.yaml .*
+$ *less edge-1.yaml*
+include::1@samples:config:example$edge-1.yaml[]
+--
 
-99. Change the TimeZone to show that you can still make changes on non-managed files and RHEM would not interfere with them.
+.. Generate an SSH key for the device.
++
+[source,subs="verbatim,quotes"]
+--
+$ *ssh-keygen -N '' -f edge-1-key -C 'key for the edge-1 managed device'*
+Generating public/private rsa key pair.
+...
+--
 
-.. TBD
+.. Insert the correct UUID for the device in the manifest
++
+[source,subs="verbatim,quotes,attributes"]
+--
+$ *UUID=$( flightctl get device -o name -l alias=edge-1 )*
+$ *echo $UUID*
+{edge-1-uuid-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}
+$ *sed -i "s|REPLACE_WITH_UUID|$UUID|" edge-1.yaml*
+--
+
+.. Insert the new SSH key in the manifest.
++
+[source,subs="verbatim,quotes"]
+--
+$ *SSH_PUB_KEY=$( cat edge-1-key.pub )*
+$ *sed -i "s|REPLACE_WITH_SSH_KEY|$SSH_PUB_KEY|" edge-1.yaml*
+--
+
+.. Review the `edge-1.yaml` manifest file and verify that it contains no more `REPLACE_WITH` markers.
+
+.. Apply the manigest on RHEM.
++
+[source,subs="verbatim,quotes,attributes"]
+--
+$ *flightctl apply -f edge-1.yaml*
+edge-1.yaml: applying device/{edge-1-uuid-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}: 200 OK
+--
+
+.. Wait until the device synchonizes with RHEM.
++
+[source,subs="verbatim,quotes,attributes"]
+--
+$ *flightctl get device $UUID -o wide*
+NAME                                                    ALIAS   OWNER   SYSTEM  UPDATED         APPLICATIONS    LABELS
+{edge-1-uuid-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}    edge-1  <none>  Online  OutOfDate        NoApplications  alias=edge-1,rhel=9.6,type=noapp
+...
+$ *flightctl get device $UUID -o wide*
+NAME                                                    ALIAS   OWNER   SYSTEM  UPDATED         APPLICATIONS    LABELS
+{edge-1-uuid-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}    edge-1  <none>  Online  UpToDate        NoApplications  alias=edge-1,rhel=9.6,type=noapp
+--
+
+.. Verify that the device actually contains the new configurations, by starting an SSH session using the newly generated key.
++
+Also remember that, in the previous lab, you created the file `/root/device.txt` only in the `edge-1` test VM.
++
+[source,subs="verbatim,quotes"]
+--
+$ *ssh -i edge-1-key -p 8122 core@127.0.0.1*
+Under new management!
+[core@enroll ~]$ *sudo ls /root*
+anaconda-ks.cfg  buildinfo  device.txt  original-ks.cfg
+[core@enroll ~]$ *exit*
+--
+
+//77. If, by any reason, an agent fails to apply a configuration update, it will NOT retry. 
+//You must apply another configuration change to the RHEM server so the agent fetches a new rendered config to apply.
 
 ////
 
@@ -311,4 +386,4 @@ https://github.com/flightctl/flightctl/blob/724dfaeef04cbc4b891864908b1398fce2b0
 
 == What's next
 
-In the next activity, you will decomission devices so they are not managed by RHEM anymore.
+In the next activity, you will update devices with a new RHEL release, by updating their bootc container image.

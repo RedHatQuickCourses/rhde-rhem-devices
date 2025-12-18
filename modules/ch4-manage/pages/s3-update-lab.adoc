@@ -1,0 +1,132 @@
+:time_estimate: 5
+
+= Lab: Update Edge Devices
+
+_Estimated reading time: *{time_estimate} minutes*._
+
+Objective::
+
+Update the operating system image on managed devices.
+
+WARNING: Not started yet
+
+== Before you begin
+
+You need a customer portal account with access to a Red Hat Enterprise Linux (RHEL) subscription.
+It could be a https://developers.redhat.com/products/rhel/download[Red Hat Developer program] free subscription.
+
+You need a _development machine_ running RHEL, which contains two test VMs already enrolled into your RHEM server by a xref:ch3-enroll:s2-enroll-lab.adoc[previous lab].
+
+You also need a _server machine_ running RHEL, to which you also have unrestricted sudo access, which was already configured with RHEM.
+
+Finally, you need a _private registry_ to store bootc container images for your managed edge devices.
+
+Your _development machine_ requires internet access to download RPM packages and container images.
+
+If you are using the course classroom, your _development machine_ is the `workstation` VM.
+Log in as the user `student` with password `student`.
+
+== Instructions
+
+////
+
+Split from a single lab which was configure AND update.
+
+Configure devices so they can access a private OCI container registry, and switch the OS image to one which includes an embedded application.
+
+* Build a new bootc container image which contains an application, such as a web server, and minimal required settings, such as enabling it in systemd and firewalld.
+
+* No need to build an update or installation media, because the update will be performed by RHEM directly from a container registry.
+
+* The previous lab, provisioning devices from ISO (a disconnected workflow), or from QCOW2, left devices without secrets to access the private container registry.
+
+* Try to switch those devices to a different image and notice it fails.
+
+* Add the registry TLS certificate and credentials as inline device configurations, and now they successfully update to the new image.
+
+* The previous bullet requires an afterupdate hook to run the update-ca-trust command
+
+* Access the device and verify the application works as intended.
+
+* Prove other devices were left untouched.
+
+* (tentative) Change a file which is managed by RHEM and verify that RHEM reverts the change, to demonstrate it works as a “kubernetes-style” reconciliation loop and prevents configuration drift
+
+* Update another different device (to the same image and settings) to demonstrate it done from both the CLI and web UI?
+
+////
+
+You will also configure your managed devices with secrets required to access a private OCI container registry, so they can fetch bootc container images, and update them to use a different image than the one used during enrollment.
+The new bootc container image contains an embedded web application.
+
+1. Verify that you have the outcomes of previous labs.
+If you do not, go back and complete them, because you need their outcomes to continue with this course.
+
+.. There is a clone of the course samples repository on your home directory.
++
+[source,subs="verbatim,quotes"]
+--
+$ *cd*
+$ *ls rhde-rhem-samples*
+LICENSE  README.md  antora.yml  enroll  modules  webapp
+--
+
+.. There are two local test VMs, named `edge-1` and `edge-2`.
++
+[source,subs="verbatim,quotes"]
+--
+$ *virsh list --all*
+ Id   Name     State
+-------------------------
+ -    edge-1   shut off
+ -    edge-2   shut off
+--
+
+.. If your test VMs are not started, because you stopped your classroom environment since completing the previous lab, start them now.
++
+[source,subs="verbatim,quotes"]
+--
+$ *virsh start edge-1*
+Domain 'edge-1' started
+$ *virsh start edge-2*
+Domain 'edge-2' started
+--
+
+.. Enter the `test-enroll` directory, which contains the Containerfile, kickstart script, and SSH key used to provision the two test VMs.
++
+[source,subs="verbatim,quotes"]
+--
+$ *cd temp-enroll*
+$ *ls*
+Containerfile  bib-iso.sh  config.toml  config.yaml  edge-key  edge-key.pub  output  rhem-enroll.iso  virt-install.sh
+--
+
+.. Log in on RHEM, as an administrator, and verify that there are two managed devices, which correspond to the two test VMs.
++
+[source,subs="verbatim,quotes,attributes"]
+--
+$ *flightctl login -u admin -p redhat https://servera.lab.example.com:3443*
+Login successful.
+$ *flightctl get device -o wide*
+NAME                                                    ALIAS   OWNER   SYSTEM  UPDATED         APPLICATIONS    LABELS
+{edge-1-uuid-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}    edge-1  <none>  Online  UpToDate        NoApplications  alias=edge-1,rhel=9.6,type=noapps
+{edge-2-uuid-bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb}    edge-2  <none>  Unknown Unknown         Unknown         rhel=9.6,type=noapps,alias=edge-2
+--
+
+.. Wait a few moments and repeat the latest command until both managed devices return as `OnLine` and `UpToDate`.
+
+2. Build and publish a bootc container image which contains a web application.
+
+.. TBD
+
+3. Update the second test VM to use the new image, by using the web interface.
+
+.. TBD
+
+4. Update the first test VM to use the new image, by using the CLI.
+
+.. TBD
+
+== What's next
+
+In the next activity, you will decomission devices so they are not managed by RHEM anymore.
