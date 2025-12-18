@@ -3,9 +3,9 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Lab: Configure and Update Edge Devices :: Deploying Red Hat Edge Manager and Managing Edge Devices</title>
+    <title>Lab: Configure Edge Devices :: Deploying Red Hat Edge Manager and Managing Edge Devices</title>
     <link rel="prev" href="s1-manage.html">
-    <link rel="next" href="../ch5-decomission/index.html">
+    <link rel="next" href="s3-update-lab.html">
     <meta name="generator" content="Antora 3.1.3">
     <link rel="stylesheet" href="../../../_/css/site.css">
     <script>var uiRootPath = '../../../_'</script>
@@ -100,7 +100,10 @@
     <a class="nav-link" href="s1-manage.html">Manage Edge Devices with RHEM</a>
   </li>
   <li class="nav-item is-current-page" data-depth="2">
-    <a class="nav-link" href="s2-manage-lab.html">Lab: Configure and Update Edge Devices</a>
+    <a class="nav-link" href="s2-manage-lab.html">Lab: Configure Edge Devices</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="s3-update-lab.html">Lab: Update Edge Devices</a>
   </li>
 </ul>
   </li>
@@ -151,7 +154,7 @@
   <ul>
     <li><a href="../index.html">Deploying Red Hat Edge Manager and Managing Edge Devices</a></li>
     <li><a href="index.html">Manage Edge Devices with Red Hat Edge Manager</a></li>
-    <li><a href="s2-manage-lab.html">Lab: Configure and Update Edge Devices</a></li>
+    <li><a href="s2-manage-lab.html">Lab: Configure Edge Devices</a></li>
   </ul>
 </nav>
 </div>
@@ -160,7 +163,7 @@
   <div class="toc-menu"></div>
 </aside>
 <article class="doc">
-<h1 class="page">Lab: Configure and Update Edge Devices</h1>
+<h1 class="page">Lab: Configure Edge Devices</h1>
 <div id="preamble">
 <div class="sectionbody">
 <div class="paragraph">
@@ -170,7 +173,7 @@
 <dl>
 <dt class="hdlist1">Objective</dt>
 <dd>
-<p>Configure managed devices by using inline configuration in the device specification[, and update the operating system image on managed devices].</p>
+<p>Configure managed devices by using inline configuration in their device specifications.</p>
 </dd>
 </dl>
 </div>
@@ -181,7 +184,7 @@
 <i class="fa icon-warning" title="Warning"></i>
 </td>
 <td class="content">
-Not started yet
+Work in progress
 </td>
 </tr>
 </table>
@@ -205,9 +208,6 @@ It could be a <a href="https://developers.redhat.com/products/rhel/download">Red
 <p>Finally, you need a <em>private registry</em> to store bootc container images for your managed edge devices.</p>
 </div>
 <div class="paragraph">
-<p>Your <em>development machine</em> requires internet access to download RPM packages and container images. [ ONLY IF WE DO UPDATE HERE ]</p>
-</div>
-<div class="paragraph">
 <p>If you are using the course classroom, your <em>development machine</em> is the <code>workstation</code> VM.
 Log in as the user <code>student</code> with password <code>student</code>.</p>
 </div>
@@ -216,18 +216,6 @@ Log in as the user <code>student</code> with password <code>student</code>.</p>
 <div class="sect1">
 <h2 id="_instructions"><a class="anchor" href="#_instructions"></a>Instructions</h2>
 <div class="sectionbody">
-<div class="admonitionblock important">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-important" title="Important"></i>
-</td>
-<td class="content">
-SPLIT THIS INTO A CONFIGURE AND AN UPDATE LAB?
-</td>
-</tr>
-</table>
-</div>
 <div class="paragraph">
 <p>At the end of the previous lab, you had two managed devices which were provisioned from the same installation disk.
 Right now, they have identical settings, among them a well-known SSH key, which is considered insecure because it&#8217;s available to any field personel with possess an installation media.
@@ -235,9 +223,6 @@ You will remediate this by configuring your managed devices with different SSH k
 </div>
 <div class="paragraph">
 <p>Then you will exercise RHEM&#8217;s ability to detect and correct configuration drift, by making manual changes to configuration files, and observing that RHEM restores the configurations set for each device.</p>
-</div>
-<div class="paragraph">
-<p>You will also configure your managed devices with secrets required to access a private OCI container registry, so they can fetch bootc container images, and update them to use a different image than the one used during enrollment, which contains an embedded application.</p>
 </div>
 <div class="olist arabic">
 <ol class="arabic">
@@ -375,7 +360,7 @@ Generating public/private rsa key pair.
 Of course, your SSH key will have different contents than the ones listed here.</p>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-none hljs">$ *cat edge-2-key.pub *
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>cat edge-2-key.pub</strong>
 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILy6lU52yOY7IZ2BFpQhCQaQNBvyo1ydbsd5uyzPZBNq key for the edge-2 managed device</code></pre>
 </div>
 </div>
@@ -540,6 +525,18 @@ Sysadmin doing nasty things</code></pre>
 </div>
 </li>
 <li>
+<p>Also change the system time zone.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>timedatectl show -p Timezone</strong>
+Timezone=UTC
+$ <strong>sudo timedatectl set-timezone "Europe/Rome"</strong>
+$ timedatectl show -p Timezone
+Timezone=Europe/Rome</code></pre>
+</div>
+</div>
+</li>
+<li>
 <p>Wait a few moments and verify that the message reverts to the one set by RHEM.</p>
 <div class="listingblock">
 <div class="content">
@@ -549,25 +546,125 @@ Under new management!</code></pre>
 </div>
 </li>
 <li>
-<p>TBD</p>
+<p>Notice that the time zone change will NOT revert, because RHEM is not managing the file <code>/etc/localtime</code>, so you must revert that change manually.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ timedatectl show -p Timezone
+Timezone=Europe/Rome
+$ <strong>sudo timedatectl set-timezone UTC</strong></code></pre>
+</div>
+</div>
 </li>
 </ol>
 </div>
 </li>
 <li>
-<p>If, by any reason, an agent fails to apply a configuration update, it will NOT retry.
-You must apply another configuration change to the RHEM server so the agent fetches a new rendered config to apply.</p>
-</li>
-<li>
-<p>Need another simple scenario to replace the hostname change.
-Anything easy to see in a basic RHEL, which wouldn&#8217;t require adding an HTTP server and other services to the bootc image?</p>
-</li>
-<li>
-<p>Change the TimeZone to show that you can still make changes on non-managed files and RHEM would not interfere with them.</p>
+<p>Apply similar configurations to the <code>edge-1</code> managed device, but this time using the CLI.</p>
 <div class="olist loweralpha">
 <ol class="loweralpha" type="a">
 <li>
-<p>TBD</p>
+<p>Copy and inspect the template manifest from the course samples repository.</p>
+<div class="paragraph">
+<p>If you compare it with the complete YAML manifest form devices, which you already saw in the previous lab, you will notice the absense of some metadata fields and of all status fields.
+Manifests which you apply should focus on the device specification, and provide just the device UUID and labels on its metadata.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>cp ../rhde-rhem-samples/config/edge-1.yaml .</strong>
+$ <strong>less edge-1.yaml</strong>
+apiVersion: flightctl.io/v1beta1
+kind: Device
+metadata:
+  labels:
+    alias: edge-1
+    rhel: "9.6"
+    type: noapp
+  name: REPLACE_WITH_UUID
+spec:
+  config:
+  - inline:
+    - content: |
+        REPLACE_WITH_SSH_KEY
+      mode: 420
+      path: /home/core/.ssh/authorized_keys
+    name: ssh-key
+  - inline:
+    - content: Under new management!
+      path: /etc/motd
+    name: motd</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Generate an SSH key for the device.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>ssh-keygen -N '' -f edge-1-key -C 'key for the edge-1 managed device'</strong>
+Generating public/private rsa key pair.
+...</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Insert the correct UUID for the device in the manifest</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>UUID=$( flightctl get device -o name -l alias=edge-1 )</strong>
+$ <strong>echo $UUID</strong>
+1u63hvsgtua9tjjbmla9bgh5h2s77cb8esepphnf68m3ocf8qfng
+$ <strong>sed -i "s|REPLACE_WITH_UUID|$UUID|" edge-1.yaml</strong></code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Insert the new SSH key in the manifest.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>SSH_PUB_KEY=$( cat edge-1-key.pub )</strong>
+$ <strong>sed -i "s|REPLACE_WITH_SSH_KEY|$SSH_PUB_KEY|" edge-1.yaml</strong></code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Review the <code>edge-1.yaml</code> manifest file and verify that it contains no more <code>REPLACE_WITH</code> markers.</p>
+</li>
+<li>
+<p>Apply the manigest on RHEM.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>flightctl apply -f edge-1.yaml</strong>
+edge-1.yaml: applying device/1u63hvsgtua9tjjbmla9bgh5h2s77cb8esepphnf68m3ocf8qfng: 200 OK</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Wait until the device synchonizes with RHEM.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>flightctl get device $UUID -o wide</strong>
+NAME                                                    ALIAS   OWNER   SYSTEM  UPDATED         APPLICATIONS    LABELS
+1u63hvsgtua9tjjbmla9bgh5h2s77cb8esepphnf68m3ocf8qfng    edge-1  &lt;none&gt;  Online  OutOfDate        NoApplications  alias=edge-1,rhel=9.6,type=noapp
+...
+$ <strong>flightctl get device $UUID -o wide</strong>
+NAME                                                    ALIAS   OWNER   SYSTEM  UPDATED         APPLICATIONS    LABELS
+1u63hvsgtua9tjjbmla9bgh5h2s77cb8esepphnf68m3ocf8qfng    edge-1  &lt;none&gt;  Online  UpToDate        NoApplications  alias=edge-1,rhel=9.6,type=noapp</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Verify that the device actually contains the new configurations, by starting an SSH session using the newly generated key.</p>
+<div class="paragraph">
+<p>Also remember that, in the previous lab, you created the file <code>/root/device.txt</code> only in the <code>edge-1</code> test VM.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>ssh -i edge-1-key -p 8122 core@127.0.0.1</strong>
+Under new management!
+[core@enroll ~]$ <strong>sudo ls /root</strong>
+anaconda-ks.cfg  buildinfo  device.txt  original-ks.cfg
+[core@enroll ~]$ <strong>exit</strong></code></pre>
+</div>
+</div>
 </li>
 </ol>
 </div>
@@ -580,13 +677,13 @@ Anything easy to see in a basic RHEL, which wouldn&#8217;t require adding an HTT
 <h2 id="_whats_next"><a class="anchor" href="#_whats_next"></a>What&#8217;s next</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>In the next activity, you will decomission devices so they are not managed by RHEM anymore.</p>
+<p>In the next activity, you will update devices with a new RHEL release, by updating their bootc container image.</p>
 </div>
 </div>
 </div>
 <nav class="pagination">
   <span class="prev"><a href="s1-manage.html">Manage Edge Devices with RHEM</a></span>
-  <span class="next"><a href="../ch5-decomission/index.html">Remove Edge Devices from Red Hat Edge Manager</a></span>
+  <span class="next"><a href="s3-update-lab.html">Lab: Update Edge Devices</a></span>
 </nav>
 </article>
   </div>
