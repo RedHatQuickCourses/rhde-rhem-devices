@@ -84,6 +84,8 @@ It adds two things over a base RHEL 9 bootc container image.
 ... Installs the RHEM agent package.
 
 ... Masks the bootc update time service, so RHEM has control system updates.
+
+... Adds a certificate authority (CA) to the system PKI trust, so that devices provisioned from this bootc container image can fetch system updates without disabling TLS validation.
 --
 +
 Because it doesn't include RHEM server data nor a client enrollment certiticate, that same bootc image could be used with different RHEM servers.
@@ -114,6 +116,14 @@ Login Succeeded!
 +
 // Do registration, pre-pull, and other steps in an extra lab in ch1?
 
+.. Copy the CA certificate of the private container registry.
++
+[source,subs="verbatim,quotes"]
+--
+$ *scp student@utility:/opt/registry/certs/domain.crt*
+domain.crt
+--
+
 .. Build the bootc container image.
 Notice that the `podman build` command finnishes with period, for the current directory.
 +
@@ -135,7 +145,6 @@ Login Succeeded!
 $ *skopeo copy containers-storage:localhost/rhem-enroll:latest docker://registry.lab.example.com:5000/rhem-enroll:v1.0*
 ...
 Writing manifest to image destination
-{rhem-enroll-v1-shaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}
 --
 
 2. Create an installable ISO containing the bootc container image from the previous step.

@@ -7,6 +7,7 @@ asciidoc:
     edge-1-uuid-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa: 1u63hvsgtua9tjjbmla9bgh5h2s77cb8esepphnf68m3ocf8qfng
     edge-2-uuid-bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb: g7ombcqk46tqq458j9uju454441mf1lgt9qqqva8ti0fnvosm57g
     rhem-enroll-v1-shaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa: 503f839113b376c55ceee225a8cbfdc9bf1496f3342385ce171f2cf2e01f1333
+    rhem-webapp-v1-shaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa: 54a35799c931be0f0030943da0e8400815ab5181e2cba9f868efe94ad17a54dc
 nav:
 - modules/ROOT/nav.adoc
 - modules/LABENV/nav.adoc

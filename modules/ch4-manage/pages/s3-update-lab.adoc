@@ -92,16 +92,7 @@ $ *virsh start edge-2*
 Domain 'edge-2' started
 --
 
-.. Enter the `test-enroll` directory, which contains the Containerfile, kickstart script, and SSH key used to provision the two test VMs.
-+
-[source,subs="verbatim,quotes"]
---
-$ *cd temp-enroll*
-$ *ls*
-Containerfile  bib-iso.sh  config.toml  config.yaml  edge-key  edge-key.pub  output  rhem-enroll.iso  virt-install.sh
---
-
-.. Log in on RHEM, as an administrator, and verify that there are two managed devices, which correspond to the two test VMs.
+.. Log in on RHEM, as a non-administrator, and verify that there are two managed devices, which correspond to the two test VMs.
 +
 [source,subs="verbatim,quotes,attributes"]
 --
@@ -109,7 +100,7 @@ $ *flightctl login -u admin -p redhat https://servera.lab.example.com:3443*
 Login successful.
 $ *flightctl get device -o wide*
 NAME                                                    ALIAS   OWNER   SYSTEM  UPDATED         APPLICATIONS    LABELS
-{edge-1-uuid-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}    edge-1  <none>  Online  UpToDate        NoApplications  alias=edge-1,rhel=9.6,type=noapps
+{edge-1-uuid-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}    edge-1  <none>  Online  UpToDate        NoApplications  rhel=9.6,type=noapps,alias=edge-2
 {edge-2-uuid-bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb}    edge-2  <none>  Unknown Unknown         Unknown         rhel=9.6,type=noapps,alias=edge-2
 --
 
@@ -117,13 +108,177 @@ NAME                                                    ALIAS   OWNER   SYSTEM  
 
 2. Build and publish a bootc container image which contains a web application.
 
-.. TBD
+.. Copy the Containerfile and related files for the web application image to a work directory.
+Then make the work directory your current directory.
++
+[source,subs="verbatim,quotes"]
+--
+$ *cp -r rhde-rhem-samples/webapp temp-webapp*
+$ *cd temp-webapp*
+--
+
+.. Review the Containerfile that builds a bootc image whith contains an embedded web applicaion.
++
+It is similar to the enrollment image, from a previous lab, adding the Apache HTTP Server and firewall services.
++
+[source,subs="verbatim,quotes"]
+--
+$ *less Containerfile*
+include::1@samples:webapp:example$Containerfile[]
+--
++
+NOTE: If you want to try with the current lastest release of the upstream project, edit your Containerfile to remove the version component `-1.0.0~rc` from the package `flightctl-agent`.
+
+.. Your _development machine_ should be already registere with the Red Hat subscription manager, from a previous lab, but you may have to log in again on the Red Hat registry.
++
+[source,subs="verbatim,quotes"]
+--
+$ *sudo subscription-manager status*
++-------------------------------------------+
+   System Status Details
++-------------------------------------------+
+Overall Status: Registered
+$ *podman login registry.redhat.io*
+Login Succeeded!
+--
+
+.. Build the bootc container image.
++
+[source,subs="verbatim,quotes,attributes"]
+--
+$ *podman build -t rhem-webapp .*
+STEP 1/2: FROM registry.redhat.io/rhel9/rhel-bootc:9.6
+...
+Successfully tagged localhost/rhem-webapp:latest
+{rhem-webapp-v1-shaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}
+--
+
+.. Publish the container image in the private registry.
++
+[source,subs="verbatim,quotes,attributes"]
+--
+$ *podman login -u student -p redhat registry.lab.example.com:5000*
+Login Succeeded!
+$ *skopeo copy containers-storage:localhost/rhem-webapp:latest docker://registry.lab.example.com:5000/rhem-webapp:v1.0*
+...
+Writing manifest to image destination
+--
++
+////
+ERROR 500 on push to private registry. Its disk is full :-(
+I was able to enable deletion on the registry delete some folders, and run garbage collections, freeing up a couple GB.
+It seems I need a larger utility VM!
+https://stackoverflow.com/questions/25436742/how-to-delete-images-from-a-private-docker-registry
+
+Open shell on utility, sudo -i
+[root@utility /root]# systemctl stop registry
+[root@utility /root]# cd /opt/registry
+[root@utility registry]# rm -rf data/docker/registry/v2/repositories/openshift4/
+[root@utility registry]# rm -rf data/docker/registry/v2/repositories/rhel10/
+[root@utility registry]# systemctl start registry
+[root@utility registry]# podman exec -it registry sh
+/ # registry garbage-collect -m /etc/distribution/config.yml
+...
+/ # exit
+////
+
+.. There is no need to create an installation disk from that image, because RHEM will handle switching managed devices to it.
 
 3. Update the second test VM to use the new image, by using the web interface.
++
+IMPORTANT: The first attempt is expected to fail, but we will troubleshoot the issue and fix it.
+
+.. Open a web browser and visit `\https://servera.lab.example.com`
+
+.. Log in as the `student` user with the `student` password.
++
+GRAB SCREENSHOT
+
+.. On the left pane, select the menu:Devices page, and click the link corresponding to the `edge-2` managed device, to enter its details page.
++
+GRAB SCREENSHOT
+
+.. On the top right, select menu:Actions[Edit device configurations] to enter the *Edit device* page.
++
+GRAB SCREENSHOT
+
+.. Click menu:Next or select the menu:"Device Template" tab and type `registry.lab.example.com:5000/rhem-webapp:v1.0` on the *System image* field.
++
+GRAB SCREENSHOT
+
+.. Click menu:Next until you reach the menu:"Review and save" tab, and click menu:Save.
+
+.. The managed device details page should show an `Out-of-date` *Update status* in the *System status* panel, and if you click the warning icon next to *System image (running)*, it will indicate there's a mismatch.
++
+GRAB SCREENSHOT
+
+.. After a few moments, or if you refresh your web browser, the *Update status* will change to `Updating`, meaning it is attempting to download and switch to the new booc container image.
++
+GRAB SCREENSHOT
+
+.. After a few more momentos, the *Update status* will change back to `Out-of-date` and, if you click the status, you will see an error message which includes the text: `before update: prefetch: pulling oci target registry.lab.example.com:5000/rhem-webapp:v1.0: pull image: code: 125: Trying to pull registry.lab.example.com:5000/rhem-webapp:v1.0`
++
+GRAB SCREENSHOT
+
+.. The private registry requires authentication credentails, but these were not provided by its bootc image nor kickstart during provisioning.
+We will solve the issue by providing those credentials using RHEM.
+
+.. ALSO NEED THE CA CERTIFICATE. TOO MUCH TO DO USING THE GUI???
+
+5. Configure the managed device with credentials to download bootc container images from the private registry.
+
+.. Switch to a terminal, but do NOT close your web browser.
+
+.. Create a containers authentication file, and access the new bootc container image using this file.
+Then copy the contents of the file to the clipboard.
++
+[source,subs="verbatim,quotes,attributes"]
+--
+$ *podman login --authfile auth.json -u student -p redhat registry.lab.example.com:5000*
+Login Succeeded!
+$ *skopeo inspect --authfile auth.json --format '{{ json .RepoTags }}' docker://registry.lab.example.com:5000/rhem-webapp:v1.0*
+["v1.0"]
+$ *cat auth.json *
+{
+        "auths": {
+                "registry.lab.example.com:5000": {
+                        "auth": "c3R1ZGVudDpyZWRoYXQ="
+                }
+        }
+}
+--
++
+//sudo cp /run/containers/0/auth.json /etc/ostree/auth.json
++
+//NOTE: In a production setup, both the private registry and RHEM would be configured with a TLS certificate signed by a corporate CA and you would need only to add that CA to all your servers and workstations, including your edge devices.
+
+.. GUESS I NEED TO USE THE CLI BECAUSE I NEED A HOOK TO RUN 'update-ca-trust'... FAIL ANOTHER SELINUX ISSUE, cannot update /etc/pki -- will work around by adding it to the image, but then I miss the opportunity to showcase hooks. :-(
+
+.. Now adding the CA of the registry to the image, so I still add the auth with RHEM.
+
+.. Back to your web browser, enter the manged device details page for the `edge-2` device end edit its device configurations.
+
+.. Click menu:"Add configuration" and fill in the fields as follows:
++
+--
+... *Source name*: `registry-auth`
+
+... *Source type*: `Inline configuration`
+
+... *File path on device*: `/etc/ostree/auth.json`
+
+... *Content*: either paste the contents of your `auth.json` file or use the menu:Browse button to open it.
+--
+
+.. Click menu:Next until you reach the menu:"Review and save" tab and click menu:Save.
+
+.. After a few moments, you should see the device status change to `Updating` and, if everything is fine, to `???`.
++
+NOTE: You can observe the update status of the device from the *Devices* page, if you wish.
 
 .. TBD
 
-4. Update the first test VM to use the new image, by using the CLI.
+5. Update the first test VM to use the new image, by using the CLI.
 
 .. TBD
 
