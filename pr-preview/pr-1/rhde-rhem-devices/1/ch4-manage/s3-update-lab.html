@@ -264,24 +264,14 @@ Domain 'edge-2' started</code></pre>
 </div>
 </li>
 <li>
-<p>Enter the <code>test-enroll</code> directory, which contains the Containerfile, kickstart script, and SSH key used to provision the two test VMs.</p>
-<div class="listingblock">
-<div class="content">
-<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>cd temp-enroll</strong>
-$ <strong>ls</strong>
-Containerfile  bib-iso.sh  config.toml  config.yaml  edge-key  edge-key.pub  output  rhem-enroll.iso  virt-install.sh</code></pre>
-</div>
-</div>
-</li>
-<li>
-<p>Log in on RHEM, as an administrator, and verify that there are two managed devices, which correspond to the two test VMs.</p>
+<p>Log in on RHEM, as a non-administrator, and verify that there are two managed devices, which correspond to the two test VMs.</p>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>flightctl login -u admin -p redhat https://servera.lab.example.com:3443</strong>
 Login successful.
 $ <strong>flightctl get device -o wide</strong>
 NAME                                                    ALIAS   OWNER   SYSTEM  UPDATED         APPLICATIONS    LABELS
-1u63hvsgtua9tjjbmla9bgh5h2s77cb8esepphnf68m3ocf8qfng    edge-1  &lt;none&gt;  Online  UpToDate        NoApplications  alias=edge-1,rhel=9.6,type=noapps
+1u63hvsgtua9tjjbmla9bgh5h2s77cb8esepphnf68m3ocf8qfng    edge-1  &lt;none&gt;  Online  UpToDate        NoApplications  rhel=9.6,type=noapps,alias=edge-2
 g7ombcqk46tqq458j9uju454441mf1lgt9qqqva8ti0fnvosm57g    edge-2  &lt;none&gt;  Unknown Unknown         Unknown         rhel=9.6,type=noapps,alias=edge-2</code></pre>
 </div>
 </div>
@@ -297,15 +287,248 @@ g7ombcqk46tqq458j9uju454441mf1lgt9qqqva8ti0fnvosm57g    edge-2  &lt;none&gt;  Un
 <div class="olist loweralpha">
 <ol class="loweralpha" type="a">
 <li>
-<p>TBD</p>
+<p>Copy the Containerfile and related files for the web application image to a work directory.
+Then make the work directory your current directory.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>cp -r rhde-rhem-samples/webapp temp-webapp</strong>
+$ <strong>cd temp-webapp</strong></code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Review the Containerfile that builds a bootc image whith contains an embedded web applicaion.</p>
+<div class="paragraph">
+<p>It is similar to the enrollment image, from a previous lab, adding the Apache HTTP Server and firewall services.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>less Containerfile</strong>
+FROM registry.redhat.io/rhel9/rhel-bootc:9.6
+RUN dnf -y config-manager --add-repo https://rpm.flightctl.io/flightctl-epel.repo &amp;&amp; \
+    dnf -y install flightctl-agent-1.0.0~rc2 firewalld httpd &amp;&amp; \
+    dnf clean all &amp;&amp; \
+    systemctl enable flightctl-agent &amp;&amp; \
+    systemctl mask bootc-fetch-apply-updates.timer &amp;&amp; \
+    systemctl enable firewalld &amp;&amp; \
+    systemctl enable httpd &amp;&amp; \
+    firewall-offline-cmd --zone=public --add-service=http
+ADD domain.crt /etc/pki/ca-trust/source/anchors/
+RUN update-ca-trust
+ADD html /webapp/html
+RUN chmod -R a+rX /webapp &amp;&amp; \
+  semanage fcontext -a -t httpd_sys_content_t "/webapp(/.*)?" &amp;&amp; \
+  sed -i '1,$ s?/var/www/?/webapp/?' /etc/httpd/conf/httpd.conf</code></pre>
+</div>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+If you want to try with the current lastest release of the upstream project, edit your Containerfile to remove the version component <code>-1.0.0~rc</code> from the package <code>flightctl-agent</code>.
+</td>
+</tr>
+</table>
+</div>
+</li>
+<li>
+<p>Your <em>development machine</em> should be already registere with the Red Hat subscription manager, from a previous lab, but you may have to log in again on the Red Hat registry.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>sudo subscription-manager status</strong>
++-------------------------------------------+
+   System Status Details
++-------------------------------------------+
+Overall Status: Registered
+$ <strong>podman login registry.redhat.io</strong>
+Login Succeeded!</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Build the bootc container image.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>podman build -t rhem-webapp .</strong>
+STEP 1/2: FROM registry.redhat.io/rhel9/rhel-bootc:9.6
+...
+Successfully tagged localhost/rhem-webapp:latest
+54a35799c931be0f0030943da0e8400815ab5181e2cba9f868efe94ad17a54dc</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Publish the container image in the private registry.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>podman login -u student -p redhat registry.lab.example.com:5000</strong>
+Login Succeeded!
+$ <strong>skopeo copy containers-storage:localhost/rhem-webapp:latest docker://registry.lab.example.com:5000/rhem-webapp:v1.0</strong>
+...
+Writing manifest to image destination</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>There is no need to create an installation disk from that image, because RHEM will handle switching managed devices to it.</p>
 </li>
 </ol>
 </div>
 </li>
 <li>
 <p>Update the second test VM to use the new image, by using the web interface.</p>
+<div class="admonitionblock important">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-important" title="Important"></i>
+</td>
+<td class="content">
+The first attempt is expected to fail, but we will troubleshoot the issue and fix it.
+</td>
+</tr>
+</table>
+</div>
 <div class="olist loweralpha">
 <ol class="loweralpha" type="a">
+<li>
+<p>Open a web browser and visit <code>https://servera.lab.example.com</code></p>
+</li>
+<li>
+<p>Log in as the <code>student</code> user with the <code>student</code> password.</p>
+<div class="paragraph">
+<p>GRAB SCREENSHOT</p>
+</div>
+</li>
+<li>
+<p>On the left pane, select the menu:Devices page, and click the link corresponding to the <code>edge-2</code> managed device, to enter its details page.</p>
+<div class="paragraph">
+<p>GRAB SCREENSHOT</p>
+</div>
+</li>
+<li>
+<p>On the top right, select <span class="menuseq"><b class="menu">Actions</b>&#160;<i class="fa fa-angle-right caret"></i> <b class="menuitem">Edit device configurations</b></span> to enter the <strong>Edit device</strong> page.</p>
+<div class="paragraph">
+<p>GRAB SCREENSHOT</p>
+</div>
+</li>
+<li>
+<p>Click menu:Next or select the menu:"Device Template" tab and type <code>registry.lab.example.com:5000/rhem-webapp:v1.0</code> on the <strong>System image</strong> field.</p>
+<div class="paragraph">
+<p>GRAB SCREENSHOT</p>
+</div>
+</li>
+<li>
+<p>Click menu:Next until you reach the menu:"Review and save" tab, and click menu:Save.</p>
+</li>
+<li>
+<p>The managed device details page should show an <code>Out-of-date</code> <strong>Update status</strong> in the <strong>System status</strong> panel, and if you click the warning icon next to <strong>System image (running)</strong>, it will indicate there&#8217;s a mismatch.</p>
+<div class="paragraph">
+<p>GRAB SCREENSHOT</p>
+</div>
+</li>
+<li>
+<p>After a few moments, or if you refresh your web browser, the <strong>Update status</strong> will change to <code>Updating</code>, meaning it is attempting to download and switch to the new booc container image.</p>
+<div class="paragraph">
+<p>GRAB SCREENSHOT</p>
+</div>
+</li>
+<li>
+<p>After a few more momentos, the <strong>Update status</strong> will change back to <code>Out-of-date</code> and, if you click the status, you will see an error message which includes the text: <code>before update: prefetch: pulling oci target registry.lab.example.com:5000/rhem-webapp:v1.0: pull image: code: 125: Trying to pull registry.lab.example.com:5000/rhem-webapp:v1.0</code></p>
+<div class="paragraph">
+<p>GRAB SCREENSHOT</p>
+</div>
+</li>
+<li>
+<p>The private registry requires authentication credentails, but these were not provided by its bootc image nor kickstart during provisioning.
+We will solve the issue by providing those credentials using RHEM.</p>
+</li>
+<li>
+<p>ALSO NEED THE CA CERTIFICATE. TOO MUCH TO DO USING THE GUI???</p>
+</li>
+</ol>
+</div>
+</li>
+<li>
+<p>Configure the managed device with credentials to download bootc container images from the private registry.</p>
+<div class="olist loweralpha">
+<ol class="loweralpha" type="a">
+<li>
+<p>Switch to a terminal, but do NOT close your web browser.</p>
+</li>
+<li>
+<p>Create a containers authentication file, and access the new bootc container image using this file.
+Then copy the contents of the file to the clipboard.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>podman login --authfile auth.json -u student -p redhat registry.lab.example.com:5000</strong>
+Login Succeeded!
+$ <strong>skopeo inspect --authfile auth.json --format '{{ json .RepoTags }}' docker://registry.lab.example.com:5000/rhem-webapp:v1.0</strong>
+["v1.0"]
+$ *cat auth.json *
+{
+        "auths": {
+                "registry.lab.example.com:5000": {
+                        "auth": "c3R1ZGVudDpyZWRoYXQ="
+                }
+        }
+}</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>GUESS I NEED TO USE THE CLI BECAUSE I NEED A HOOK TO RUN 'update-ca-trust'&#8230;&#8203; FAIL ANOTHER SELINUX ISSUE, cannot update /etc/pki&#8201;&#8212;&#8201;will work around by adding it to the image, but then I miss the opportunity to showcase hooks. :-(</p>
+</li>
+<li>
+<p>Now adding the CA of the registry to the image, so I still add the auth with RHEM.</p>
+</li>
+<li>
+<p>Back to your web browser, enter the manged device details page for the <code>edge-2</code> device end edit its device configurations.</p>
+</li>
+<li>
+<p>Click menu:"Add configuration" and fill in the fields as follows:</p>
+<div class="openblock">
+<div class="content">
+<div class="olist lowerroman">
+<ol class="lowerroman" type="i">
+<li>
+<p><strong>Source name</strong>: <code>registry-auth</code></p>
+</li>
+<li>
+<p><strong>Source type</strong>: <code>Inline configuration</code></p>
+</li>
+<li>
+<p><strong>File path on device</strong>: <code>/etc/ostree/auth.json</code></p>
+</li>
+<li>
+<p><strong>Content</strong>: either paste the contents of your <code>auth.json</code> file or use the menu:Browse button to open it.</p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+</li>
+<li>
+<p>Click menu:Next until you reach the menu:"Review and save" tab and click menu:Save.</p>
+</li>
+<li>
+<p>After a few moments, you should see the device status change to <code>Updating</code> and, if everything is fine, to <code>???</code>.</p>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+You can observe the update status of the device from the <strong>Devices</strong> page, if you wish.
+</td>
+</tr>
+</table>
+</div>
+</li>
 <li>
 <p>TBD</p>
 </li>

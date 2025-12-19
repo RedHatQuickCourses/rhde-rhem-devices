@@ -265,6 +265,9 @@ $ <strong>cd temp-enroll</strong></code></pre>
 <li>
 <p>Masks the bootc update time service, so RHEM has control system updates.</p>
 </li>
+<li>
+<p>Adds a certificate authority (CA) to the system PKI trust, so that devices provisioned from this bootc container image can fetch system updates without disabling TLS validation.</p>
+</li>
 </ol>
 </div>
 </div>
@@ -282,6 +285,8 @@ RUN dnf -y config-manager --add-repo https://rpm.flightctl.io/flightctl-epel.rep
     dnf clean all &amp;&amp; \
     systemctl enable flightctl-agent &amp;&amp; \
     systemctl mask bootc-fetch-apply-updates.timer
+ADD domain.crt /etc/pki/ca-trust/source/anchors/
+RUN update-ca-trust
 # Uncomment the following line to use early binding
 # ADD config.yaml /etc/flightctl</code></pre>
 </div>
@@ -326,6 +331,15 @@ Login Succeeded!</code></pre>
 </div>
 </li>
 <li>
+<p>Copy the CA certificate of the private container registry.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>scp student@utility:/opt/registry/certs/domain.crt</strong>
+domain.crt</code></pre>
+</div>
+</div>
+</li>
+<li>
 <p>Build the bootc container image.
 Notice that the <code>podman build</code> command finnishes with period, for the current directory.</p>
 <div class="listingblock">
@@ -346,8 +360,7 @@ Successfully tagged localhost/rhem-enroll:latest
 Login Succeeded!
 $ <strong>skopeo copy containers-storage:localhost/rhem-enroll:latest docker://registry.lab.example.com:5000/rhem-enroll:v1.0</strong>
 ...
-Writing manifest to image destination
-503f839113b376c55ceee225a8cbfdc9bf1496f3342385ce171f2cf2e01f1333</code></pre>
+Writing manifest to image destination</code></pre>
 </div>
 </div>
 </li>
