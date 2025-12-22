@@ -318,7 +318,8 @@ RUN update-ca-trust
 ADD html /webapp/html
 RUN chmod -R a+rX /webapp &amp;&amp; \
   semanage fcontext -a -t httpd_sys_content_t "/webapp(/.*)?" &amp;&amp; \
-  sed -i '1,$ s?/var/www/?/webapp/?' /etc/httpd/conf/httpd.conf</code></pre>
+  sed -i '1,$ s?/var/www/?/webapp/?' /etc/httpd/conf/httpd.conf
+ADD tmpfiles.d /usr/lib/tmpfiles.d</code></pre>
 </div>
 </div>
 <div class="admonitionblock note">
@@ -328,14 +329,14 @@ RUN chmod -R a+rX /webapp &amp;&amp; \
 <i class="fa icon-note" title="Note"></i>
 </td>
 <td class="content">
-If you want to try with the current lastest release of the upstream project, edit your Containerfile to remove the version component <code>-1.0.0~rc</code> from the package <code>flightctl-agent</code>.
+If you want to try with the current lastest release of the upstream project, edit your Containerfile to remove the version component <code>-1.0.0~rc2</code> from the package <code>flightctl-agent</code>.
 </td>
 </tr>
 </table>
 </div>
 </li>
 <li>
-<p>Your <em>development machine</em> should be already registere with the Red Hat subscription manager, from a previous lab, but you may have to log in again on the Red Hat registry.</p>
+<p>Your <em>development machine</em> should be already registered with the Red Hat subscription manager, from a previous lab, but you may have to log in again on the Red Hat registry before you can build you new bootc container image.</p>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>sudo subscription-manager status</strong>
@@ -425,19 +426,20 @@ The first attempt is expected to fail, but we will troubleshoot the issue and fi
 <p>Click menu:Next until you reach the menu:"Review and save" tab, and click menu:Save.</p>
 </li>
 <li>
-<p>The managed device details page should show an <code>Out-of-date</code> <strong>Update status</strong> in the <strong>System status</strong> panel, and if you click the warning icon next to <strong>System image (running)</strong>, it will indicate there&#8217;s a mismatch.</p>
+<p>The managed device details page should show an <strong>Update status</strong> of <code>Out-of-date</code> in the <strong>System status</strong> panel, and if you click the warning icon next to <strong>System image (running)</strong>, it will indicate there&#8217;s a mismatch.</p>
 <div class="paragraph">
 <p>GRAB SCREENSHOT</p>
 </div>
 </li>
 <li>
-<p>After a few moments, or if you refresh your web browser, the <strong>Update status</strong> will change to <code>Updating</code>, meaning it is attempting to download and switch to the new booc container image.</p>
+<p>After a few moments, the <strong>Update status</strong> will change to <code>Updating</code>, meaning it is attempting to download and switch to the new booc container image.
+You can click the <code>Updating</code> status to see a longer message describring what updates are pending, in this case, pending download of the bootc container image.</p>
 <div class="paragraph">
 <p>GRAB SCREENSHOT</p>
 </div>
 </li>
 <li>
-<p>After a few more momentos, the <strong>Update status</strong> will change back to <code>Out-of-date</code> and, if you click the status, you will see an error message which includes the text: <code>before update: prefetch: pulling oci target registry.lab.example.com:5000/rhem-webapp:v1.0: pull image: code: 125: Trying to pull registry.lab.example.com:5000/rhem-webapp:v1.0</code></p>
+<p>After a few more momentos, the <strong>Update status</strong> will change back to <code>Out-of-date</code> and, if you click the status, you will see an error message which indicates a failure to download the bootc container image.</p>
 <div class="paragraph">
 <p>GRAB SCREENSHOT</p>
 </div>
@@ -445,9 +447,6 @@ The first attempt is expected to fail, but we will troubleshoot the issue and fi
 <li>
 <p>The private registry requires authentication credentails, but these were not provided by its bootc image nor kickstart during provisioning.
 We will solve the issue by providing those credentials using RHEM.</p>
-</li>
-<li>
-<p>ALSO NEED THE CA CERTIFICATE. TOO MUCH TO DO USING THE GUI???</p>
 </li>
 </ol>
 </div>
@@ -480,12 +479,6 @@ $ *cat auth.json *
 </div>
 </li>
 <li>
-<p>GUESS I NEED TO USE THE CLI BECAUSE I NEED A HOOK TO RUN 'update-ca-trust'&#8230;&#8203; FAIL ANOTHER SELINUX ISSUE, cannot update /etc/pki&#8201;&#8212;&#8201;will work around by adding it to the image, but then I miss the opportunity to showcase hooks. :-(</p>
-</li>
-<li>
-<p>Now adding the CA of the registry to the image, so I still add the auth with RHEM.</p>
-</li>
-<li>
 <p>Back to your web browser, enter the manged device details page for the <code>edge-2</code> device end edit its device configurations.</p>
 </li>
 <li>
@@ -512,10 +505,20 @@ $ *cat auth.json *
 </div>
 </li>
 <li>
-<p>Click menu:Next until you reach the menu:"Review and save" tab and click menu:Save.</p>
+<p>Click <b class="menuref">Next</b> until you reach the <b class="menuref">Review and save</b> tab and click <b class="menuref">Save</b>.</p>
 </li>
 <li>
-<p>After a few moments, you should see the device status change to <code>Updating</code> and, if everything is fine, to <code>???</code>.</p>
+<p>Right after you save device configuration changes, the device displays an <code>Out-of-date</code> with the error message from before the latest changes.
+After a few moments, the device status changes to <code>Updating</code> and it startings downloading the new bootc container image.</p>
+<div class="paragraph">
+<p>If you click again on the <code>Updating</code> status you may see the pop-up message changing to indicate that the device is applying the new configuration, which is a sign that the device finished downloading its new bootc container image.</p>
+</div>
+<div class="paragraph">
+<p>If everything is fine, after a few more moments the device update status will change to <code>Up-to-date</code>.</p>
+</div>
+<div class="paragraph">
+<p>GRAB SCREENSHOTs ???</p>
+</div>
 <div class="admonitionblock note">
 <table>
 <tr>
@@ -523,14 +526,37 @@ $ *cat auth.json *
 <i class="fa icon-note" title="Note"></i>
 </td>
 <td class="content">
-You can observe the update status of the device from the <strong>Devices</strong> page, if you wish.
+You can also monitor the update status of the device from the <strong>Devices</strong> page, if you prefer.
 </td>
 </tr>
 </table>
 </div>
 </li>
+</ol>
+</div>
+</li>
 <li>
-<p>TBD</p>
+<p>Verify that the device is running the new system image.</p>
+<div class="olist loweralpha">
+<ol class="loweralpha" type="a">
+<li>
+<p>Enter the device details page for the <code>edge-2</code> device, if you are not already there, and click the <b class="menuref">Terminal</b> tab.
+Run the <code>bootc status</code> command, to show that the webapp bootc container is the corrently booted system image, and the enrollment bootc container is now the rollback image.</p>
+<div class="paragraph">
+<p>You can also verify that the <code>httpd</code> service is active and use the <code>curl</code> command do see its default web page.</p>
+</div>
+<div class="paragraph">
+<p>GRAB SCREENSHOT</p>
+</div>
+</li>
+<li>
+<p>You can access the mock web application from your <em>development machine</em>, by using the port redirection that was set up at VM creation time:</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>curl 127.0.0.1:8208</strong>
+This would be the HTML and JavaScript code of a single-page web application.</code></pre>
+</div>
+</div>
 </li>
 </ol>
 </div>
