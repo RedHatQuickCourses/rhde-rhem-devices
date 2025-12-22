@@ -8,7 +8,7 @@ Objective::
 
 Update the operating system image on managed devices.
 
-WARNING: Not started yet
+WARNING: Work in progress
 
 == Before you begin
 
@@ -128,6 +128,10 @@ include::1@samples:webapp:example$Containerfile[]
 --
 +
 NOTE: If you want to try with the current lastest release of the upstream project, edit your Containerfile to remove the version component `-1.0.0~rc2` from the package `flightctl-agent`.
++
+IMPORTANT: The previous Containerfile relies on a custom configuration for the Systemd tempfiles services, which ensures the Apache HTTP Server finds work directories it needs in the `/var` and `/run` directories.
+These directories are setup by its RPM packages, and such setup only works at first provisioning, failing at `bootc update` and `bootc switch`.
+Using the Systemd tempfiles services is a common workaround for such scenarios.
 
 .. Your _development machine_ should be already registered with the Red Hat subscription manager, from a previous lab, but you may have to log in again on the Red Hat registry before you can build you new bootc container image.
 +
@@ -194,7 +198,7 @@ IMPORTANT: The first attempt is expected to fail, but we will troubleshoot the i
 +
 GRAB SCREENSHOT
 
-.. On the left pane, select the menu:Devices page, and click the link corresponding to the `edge-2` managed device, to enter its details page.
+.. On the left pane, select the menu:Devices[] page, and click the link corresponding to the `edge-2` managed device, to enter its details page.
 +
 GRAB SCREENSHOT
 
@@ -202,11 +206,11 @@ GRAB SCREENSHOT
 +
 GRAB SCREENSHOT
 
-.. Click menu:Next or select the menu:"Device Template" tab and type `registry.lab.example.com:5000/rhem-webapp:v1.0` on the *System image* field.
+.. Click menu:Next[] or select the menu:Device Template[] tab and type `registry.lab.example.com:5000/rhem-webapp:v1.0` on the *System image* field.
 +
 GRAB SCREENSHOT
 
-.. Click menu:Next until you reach the menu:"Review and save" tab, and click menu:Save.
+.. Click menu:Next[] until you reach the menu:Review and save[] tab, and click menu:Save[].
 
 .. The managed device details page should show an *Update status* of `Out-of-date` in the *System status* panel, and if you click the warning icon next to *System image (running)*, it will indicate there's a mismatch.
 +
@@ -226,7 +230,7 @@ We will solve the issue by providing those credentials using RHEM.
 +
 //.. ALSO NEED THE CA CERTIFICATE. TOO MUCH TO DO USING THE GUI??? No, because of SELinux issues.
 
-5. Configure the managed device with credentials to download bootc container images from the private registry.
+4. Configure the managed device with credentials to download bootc container images from the private registry.
 
 .. Switch to a terminal, but do NOT close your web browser.
 
@@ -239,7 +243,7 @@ $ *podman login --authfile auth.json -u student -p redhat registry.lab.example.c
 Login Succeeded!
 $ *skopeo inspect --authfile auth.json --format '{{ json .RepoTags }}' docker://registry.lab.example.com:5000/rhem-webapp:v1.0*
 ["v1.0"]
-$ *cat auth.json *
+$ *cat auth.json*
 {
         "auths": {
                 "registry.lab.example.com:5000": {
@@ -255,7 +259,7 @@ $ *cat auth.json *
 
 .. Back to your web browser, enter the manged device details page for the `edge-2` device end edit its device configurations.
 
-.. Click menu:"Add configuration" and fill in the fields as follows:
+.. Click menu:Add configuration[] and fill in the fields as follows:
 +
 --
 ... *Source name*: `registry-auth`
@@ -264,7 +268,7 @@ $ *cat auth.json *
 
 ... *File path on device*: `/etc/ostree/auth.json`
 
-... *Content*: either paste the contents of your `auth.json` file or use the menu:Browse button to open it.
+... *Content*: either paste the contents of your `auth.json` file or use the menu:Browse[] button to open it.
 --
 
 .. Click menu:Next[] until you reach the menu:Review and save[] tab and click menu:Save[].
@@ -280,7 +284,7 @@ GRAB SCREENSHOTs ???
 +
 NOTE: You can also monitor the update status of the device from the *Devices* page, if you prefer.
 
-6. Verify that the device is running the new system image.
+5. Verify that the device is running the new system image.
 
 .. Enter the device details page for the `edge-2` device, if you are not already there, and click the menu:Terminal[] tab.
 Run the `bootc status` command, to show that the webapp bootc container is the corrently booted system image, and the enrollment bootc container is now the rollback image.
@@ -327,9 +331,104 @@ $ *curl 127.0.0.1:8208*
 This would be the HTML and JavaScript code of a single-page web application.
 --
 
-7. Update the first test VM to use the new image, by using the CLI.
+6. Update the first test VM to use the new image, by using the CLI.
 
-.. TBD
+.. Now you will apply the same operating system + configuration update, but using YAML manifests.
+Start by reviewing the `edge-1-webapp.yaml` file, which is in the same folder as the Containerfile for the new bootc image.
++
+There should be nothing new to you in this manifest: it includes the updated SSH key and message of day files from the previous lab, and adds the private registry credentials and the reference to the new bootc container image, just like you did for the `edge-2` device.
++
+Feel free to make edits to the `edge-1.yaml` file yourself, instead of starting from the `edge-1-webapp.yaml` file.
++
+[source,subs="verbatim,quotes"]
+--
+$ *less edge-1-webapp.yaml*
+include::1@samples:webapp:example$edge-1-webapp.yaml[]
+--
+
+.. Insert the correct UUID for the device in the manifest
++
+[source,subs="verbatim,quotes,attributes"]
+--
+$ *UUID=$( flightctl get device -o name -l alias=edge-1 )*
+$ *sed -i "s|REPLACE_WITH_UUID|$UUID|" edge-1-webapp.yaml*
+--
+
+.. Insert the device-specific SSH key in the manifest.
++
+[source,subs="verbatim,quotes"]
+--
+$ *SSH_PUB_KEY=$( cat ../temp-enroll/edge-1-key.pub )*
+$ *sed -i "s|REPLACE_WITH_SSH_KEY|$SSH_PUB_KEY|" edge-1-webapp.yaml*
+--
+
+.. Insert the container tools authentication file in the manifest.
++
+[source,subs="verbatim,quotes,attributes"]
+--
+$ *REGISTRY_AUTH=$( jq -c . auth.json )*
+$ *sed -i "s|REPLACE_WITH_AUTH_JSON|$REGISTRY_AUTH|" edge-1-webapp.yaml*
+--
+
+.. Review the `edge-1-webapp.yaml` manifest file and verify that it contains no more `REPLACE_WITH` markers.
+
+.. Apply the manigest on RHEM.
++
+[source,subs="verbatim,quotes,attributes"]
+--
+$ *flightctl apply -f edge-1-webapp.yaml*
+edge-1-webapp.yaml: applying device/{edge-1-uuid-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}: 200 OK
+--
+
+.. Wait until the device synchonizes with RHEM.
++
+If you wish, you can request the YAML output of the `flightctl get device`, by appending `-o yaml`, to see detailed status information as the device is updated.
++
+[source,subs="verbatim,quotes,attributes"]
+--
+$ *flightctl get device $UUID -o wide*
+NAME                                                    ALIAS   OWNER   SYSTEM  UPDATED         APPLICATIONS    LABELS
+{edge-1-uuid-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}    edge-1  <none>  Online  OutOfDate        NoApplications  alias=edge-1,rhel=9.6,type=noapps
+...
+$ *flightctl get device $UUID -o wide*
+NAME                                                    ALIAS   OWNER   SYSTEM  UPDATED         APPLICATIONS    LABELS
+{edge-1-uuid-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}    edge-1  <none>  Online  UpToDate        NoApplications  alias=edge-1,rhel=9.6,type=noapps
+--
+
+7. Verify that the first test VM is running with updates applied.
+
+.. Verify the currently booted system image.
++
+[source,subs="verbatim,quotes,attributes"]
+--
+$ *flightctl console device $UUID -- bootc status*
+● Booted image: containers-storage:registry.lab.example.com:5000/rhem-webapp:v1.2
+        Digest: sha256:{rhem-webapp-v1-shaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}
+       Version: 9.6 (2025-12-02 08:30:48 UTC)
+
+  Rollback image: registry.lab.example.com:5000/rhem-enroll:v1.0
+          Digest: sha256:{rhem-enroll-v1-shaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}
+         Version: 9.6 (2025-12-02 08:30:48 UTC)
+--
+
+.. Verify that the Apache HTTP Server is active.
++
+[source,subs="verbatim,quotes"]
+--
+$ *flightctl console device $UUID -- systemctl is-active httpd*
+active
+--
+
+.. Use the port redirection that you configured at VM creation time to verify that it is serving the mock of the web application.
++
+[source,subs="verbatim,quotes"]
+--
+$ *curl 127.0.0.1:8108*
+This would be the HTML and JavaScript code of a single-page web application.
+--
+
+In this lab, you performed operating system updated on two managed devices, by using the RHEM web interface and its CLI. 
+You also demonstrated that the fact that a device can be provisioned from a bootc container image does not ensures that it is configured to fetch bootc container updates from private registries, and that RHEM is able to provide such configurations at the same time it updates the system image of managed devices.
 
 == What's next
 
