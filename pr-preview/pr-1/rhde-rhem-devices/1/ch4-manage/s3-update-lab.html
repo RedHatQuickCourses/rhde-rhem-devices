@@ -184,7 +184,7 @@
 <i class="fa icon-warning" title="Warning"></i>
 </td>
 <td class="content">
-Not started yet
+Work in progress
 </td>
 </tr>
 </table>
@@ -334,6 +334,20 @@ If you want to try with the current lastest release of the upstream project, edi
 </tr>
 </table>
 </div>
+<div class="admonitionblock important">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-important" title="Important"></i>
+</td>
+<td class="content">
+The previous Containerfile relies on a custom configuration for the Systemd tempfiles services, which ensures the Apache HTTP Server finds work directories it needs in the <code>/var</code> and <code>/run</code> directories.
+These directories are setup by its RPM packages, and such setup only works at first provisioning, failing at <code>bootc update</code> and <code>bootc switch</code>.
+Using the Systemd tempfiles services is a common workaround for such scenarios.
+</td>
+</tr>
+</table>
+</div>
 </li>
 <li>
 <p>Your <em>development machine</em> should be already registered with the Red Hat subscription manager, from a previous lab, but you may have to log in again on the Red Hat registry before you can build you new bootc container image.</p>
@@ -405,7 +419,7 @@ The first attempt is expected to fail, but we will troubleshoot the issue and fi
 </div>
 </li>
 <li>
-<p>On the left pane, select the menu:Devices page, and click the link corresponding to the <code>edge-2</code> managed device, to enter its details page.</p>
+<p>On the left pane, select the <b class="menuref">Devices</b> page, and click the link corresponding to the <code>edge-2</code> managed device, to enter its details page.</p>
 <div class="paragraph">
 <p>GRAB SCREENSHOT</p>
 </div>
@@ -417,13 +431,13 @@ The first attempt is expected to fail, but we will troubleshoot the issue and fi
 </div>
 </li>
 <li>
-<p>Click menu:Next or select the menu:"Device Template" tab and type <code>registry.lab.example.com:5000/rhem-webapp:v1.0</code> on the <strong>System image</strong> field.</p>
+<p>Click <b class="menuref">Next</b> or select the <b class="menuref">Device Template</b> tab and type <code>registry.lab.example.com:5000/rhem-webapp:v1.0</code> on the <strong>System image</strong> field.</p>
 <div class="paragraph">
 <p>GRAB SCREENSHOT</p>
 </div>
 </li>
 <li>
-<p>Click menu:Next until you reach the menu:"Review and save" tab, and click menu:Save.</p>
+<p>Click <b class="menuref">Next</b> until you reach the <b class="menuref">Review and save</b> tab, and click <b class="menuref">Save</b>.</p>
 </li>
 <li>
 <p>The managed device details page should show an <strong>Update status</strong> of <code>Out-of-date</code> in the <strong>System status</strong> panel, and if you click the warning icon next to <strong>System image (running)</strong>, it will indicate there&#8217;s a mismatch.</p>
@@ -467,7 +481,7 @@ Then copy the contents of the file to the clipboard.</p>
 Login Succeeded!
 $ <strong>skopeo inspect --authfile auth.json --format '{{ json .RepoTags }}' docker://registry.lab.example.com:5000/rhem-webapp:v1.0</strong>
 ["v1.0"]
-$ *cat auth.json *
+$ <strong>cat auth.json</strong>
 {
         "auths": {
                 "registry.lab.example.com:5000": {
@@ -482,7 +496,7 @@ $ *cat auth.json *
 <p>Back to your web browser, enter the manged device details page for the <code>edge-2</code> device end edit its device configurations.</p>
 </li>
 <li>
-<p>Click menu:"Add configuration" and fill in the fields as follows:</p>
+<p>Click <b class="menuref">Add configuration</b> and fill in the fields as follows:</p>
 <div class="openblock">
 <div class="content">
 <div class="olist lowerroman">
@@ -497,7 +511,7 @@ $ *cat auth.json *
 <p><strong>File path on device</strong>: <code>/etc/ostree/auth.json</code></p>
 </li>
 <li>
-<p><strong>Content</strong>: either paste the contents of your <code>auth.json</code> file or use the menu:Browse button to open it.</p>
+<p><strong>Content</strong>: either paste the contents of your <code>auth.json</code> file or use the <b class="menuref">Browse</b> button to open it.</p>
 </li>
 </ol>
 </div>
@@ -566,12 +580,151 @@ This would be the HTML and JavaScript code of a single-page web application.</co
 <div class="olist loweralpha">
 <ol class="loweralpha" type="a">
 <li>
-<p>TBD</p>
+<p>Now you will apply the same operating system + configuration update, but using YAML manifests.
+Start by reviewing the <code>edge-1-webapp.yaml</code> file, which is in the same folder as the Containerfile for the new bootc image.</p>
+<div class="paragraph">
+<p>There should be nothing new to you in this manifest: it includes the updated SSH key and message of day files from the previous lab, and adds the private registry credentials and the reference to the new bootc container image, just like you did for the <code>edge-2</code> device.</p>
+</div>
+<div class="paragraph">
+<p>Feel free to make edits to the <code>edge-1.yaml</code> file yourself, instead of starting from the <code>edge-1-webapp.yaml</code> file.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>less edge-1-webapp.yaml</strong>
+apiVersion: flightctl.io/v1beta1
+kind: Device
+metadata:
+  labels:
+    alias: edge-1
+    rhel: "9.6"
+    type: noapps
+  name: REPLACE_WITH_UUID
+spec:
+  config:
+  - inline:
+    - content: |
+        REPLACE_WITH_SSH_KEY
+      mode: 420
+      path: /home/core/.ssh/authorized_keys
+    name: ssh-key
+  - inline:
+    - content: Under new management!
+      path: /etc/motd
+    name: motd
+  - inline:
+    - content: |
+        REPLACE_WITH_AUTH_JSON
+      path: /etc/ostree/auth.json
+    name: registry-auth
+  os:
+    image: registry.lab.example.com:5000/rhem-webapp:v1.0</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Insert the correct UUID for the device in the manifest</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>UUID=$( flightctl get device -o name -l alias=edge-1 )</strong>
+$ <strong>sed -i "s|REPLACE_WITH_UUID|$UUID|" edge-1-webapp.yaml</strong></code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Insert the device-specific SSH key in the manifest.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>SSH_PUB_KEY=$( cat ../temp-enroll/edge-1-key.pub )</strong>
+$ <strong>sed -i "s|REPLACE_WITH_SSH_KEY|$SSH_PUB_KEY|" edge-1-webapp.yaml</strong></code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Insert the container tools authentication file in the manifest.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>REGISTRY_AUTH=$( jq -c . auth.json )</strong>
+$ <strong>sed -i "s|REPLACE_WITH_AUTH_JSON|$REGISTRY_AUTH|" edge-1-webapp.yaml</strong></code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Review the <code>edge-1-webapp.yaml</code> manifest file and verify that it contains no more <code>REPLACE_WITH</code> markers.</p>
+</li>
+<li>
+<p>Apply the manigest on RHEM.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>flightctl apply -f edge-1-webapp.yaml</strong>
+edge-1-webapp.yaml: applying device/1u63hvsgtua9tjjbmla9bgh5h2s77cb8esepphnf68m3ocf8qfng: 200 OK</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Wait until the device synchonizes with RHEM.</p>
+<div class="paragraph">
+<p>If you wish, you can request the YAML output of the <code>flightctl get device</code>, by appending <code>-o yaml</code>, to see detailed status information as the device is updated.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>flightctl get device $UUID -o wide</strong>
+NAME                                                    ALIAS   OWNER   SYSTEM  UPDATED         APPLICATIONS    LABELS
+1u63hvsgtua9tjjbmla9bgh5h2s77cb8esepphnf68m3ocf8qfng    edge-1  &lt;none&gt;  Online  OutOfDate        NoApplications  alias=edge-1,rhel=9.6,type=noapps
+...
+$ <strong>flightctl get device $UUID -o wide</strong>
+NAME                                                    ALIAS   OWNER   SYSTEM  UPDATED         APPLICATIONS    LABELS
+1u63hvsgtua9tjjbmla9bgh5h2s77cb8esepphnf68m3ocf8qfng    edge-1  &lt;none&gt;  Online  UpToDate        NoApplications  alias=edge-1,rhel=9.6,type=noapps</code></pre>
+</div>
+</div>
+</li>
+</ol>
+</div>
+</li>
+<li>
+<p>Verify that the first test VM is running with updates applied.</p>
+<div class="olist loweralpha">
+<ol class="loweralpha" type="a">
+<li>
+<p>Verify the currently booted system image.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>flightctl console device $UUID -- bootc status</strong>
+● Booted image: containers-storage:registry.lab.example.com:5000/rhem-webapp:v1.2
+        Digest: sha256:54a35799c931be0f0030943da0e8400815ab5181e2cba9f868efe94ad17a54dc
+       Version: 9.6 (2025-12-02 08:30:48 UTC)
+
+  Rollback image: registry.lab.example.com:5000/rhem-enroll:v1.0
+          Digest: sha256:503f839113b376c55ceee225a8cbfdc9bf1496f3342385ce171f2cf2e01f1333
+         Version: 9.6 (2025-12-02 08:30:48 UTC)</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Verify that the Apache HTTP Server is active.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>flightctl console device $UUID -- systemctl is-active httpd</strong>
+active</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Use the port redirection that you configured at VM creation time to verify that it is serving the mock of the web application.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>curl 127.0.0.1:8108</strong>
+This would be the HTML and JavaScript code of a single-page web application.</code></pre>
+</div>
+</div>
 </li>
 </ol>
 </div>
 </li>
 </ol>
+</div>
+<div class="paragraph">
+<p>In this lab, you performed operating system updated on two managed devices, by using the RHEM web interface and its CLI.
+You also demonstrated that the fact that a device can be provisioned from a bootc container image does not ensures that it is configured to fetch bootc container updates from private registries, and that RHEM is able to provide such configurations at the same time it updates the system image of managed devices.</p>
 </div>
 </div>
 </div>
