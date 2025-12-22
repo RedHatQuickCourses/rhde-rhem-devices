@@ -127,9 +127,9 @@ $ *less Containerfile*
 include::1@samples:webapp:example$Containerfile[]
 --
 +
-NOTE: If you want to try with the current lastest release of the upstream project, edit your Containerfile to remove the version component `-1.0.0~rc` from the package `flightctl-agent`.
+NOTE: If you want to try with the current lastest release of the upstream project, edit your Containerfile to remove the version component `-1.0.0~rc2` from the package `flightctl-agent`.
 
-.. Your _development machine_ should be already registere with the Red Hat subscription manager, from a previous lab, but you may have to log in again on the Red Hat registry.
+.. Your _development machine_ should be already registered with the Red Hat subscription manager, from a previous lab, but you may have to log in again on the Red Hat registry before you can build you new bootc container image.
 +
 [source,subs="verbatim,quotes"]
 --
@@ -208,22 +208,23 @@ GRAB SCREENSHOT
 
 .. Click menu:Next until you reach the menu:"Review and save" tab, and click menu:Save.
 
-.. The managed device details page should show an `Out-of-date` *Update status* in the *System status* panel, and if you click the warning icon next to *System image (running)*, it will indicate there's a mismatch.
+.. The managed device details page should show an *Update status* of `Out-of-date` in the *System status* panel, and if you click the warning icon next to *System image (running)*, it will indicate there's a mismatch.
 +
 GRAB SCREENSHOT
 
-.. After a few moments, or if you refresh your web browser, the *Update status* will change to `Updating`, meaning it is attempting to download and switch to the new booc container image.
+.. After a few moments, the *Update status* will change to `Updating`, meaning it is attempting to download and switch to the new booc container image.
+You can click the `Updating` status to see a longer message describring what updates are pending, in this case, pending download of the bootc container image.
 +
 GRAB SCREENSHOT
 
-.. After a few more momentos, the *Update status* will change back to `Out-of-date` and, if you click the status, you will see an error message which includes the text: `before update: prefetch: pulling oci target registry.lab.example.com:5000/rhem-webapp:v1.0: pull image: code: 125: Trying to pull registry.lab.example.com:5000/rhem-webapp:v1.0`
+.. After a few more momentos, the *Update status* will change back to `Out-of-date` and, if you click the status, you will see an error message which indicates a failure to download the bootc container image.
 +
 GRAB SCREENSHOT
 
 .. The private registry requires authentication credentails, but these were not provided by its bootc image nor kickstart during provisioning.
 We will solve the issue by providing those credentials using RHEM.
-
-.. ALSO NEED THE CA CERTIFICATE. TOO MUCH TO DO USING THE GUI???
++
+//.. ALSO NEED THE CA CERTIFICATE. TOO MUCH TO DO USING THE GUI??? No, because of SELinux issues.
 
 5. Configure the managed device with credentials to download bootc container images from the private registry.
 
@@ -232,7 +233,7 @@ We will solve the issue by providing those credentials using RHEM.
 .. Create a containers authentication file, and access the new bootc container image using this file.
 Then copy the contents of the file to the clipboard.
 +
-[source,subs="verbatim,quotes,attributes"]
+[source,subs="verbatim,quotes"]
 --
 $ *podman login --authfile auth.json -u student -p redhat registry.lab.example.com:5000*
 Login Succeeded!
@@ -252,10 +253,6 @@ $ *cat auth.json *
 +
 //NOTE: In a production setup, both the private registry and RHEM would be configured with a TLS certificate signed by a corporate CA and you would need only to add that CA to all your servers and workstations, including your edge devices.
 
-.. GUESS I NEED TO USE THE CLI BECAUSE I NEED A HOOK TO RUN 'update-ca-trust'... FAIL ANOTHER SELINUX ISSUE, cannot update /etc/pki -- will work around by adding it to the image, but then I miss the opportunity to showcase hooks. :-(
-
-.. Now adding the CA of the registry to the image, so I still add the auth with RHEM.
-
 .. Back to your web browser, enter the manged device details page for the `edge-2` device end edit its device configurations.
 
 .. Click menu:"Add configuration" and fill in the fields as follows:
@@ -270,15 +267,67 @@ $ *cat auth.json *
 ... *Content*: either paste the contents of your `auth.json` file or use the menu:Browse button to open it.
 --
 
-.. Click menu:Next until you reach the menu:"Review and save" tab and click menu:Save.
+.. Click menu:Next[] until you reach the menu:Review and save[] tab and click menu:Save[].
 
-.. After a few moments, you should see the device status change to `Updating` and, if everything is fine, to `???`.
+.. Right after you save device configuration changes, the device displays an `Out-of-date` with the error message from before the latest changes.
+After a few moments, the device status changes to `Updating` and it startings downloading the new bootc container image.
 +
-NOTE: You can observe the update status of the device from the *Devices* page, if you wish.
+If you click again on the `Updating` status you may see the pop-up message changing to indicate that the device is applying the new configuration, which is a sign that the device finished downloading its new bootc container image.
++
+If everything is fine, after a few more moments the device update status will change to `Up-to-date`.
++
+GRAB SCREENSHOTs ???
++
+NOTE: You can also monitor the update status of the device from the *Devices* page, if you prefer.
 
-.. TBD
+6. Verify that the device is running the new system image.
 
-5. Update the first test VM to use the new image, by using the CLI.
+.. Enter the device details page for the `edge-2` device, if you are not already there, and click the menu:Terminal[] tab.
+Run the `bootc status` command, to show that the webapp bootc container is the corrently booted system image, and the enrollment bootc container is now the rollback image.
++
+You can also verify that the `httpd` service is active and use the `curl` command do see its default web page.
++
+GRAB SCREENSHOT
++
+////
+[core@enroll ~]$ sudo journalctl -u httpd | tail
+...
+Need to add tmpfiles config to the webapp image so it works as an update image.
+Dec 20 01:59:41 enroll systemd[1]: Starting The Apache HTTP Server...
+Dec 20 01:59:41 enroll httpd[881]: (2)No such file or directory: AH02291: Cannot access directory '/etc/httpd/logs/' for main error log
+Dec 20 01:59:41 enroll httpd[881]: AH00014: Configuration check failed
+Dec 20 01:59:41 enroll systemd[1]: httpd.service: Main process exited, code=exited, status=1/FAILURE
+Dec 20 01:59:41 enroll systemd[1]: httpd.service: Failed with result 'exit-code'.
+Dec 20 01:59:41 enroll systemd[1]: Failed to start The Apache HTTP Server.
+
+It is looking more complicated than my php scenario from rhde-bootc-update :-(
+httpd is split into multiple packages, with many scriptlets and many /var files in each package
+
+This is the list of files I need to provide, considering all pachages (that are dependencies of httpd)
+/var/www -- def content, not using
+/var/www/cgi-bin -- def content, not using
+/var/www/html -- def content, not using
+/run/httpd
+/run/httpd/htcacheclean -- no need
+/var/cache/httpd -- do I reallyu need this?
+/var/cache/httpd/proxy -- not using proxy
+/var/lib/httpd -- what's here?
+/var/log/httpd
+
+I may also need to provide sysusers. No, the apache user and group are there. Because they have fixed id, that is, they're NOT dynamic users?
+
+It works after adding just /run/httpd /var/log/httpd to tmpfiles.d
+////
+
+.. You can access the mock web application from your _development machine_, by using the port redirection that was set up at VM creation time:
++
+[source,subs="verbatim,quotes"]
+--
+$ *curl 127.0.0.1:8208*
+This would be the HTML and JavaScript code of a single-page web application.
+--
+
+7. Update the first test VM to use the new image, by using the CLI.
 
 .. TBD
 
