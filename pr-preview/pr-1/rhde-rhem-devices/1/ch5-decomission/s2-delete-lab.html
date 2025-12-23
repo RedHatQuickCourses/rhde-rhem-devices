@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Lab: Decomission and Delete Edge Devices :: Deploying Red Hat Edge Manager and Managing Edge Devices</title>
+    <title>Lab: Decommission and Delete Edge Devices :: Deploying Red Hat Edge Manager and Managing Edge Devices</title>
     <link rel="prev" href="s1-delete.html">
     <meta name="generator" content="Antora 3.1.3">
     <link rel="stylesheet" href="../../../_/css/site.css">
@@ -115,10 +115,10 @@
     <a class="nav-link" href="index.html">Remove Edge Devices from Red Hat Edge Manager</a>
 <ul class="nav-list">
   <li class="nav-item" data-depth="2">
-    <a class="nav-link" href="s1-delete.html">Decomission and Delete Edge Devices with RHEM</a>
+    <a class="nav-link" href="s1-delete.html">Decommission and Delete Edge Devices with RHEM</a>
   </li>
   <li class="nav-item is-current-page" data-depth="2">
-    <a class="nav-link" href="s2-delete-lab.html">Lab: Decomission and Delete Edge Devices</a>
+    <a class="nav-link" href="s2-delete-lab.html">Lab: Decommission and Delete Edge Devices</a>
   </li>
 </ul>
   </li>
@@ -162,7 +162,7 @@
   <ul>
     <li><a href="../index.html">Deploying Red Hat Edge Manager and Managing Edge Devices</a></li>
     <li><a href="index.html">Remove Edge Devices from Red Hat Edge Manager</a></li>
-    <li><a href="s2-delete-lab.html">Lab: Decomission and Delete Edge Devices</a></li>
+    <li><a href="s2-delete-lab.html">Lab: Decommission and Delete Edge Devices</a></li>
   </ul>
 </nav>
 </div>
@@ -171,7 +171,7 @@
   <div class="toc-menu"></div>
 </aside>
 <article class="doc">
-<h1 class="page">Lab: Decomission and Delete Edge Devices</h1>
+<h1 class="page">Lab: Decommission and Delete Edge Devices</h1>
 <div id="preamble">
 <div class="sectionbody">
 <div class="paragraph">
@@ -229,6 +229,18 @@ Log in as the user <code>student</code> with password <code>student</code>.</p>
 <li>
 <p>Verify that you have the outcomes of previous labs.
 If you do not, go back and complete them, because you need their outcomes to continue with this course.</p>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+While this activity does not depend on outcomes from <em>all</em> of the previous labs, it works better if you already perform some configuration of managed devices, after enrolling them.
+</td>
+</tr>
+</table>
+</div>
 <div class="olist loweralpha">
 <ol class="loweralpha" type="a">
 <li>
@@ -294,16 +306,232 @@ g7ombcqk46tqq458j9uju454441mf1lgt9qqqva8ti0fnvosm57g    edge-2  &lt;none&gt;  Un
 </div>
 </li>
 <li>
-<p>TBD</p>
+<p>Verify that you need full administrator rights to decomission managed devices.</p>
 <div class="olist loweralpha">
 <ol class="loweralpha" type="a">
 <li>
-<p>TBD</p>
+<p>Open a web browser and visit <code>https://servera.lab.example.com</code></p>
+</li>
+<li>
+<p>Log in as the <code>student</code> user with the <code>student</code> password.
+On the left pane, select the <b class="menuref">Devices</b> page, and click the three vertical dots icon, to open the actions menu for any of the managed devices.</p>
+<div class="paragraph">
+<p>GRAB SCREENSHOT</p>
+</div>
+</li>
+<li>
+<p>Notice that there is no action do either decomission or delete a device.
+Also notice, to the top of page, bellow the device filters, a slider button to display decommissioned devices.</p>
+<div class="paragraph">
+<p>GRAB SCREENSHOT</p>
+</div>
+</li>
+<li>
+<p>Click the <b class="menuref">Show decommissioned devices</b> button, and the page should show that there are no devices being decommissioned or already decommissioned.</p>
+<div class="paragraph">
+<p>GRAB SCREENSHOT</p>
+</div>
+</li>
+<li>
+<p>Click on the <code>student</code> user name, to the top right, to open the user menu and select <b class="menuref">Logout</b>.</p>
+<div class="paragraph">
+<p>GRAB SCREENSHOT</p>
+</div>
+</li>
+</ol>
+</div>
+</li>
+<li>
+<p>Decomission the managed device which corresponds to your first test VM.</p>
+<div class="olist loweralpha">
+<ol class="loweralpha" type="a">
+<li>
+<p>Log in as the <code>admin</code> user with the <code>redhat</code> password.
+On the left pane, select the <b class="menuref">Devices</b> page, and click the three vertical dots icon, to open the actions menu for the <code>edge-2</code> managed device.</p>
+<div class="paragraph">
+<p>GRAB SCREENSHOT</p>
+</div>
+</li>
+<li>
+<p>Click <b class="menuref">Decommision device</b>.
+Confirm that you really want to decommission the managed device by clicking on the red <b class="menuref">Decommision device</b> button.</p>
+<div class="paragraph">
+<p>GRAB SCREENSHOT</p>
+</div>
+</li>
+<li>
+<p>The <b class="menuref">Devices</b> page automatically switches to list decomissioned devices, and shows a status of <code>Decomissioning</code> for the device which has the UUID that used to belong to the <code>edge-2</code> managed device.
+Notice that, when you decomission a managed device, it loses all its labels but it does NOT lose the configurations managed by RHEM.</p>
+<div class="paragraph">
+<p>GRAB SCREENSHOT</p>
+</div>
+</li>
+<li>
+<p>Click the UUID of the only device being decomissioned, which used to be the <code>edge-2</code> managed device, and see that it still display the configurations which were set for the device.</p>
+<div class="paragraph">
+<p>The device stays in that state on the assumption that some clean up procedure would be executed on it.</p>
+</div>
+<div class="paragraph">
+<p>GRAB SCREENSHOT</p>
+</div>
+</li>
+</ol>
+</div>
+</li>
+<li>
+<p>Delete the decommissioned device.</p>
+<div class="olist loweralpha">
+<ol class="loweralpha" type="a">
+<li>
+<p>Return to the <b class="menuref">Devices</b> page and click again <b class="menuref">Show decommissioned devices</b>.
+Click the actions menu button for the only device listed and select <b class="menuref">Delete device</b>.</p>
+<div class="paragraph">
+<p>GRAB SCREENSHOT</p>
+</div>
+</li>
+<li>
+<p>Confirm that you actually want to delete the device resource by clicking the red <b class="menuref">Delete device</b> button.
+Now your <b class="menuref">Devices</b> page should list no more decommissioned devices.</p>
+<div class="paragraph">
+<p>GRAB SCREENSHOT</p>
+</div>
+</li>
+</ol>
+</div>
+</li>
+<li>
+<p>Verify that decomissioned devices are not cleaned up.</p>
+<div class="olist loweralpha">
+<ol class="loweralpha" type="a">
+<li>
+<p>Switch to a terminal and enter the <code>temp-enroll</code> directory, which contains the SSH keys for acessing your test VMs.</p>
+<div class="paragraph">
+<p>Notice that it still contains the message of the day that you configured by using RHEM.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>cd temp-enroll</strong>
+$ <strong>ssh -i edge-2-key -p 8222 core@127.0.0.1</strong>
+Under new management!
+Last login: Thu Dec 19 14:05:12 2025 from 172.25.250.254
+[core@enroll ~]$</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Verify that the test VM is still running the latest operating system image set by RHEM.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>sudo bootc status</strong>
+● Booted image: containers-storage:registry.lab.example.com:5000/rhem-webapp:v1.2
+        Digest: sha256:{rhem-webapp-v1-shaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}
+       Version: 9.6 (2025-12-02 08:30:48 UTC)
+
+  Rollback image: containers-storage:registry.lab.example.com:5000/rhem-webapp:v1.1
+          Digest: sha256:{rhem-enroll-v1-shaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}
+         Version: 9.6 (2025-12-02 08:30:48 UTC)</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Terminate the SSH session and return to your host shell.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>exit</strong></code></pre>
+</div>
+</div>
+</li>
+</ol>
+</div>
+</li>
+<li>
+<p>Decomission another device, but now using the CLI.</p>
+<div class="olist loweralpha">
+<ol class="loweralpha" type="a">
+<li>
+<p>Log in as the <code>student</code> user, just so you can see the error message you would get for insufficient permissions to perform the decommission operation.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>flightctl login -u student -p student https://servera.lab.example.com:3443</strong>
+Login successful.
+$ <strong>flightctl get device -o wide</strong>
+NAME                                                    ALIAS   OWNER   SYSTEM  UPDATED         APPLICATIONS    LABELS
+1u63hvsgtua9tjjbmla9bgh5h2s77cb8esepphnf68m3ocf8qfng    edge-1  &lt;none&gt;  Online  UpToDate        NoApplications  rhel=9.6,type=noapps,alias=edge-2
+$ <strong>flightctl decommission device 1u63hvsgtua9tjjbmla9bgh5h2s77cb8esepphnf68m3ocf8qfng</strong>
+Error: unsuccessful decommissioning device request 1u63hvsgtua9tjjbmla9bgh5h2s77cb8esepphnf68m3ocf8qfng: Forbidden</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Login as the <code>admin</code> user and decommission the <code>edge-1</code> managed device, which corresponds to your first test VM.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>flightctl login -u admin -p redhat https://servera.lab.example.com:3443</strong>
+Login successful.
+$ <strong>flightctl get device -o wide</strong>
+NAME                                                    ALIAS   OWNER   SYSTEM  UPDATED         APPLICATIONS    LABELS
+1u63hvsgtua9tjjbmla9bgh5h2s77cb8esepphnf68m3ocf8qfng    edge-1  &lt;none&gt;  Online  UpToDate        NoApplications  rhel=9.6,type=noapps,alias=edge-2
+$ <strong>flightctl decommission device 1u63hvsgtua9tjjbmla9bgh5h2s77cb8esepphnf68m3ocf8qfng</strong>
+Device scheduled for decommissioning: 200 OK: 1u63hvsgtua9tjjbmla9bgh5h2s77cb8esepphnf68m3ocf8qfng</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Verify that the device still appears in the device list, though it is not managed anymore by RHEM.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>flightctl get device -o wide</strong>
+NAME                                                    ALIAS   OWNER   SYSTEM  UPDATED         APPLICATIONS    LABELS
+1u63hvsgtua9tjjbmla9bgh5h2s77cb8esepphnf68m3ocf8qfng            &lt;none&gt;  Online  UpToDate        NoApplications</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>You must check the <code>status</code> field of the device to know that it has been decommissioned.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>UUID=1u63hvsgtua9tjjbmla9bgh5h2s77cb8esepphnf68m3ocf8qfng</strong>
+$ <strong>flightctl get device $UUID -o json | jq -r '.status.lifecycle.status'</strong>
+Decommissioning</code></pre>
+</div>
+</div>
+</li>
+</ol>
+</div>
+</li>
+<li>
+<p>Delete the last device, also by using the CLI.</p>
+<div class="olist loweralpha">
+<ol class="loweralpha" type="a">
+<li>
+<p>Use the <code>UUID</code> shell variable that you set int the previous step to delete the device resource from RHEM.</p>
+<div class="paragraph">
+<p>Notice that, when using the CLI, there is no confirmation for either decommissioning or deleting a managed device.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>flightctl delete device $UUID</strong>
+Deletion request for device "1u63hvsgtua9tjjbmla9bgh5h2s77cb8esepphnf68m3ocf8qfng" completed</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Verify that your device list is now empty.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>flightctl get device -o wide</strong>
+NAME    ALIAS   OWNER   SYSTEM  UPDATED APPLICATIONS    LABELS</code></pre>
+</div>
+</div>
 </li>
 </ol>
 </div>
 </li>
 </ol>
+</div>
+<div class="paragraph">
+<p>You demonstrated that decommissioning and deleting managed devices on RHEM does not scrubs the devices.
+If they contained sentitive data, such as secrets to access corporate systems, that is still there, and you must implement a process for cleaning those devices of such data.</p>
 </div>
 </div>
 </div>
@@ -317,7 +545,7 @@ In the next course, you will configure device fleets, manage devices as members 
 </div>
 </div>
 <nav class="pagination">
-  <span class="prev"><a href="s1-delete.html">Decomission and Delete Edge Devices with RHEM</a></span>
+  <span class="prev"><a href="s1-delete.html">Decommission and Delete Edge Devices with RHEM</a></span>
 </nav>
 </article>
   </div>
