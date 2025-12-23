@@ -1,6 +1,6 @@
 :time_estimate: 5
 
-= Lab: Decomission and Delete Edge Devices
+= Lab: Decommission and Delete Edge Devices
 
 _Estimated reading time: *{time_estimate} minutes*._
 
@@ -44,6 +44,8 @@ Lorem ipsum
 
 1. Verify that you have the outcomes of previous labs.
 If you do not, go back and complete them, because you need their outcomes to continue with this course.
++
+NOTE: While this activity does not depend on outcomes from _all_ of the previous labs, it works better if you already perform some configuration of managed devices, after enrolling them.
 
 .. There is a clone of the course samples repository on your home directory.
 +
@@ -98,9 +100,170 @@ NAME                                                    ALIAS   OWNER   SYSTEM  
 
 .. Wait a few moments and repeat the latest command until both managed devices return as `OnLine` and `UpToDate`.
 
-2. TBD
+2. Verify that you need full administrator rights to decomission managed devices.
 
-.. TBD
+.. Open a web browser and visit `\https://servera.lab.example.com`
+
+.. Log in as the `student` user with the `student` password.
+On the left pane, select the menu:Devices[] page, and click the three vertical dots icon, to open the actions menu for any of the managed devices.
++
+GRAB SCREENSHOT
+
+.. Notice that there is no action do either decomission or delete a device.
+Also notice, to the top of page, bellow the device filters, a slider button to display decommissioned devices.
++
+GRAB SCREENSHOT
+
+.. Click the menu:Show decommissioned devices[] button, and the page should show that there are no devices being decommissioned or already decommissioned.
++
+GRAB SCREENSHOT
+
+.. Click on the `student` user name, to the top right, to open the user menu and select menu:Logout[].
++
+GRAB SCREENSHOT
+
+3. Decomission the managed device which corresponds to your first test VM.
+
+.. Log in as the `admin` user with the `redhat` password.
+On the left pane, select the menu:Devices[] page, and click the three vertical dots icon, to open the actions menu for the `edge-2` managed device.
++
+GRAB SCREENSHOT
+
+.. Click menu:Decommision device[].
+Confirm that you really want to decommission the managed device by clicking on the red menu:Decommision device[] button.
++
+GRAB SCREENSHOT
+
+.. The menu:Devices[] page automatically switches to list decomissioned devices, and shows a status of `Decomissioning` for the device which has the UUID that used to belong to the `edge-2` managed device.
+Notice that, when you decomission a managed device, it loses all its labels but it does NOT lose the configurations managed by RHEM.
++
+GRAB SCREENSHOT
+
+.. Click the UUID of the only device being decomissioned, which used to be the `edge-2` managed device, and see that it still display the configurations which were set for the device.
++
+The device stays in that state on the assumption that some clean up procedure would be executed on it.
++
+GRAB SCREENSHOT
+
+4. Delete the decommissioned device.
+
+.. Return to the menu:Devices[] page and click again menu:Show decommissioned devices[]. 
+Click the actions menu button for the only device listed and select menu:Delete device[].
++
+GRAB SCREENSHOT
+
+.. Confirm that you actually want to delete the device resource by clicking the red menu:Delete device[] button.
+Now your menu:Devices[] page should list no more decommissioned devices.
++
+GRAB SCREENSHOT
+
+4. Verify that decomissioned devices are not cleaned up.
+
+.. Switch to a terminal and enter the `temp-enroll` directory, which contains the SSH keys for acessing your test VMs.
++
+Notice that it still contains the message of the day that you configured by using RHEM.
++
+[source,subs="verbatim,quotes"]
+--
+$ *cd temp-enroll*
+$ *ssh -i edge-2-key -p 8222 core@127.0.0.1*
+Under new management!
+Last login: Thu Dec 19 14:05:12 2025 from 172.25.250.254
+[core@enroll ~]$ 
+--
+
+.. Verify that the test VM is still running the latest operating system image set by RHEM.
++
+[source,subs="verbatim,quotes"]
+--
+$ *sudo bootc status*
+● Booted image: containers-storage:registry.lab.example.com:5000/rhem-webapp:v1.2
+        Digest: sha256:{rhem-webapp-v1-shaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}
+       Version: 9.6 (2025-12-02 08:30:48 UTC)
+
+  Rollback image: containers-storage:registry.lab.example.com:5000/rhem-webapp:v1.1
+          Digest: sha256:{rhem-enroll-v1-shaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}
+         Version: 9.6 (2025-12-02 08:30:48 UTC)
+--
+
+.. Terminate the SSH session and return to your host shell.
++
+[source,subs="verbatim,quotes"]
+--
+$ *exit*
+--
+
+5. Decomission another device, but now using the CLI.
+
+.. Log in as the `student` user, just so you can see the error message you would get for insufficient permissions to perform the decommission operation.
++
+[source,subs="verbatim,quotes,attributes"]
+--
+$ *flightctl login -u student -p student https://servera.lab.example.com:3443*
+Login successful.
+$ *flightctl get device -o wide*
+NAME                                                    ALIAS   OWNER   SYSTEM  UPDATED         APPLICATIONS    LABELS
+{edge-1-uuid-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}    edge-1  <none>  Online  UpToDate        NoApplications  rhel=9.6,type=noapps,alias=edge-2
+$ *flightctl decommission device {edge-1-uuid-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}*
+Error: unsuccessful decommissioning device request {edge-1-uuid-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}: Forbidden
+--
+
+.. Login as the `admin` user and decommission the `edge-1` managed device, which corresponds to your first test VM.
++
+[source,subs="verbatim,quotes,attributes"]
+--
+$ *flightctl login -u admin -p redhat https://servera.lab.example.com:3443*
+Login successful.
+$ *flightctl get device -o wide*
+NAME                                                    ALIAS   OWNER   SYSTEM  UPDATED         APPLICATIONS    LABELS
+{edge-1-uuid-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}    edge-1  <none>  Online  UpToDate        NoApplications  rhel=9.6,type=noapps,alias=edge-2
+$ *flightctl decommission device {edge-1-uuid-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}*
+Device scheduled for decommissioning: 200 OK: {edge-1-uuid-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}
+--
+
+.. Verify that the device still appears in the device list, though it is not managed anymore by RHEM.
++
+[source,subs="verbatim,quotes,attributes"]
+--
+$ *flightctl get device -o wide*
+NAME                                                    ALIAS   OWNER   SYSTEM  UPDATED         APPLICATIONS    LABELS
+{edge-1-uuid-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}            <none>  Online  UpToDate        NoApplications
+--
+
+.. You must check the `status` field of the device to know that it has been decommissioned.
++
+[source,subs="verbatim,quotes,attributes"]
+--
+$ *UUID={edge-1-uuid-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}*
+$ *flightctl get device $UUID -o json | jq -r '.status.lifecycle.status'*
+Decommissioning
+--
+
+6. Delete the last device, also by using the CLI.
+
+.. Use the `UUID` shell variable that you set int the previous step to delete the device resource from RHEM.
++
+Notice that, when using the CLI, there is no confirmation for either decommissioning or deleting a managed device.
++
+[source,subs="verbatim,quotes,attributes"]
+--
+$ *flightctl delete device $UUID*
+Deletion request for device "{edge-1-uuid-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}" completed
+--
+
+.. Verify that your device list is now empty.
++
+[source,subs="verbatim,quotes,attributes"]
+--
+$ *flightctl get device -o wide*
+NAME    ALIAS   OWNER   SYSTEM  UPDATED APPLICATIONS    LABELS
+--
+
+// I see no message in agent logs about it being decomissioned.
+// Looks like the agent has no idea it happened, and just don't logs connection failures
+
+You demonstrated that decommissioning and deleting managed devices on RHEM does not scrubs the devices.
+If they contained sentitive data, such as secrets to access corporate systems, that is still there, and you must implement a process for cleaning those devices of such data.
 
 == What's next
 

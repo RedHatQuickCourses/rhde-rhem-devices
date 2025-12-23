@@ -1,6 +1,6 @@
 :time_estimate: 5
 
-= Decomission and Delete Edge Devices with RHEM
+= Decommission and Delete Edge Devices with RHEM
 
 _Estimated reading time: *{time_estimate} minutes*._
 
