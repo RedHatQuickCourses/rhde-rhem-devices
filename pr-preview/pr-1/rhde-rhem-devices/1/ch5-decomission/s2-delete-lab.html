@@ -3,7 +3,8 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Lab Environment :: Deploying Red Hat Edge Manager and Managing Edge Devices</title>
+    <title>Lab: Decomission and Delete Edge Devices :: Deploying Red Hat Edge Manager and Managing Edge Devices</title>
+    <link rel="prev" href="s1-delete.html">
     <meta name="generator" content="Antora 3.1.3">
     <link rel="stylesheet" href="../../../_/css/site.css">
     <script>var uiRootPath = '../../../_'</script>
@@ -45,7 +46,7 @@
   <li class="nav-item" data-depth="0">
 <ul class="nav-list">
   <li class="nav-item" data-depth="1">
-    <a class="nav-link" href="index.html">Lab Environment</a>
+    <a class="nav-link" href="../LABENV/index.html">Lab Environment</a>
   </li>
 </ul>
   </li>
@@ -111,13 +112,13 @@
 <ul class="nav-list">
   <li class="nav-item" data-depth="1">
     <button class="nav-item-toggle"></button>
-    <a class="nav-link" href="../ch5-decomission/index.html">Remove Edge Devices from Red Hat Edge Manager</a>
+    <a class="nav-link" href="index.html">Remove Edge Devices from Red Hat Edge Manager</a>
 <ul class="nav-list">
   <li class="nav-item" data-depth="2">
-    <a class="nav-link" href="../ch5-decomission/s1-delete.html">Decomission and Delete Edge Devices with RHEM</a>
+    <a class="nav-link" href="s1-delete.html">Decomission and Delete Edge Devices with RHEM</a>
   </li>
-  <li class="nav-item" data-depth="2">
-    <a class="nav-link" href="../ch5-decomission/s2-delete-lab.html">Lab: Decomission and Delete Edge Devices</a>
+  <li class="nav-item is-current-page" data-depth="2">
+    <a class="nav-link" href="s2-delete-lab.html">Lab: Decomission and Delete Edge Devices</a>
   </li>
 </ul>
   </li>
@@ -160,7 +161,8 @@
 <nav class="breadcrumbs" aria-label="breadcrumbs">
   <ul>
     <li><a href="../index.html">Deploying Red Hat Edge Manager and Managing Edge Devices</a></li>
-    <li><a href="index-lab-role.html">Lab Environment</a></li>
+    <li><a href="index.html">Remove Edge Devices from Red Hat Edge Manager</a></li>
+    <li><a href="s2-delete-lab.html">Lab: Decomission and Delete Edge Devices</a></li>
   </ul>
 </nav>
 </div>
@@ -169,50 +171,154 @@
   <div class="toc-menu"></div>
 </aside>
 <article class="doc">
-<h1 class="page">Lab Environment</h1>
-<div class="sect1">
-<h2 id="_instructions_to_launch_your_lab_on_the_red_hat_online_learning_role_platform"><a class="anchor" href="#_instructions_to_launch_your_lab_on_the_red_hat_online_learning_role_platform"></a>Instructions to Launch Your Lab on the Red Hat Online Learning (ROLE) Platform</h2>
+<h1 class="page">Lab: Decomission and Delete Edge Devices</h1>
+<div id="preamble">
 <div class="sectionbody">
+<div class="paragraph">
+<p><em>Estimated reading time: <strong>5 minutes</strong>.</em></p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Objective</dt>
+<dd>
+<p>Make managed devices unmanaged and delete their device resources in RHEM.</p>
+</dd>
+</dl>
+</div>
+<div class="admonitionblock warning">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-warning" title="Warning"></i>
+</td>
+<td class="content">
+Work in progress
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_before_you_begin"><a class="anchor" href="#_before_you_begin"></a>Before you begin</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>You need a customer portal account with access to a Red Hat Enterprise Linux (RHEL) subscription.
+It could be a <a href="https://developers.redhat.com/products/rhel/download">Red Hat Developer program</a> free subscription.</p>
+</div>
+<div class="paragraph">
+<p>You need a <em>development machine</em> running RHEL, which contains two test VMs already enrolled into your RHEM server by a <a href="../ch3-enroll/s2-enroll-lab.html" class="xref page">previous lab</a>.</p>
+</div>
+<div class="paragraph">
+<p>You also need a <em>server machine</em> running RHEL, to which you also have unrestricted sudo access, which was already configured with RHEM.</p>
+</div>
+<div class="paragraph">
+<p>If you are using the course classroom, your <em>development machine</em> is the <code>workstation</code> VM.
+Log in as the user <code>student</code> with password <code>student</code>.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_instructions"><a class="anchor" href="#_instructions"></a>Instructions</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Lorem ipsum</p>
+</div>
 <div class="olist arabic">
 <ol class="arabic">
 <li>
-<p><strong>Log in</strong> to the <a href="#ROLE-Portal-Links">ROLE platform</a></p>
+<p>Verify that you have the outcomes of previous labs.
+If you do not, go back and complete them, because you need their outcomes to continue with this course.</p>
+<div class="olist loweralpha">
+<ol class="loweralpha" type="a">
+<li>
+<p>There is a clone of the course samples repository on your home directory.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>cd</strong>
+$ <strong>ls rhde-rhem-samples</strong>
+LICENSE  README.md  antora.yml  enroll  modules  webapp</code></pre>
+</div>
+</div>
 </li>
 <li>
-<p><strong>Search</strong> for the catalog entry: <strong>FIXME Lab Catalog Name</strong>.</p>
+<p>There are two local test VMs, named <code>edge-1</code> and <code>edge-2</code>.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>virsh list --all</strong>
+ Id   Name     State
+-------------------------
+ -    edge-1   shut off
+ -    edge-2   shut off</code></pre>
+</div>
+</div>
 </li>
 <li>
-<p><strong>Click</strong> on the <strong>Launch</strong> button for the catalog entry in the search results.</p>
+<p>If your test VMs are not started, because you stopped your classroom environment since completing the previous lab, start them now.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>virsh start edge-1</strong>
+Domain 'edge-1' started
+$ <strong>virsh start edge-2</strong>
+Domain 'edge-2' started</code></pre>
+</div>
+</div>
 </li>
 <li>
-<p>On the Course page, <strong>click</strong> the <strong>Lab Environment</strong> tab.</p>
+<p>Enter the <code>test-enroll</code> directory, which contains the Containerfile, kickstart script, and SSH key used to provision the two test VMs.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>cd temp-enroll</strong>
+$ <strong>ls</strong>
+Containerfile  bib-iso.sh  config.toml  config.yaml  edge-key  edge-key.pub  output  rhem-enroll.iso  virt-install.sh</code></pre>
+</div>
+</div>
 </li>
 <li>
-<p>Click on the <strong>Create</strong> button on the Lab Environment page to launch the lab.</p>
+<p>Log in on RHEM, as an administrator, and verify that there are two managed devices, which correspond to the two test VMs.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>flightctl login -u admin -p redhat https://servera.lab.example.com:3443</strong>
+Login successful.
+$ <strong>flightctl get device -o wide</strong>
+NAME                                                    ALIAS   OWNER   SYSTEM  UPDATED         APPLICATIONS    LABELS
+1u63hvsgtua9tjjbmla9bgh5h2s77cb8esepphnf68m3ocf8qfng    edge-1  &lt;none&gt;  Online  UpToDate        NoApplications  rhel=9.6,type=noapps,alias=edge-2
+g7ombcqk46tqq458j9uju454441mf1lgt9qqqva8ti0fnvosm57g    edge-2  &lt;none&gt;  Unknown Unknown         Unknown         rhel=9.6,type=noapps,alias=edge-2</code></pre>
+</div>
+</div>
 </li>
 <li>
-<p>Wait for the lab creation process to complete.</p>
-</li>
-<li>
-<p>When the lab is created, refer to the <strong>SSH Private Key &amp; Instructions</strong> on the page to access your lab.</p>
+<p>Wait a few moments and repeat the latest command until both managed devices return as <code>OnLine</code> and <code>UpToDate</code>.</p>
 </li>
 </ol>
 </div>
-<div class="sect2">
-<h3 id="ROLE-Portal-Links"><a class="anchor" href="#ROLE-Portal-Links"></a>ROLE Portal Links</h3>
-<div class="ulist">
-<ul>
-<li>
-<p>RedHat associates: <a href="https://role.rhu.redhat.com/rol-rhu/app/" target="_blank" rel="noopener">https://role.rhu.redhat.com/rol-rhu/app/</a></p>
 </li>
 <li>
-<p>RedHat partners: <a href="https://rol.redhat.com/rol/app" target="_blank" rel="noopener">https://rol.redhat.com/rol/app</a></p>
+<p>TBD</p>
+<div class="olist loweralpha">
+<ol class="loweralpha" type="a">
+<li>
+<p>TBD</p>
 </li>
-</ul>
+</ol>
+</div>
+</li>
+</ol>
 </div>
 </div>
 </div>
+<div class="sect1">
+<h2 id="_whats_next"><a class="anchor" href="#_whats_next"></a>What&#8217;s next</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>This is the final activity of this course.
+In the next course, you will configure device fleets, manage devices as members of fleets, and also manage containerized applications in device fleets.</p>
 </div>
+</div>
+</div>
+<nav class="pagination">
+  <span class="prev"><a href="s1-delete.html">Decomission and Delete Edge Devices with RHEM</a></span>
+</nav>
 </article>
   </div>
 </main>
