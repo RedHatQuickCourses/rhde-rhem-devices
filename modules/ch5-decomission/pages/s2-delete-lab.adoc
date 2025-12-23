@@ -40,7 +40,7 @@ Decommissioning devices in RHEM.
 
 ////
 
-Lorem ipsum
+You will decommission and delete both managed devices you enrolled and configured in previous labs, and you will verify that the configurations set by RHEM remain on the devices after they are not managed anymore.
 
 1. Verify that you have the outcomes of previous labs.
 If you do not, go back and complete them, because you need their outcomes to continue with this course.
