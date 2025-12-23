@@ -1,0 +1,25 @@
+:time_estimate: 5
+
+= Decomission and Delete Edge Devices with RHEM
+
+_Estimated reading time: *{time_estimate} minutes*._
+
+Objective::
+
+Make a device not managed by RHEM anymore and, optionally, delete the device resource.
+
+WARNING: Not started yet
+
+Lorem ipsum dolor sit amet
+
+////
+
+How to “unmanage” a device and clean it of sensitive or application/customer data.
+
+* The decommission workflow in RHEM: it just deletes the per-device enrollment certificate.
+
+* How to scrub data in a device? Is there a feature to support that, or would be “update” the device to a special image which deletes all data and settings on it? [NOT SUPPORTED]
+
+* Because there is no guarantee that a device was decommissioned before it was lost (or stolen) there should be other mechanisms, external to RHEM, to invalidate whatever secrets were in the device, and careful consideration to the data stored in the device itself. And/or use of other data security mechanisms, for example encrypted system disks.
+
+////
