@@ -12,12 +12,8 @@ WARNING: Work in progress
 
 == Before you begin
 
-You need a customer portal account with access to a Red Hat Enterprise Linux (RHEL) subscription.
-It could be a https://developers.redhat.com/products/rhel/download[Red Hat Developer program] free subscription.
-+
-IMPORTANT: The GA release of RHEM may require a RHDE subscription and NOT be part of the developer program individual subscription.
-
 You need a _development machine_ running RHEL, to which you have unrestricted sudo access, and enough capacity to run a few VMs.
+Your _development machine_ is already registered to Red Hat with a valid RHDE subscription.
 
 You also need a _server machine_ running RHEL, to which you also have unrestricted sudo access.
 
@@ -46,9 +42,33 @@ Alternatively, you can open a shell or a console directly on the `servera` VM.
 
 ////
 
-You will install and configure RHEM on your _server machine_, and then you will use your _development machine_ to run the web UI and the CLI of RHEM to verify that your new RHEM instance is up and running.
+You will install and configure RHEM on your _server machine_, configure a couple users with different permissions, and then you will use your _development machine_ to run the web UI and the CLI of RHEM and verify that your new RHEM instance is healthy.
 
-NOTE: The instructions here use the community artifacts from the flightctl projects, but are expected to work with the product artifacts from RHEM, when they become available, by just switching from the community repository to the RHEM product repository and using the Red Hat subscription manager.
+NOTE: The instructions here use the community artifacts from the flightctl projects, but are expected to work with the product artifacts from RHEM, when they become available, by just switching from the community repository to the RHEM product repository and using the Red Hat subscription manager to register your _server machine_.
+
+////
+servera wants to use the DLE Satellite. How can I clean it to use the internet?
+
+$ sudo subscription-manager register
+Registering to: satellite-dle.ole.redhat.com:443/rhsm
+
+$ sudo cp /etc/rhsm/rhsm.conf /etc/rhsm/rhsm.conf.dle
+$ sudo cp /etc/rhsm/rhsm.conf.bak /etc/rhsm/rhsm.conf
+
+$ sudo subscription-manager register
+Registering to: subscription.rhsm.redhat.com:443/subscription
+Username: rht-flozano
+...
+The registered system name is: servera
+
+Using an off-line copy (scp) of the RHEM 1.0.0 GA packages, but I'm not sure how it will get container images.
+I do have access to the container images if I podman login registry.redhat.io using my employee account, but I don't know how products authenticate.
+
+$ sudo dnf install RHEM-1.0.0/*
+
+Cannot use the current RHEM artifacts, their containers fail signature check. Have to keep using Fight Control upstream artifacts.
+
+////
 
 1. Install the RHEM services on your _server machine_.
 
@@ -60,27 +80,69 @@ $ *hostname*
 servera
 --
 
-.. Enable the Flightctl repository from EPEL.
+.. Install the container tools on your _server machine_ because the RHEM packages just configure Systemd to run the RHEM services as quadlets, that is, as Podman containers.
++
+[source,subs="verbatim,quotes"]
+--
+$ *sudo dnf install podman skopeo*
+...
+Complete!
+--
++
+////
+
+.. Restore the default configuration for RHEL subscription services and register your _server machine_ with the Red Hat subscription manager and enable the Red Hat Edge Manager repository.
+[ not registering, trying to use offline packages from scp ]
++
+[source,subs="verbatim,quotes"]
+--
+$ *sudo cp /etc/rhsm/rhsm.conf.bak /etc/rhsm/rhsm.conf*
+$ *sudo subscription-manager register*
+GRAB OUTPUT
+$ *sudo subscription-manager repos --enable edge-manager-1.0-for-rhel-9-x86_64-rpms*
+GRAB OUTPUT
+--
++
+NOTE: The product package channel was not available yet, at the time this was written, but it was tested using packaged downloaded manually from Red Hat product engineering.
+
+.. Log in to the Red Hat registry using your customer portal account.
+[only for product artifacts]
+You need this because the RHEM RPM packages need to download their container images.
++
+[source,subs="verbatim,quotes"]
+--
+$ *sudo podman login registry.redhat.io*
+Login succeed!
+--
+
+////
+
+.. Enable the Flight Control repository from EPEL.
 +
 [source,subs="verbatim,quotes"]
 --
 $ *sudo dnf config-manager --add-repo https://rpm.flightctl.io/flightctl-epel.repo*
-GRAB OUTPUT
+Adding repo from: https://rpm.flightctl.io/flightctl-epel.repo
 --
 +
-NOTE: There is no need to register `servera` because the RHEM services package contains no dependencies other than a container engine (Podman) and the classroom environment contains a mirror of the RHEL 10 packages, which the `sererva` machine is preconfigured to use.
+NOTE: There is no need to register `servera` because the Flight Control services package contains no dependencies other than a container engine (Podman) and the classroom environment contains a mirror of the RHEL 10 packages, which the `sererva` machine is preconfigured to use.
 
 .. Install the RHEM services.
 +
 [source,subs="verbatim,quotes"]
 --
-$ *sudo dnf install -y flightctl-services-1.0.0~rc2*
-GRAB OUTPUT
+$ *sudo dnf install -y flightctl-services-1.0.0*
+...
+Complete!
 --
 +
-NOTE: If you want to try the current lastest release from the upstream project, remove the version component `-1.0.0-rc2` from the package `flightctl-services` in the command above.
+NOTE: If you want to try the current lastest release from the upstream project, remove the version component `-1.0.0` from the package `flightctl-services` in the command above.
++
+////
 
 .. Edit the RHEM configuration in `/etc/flightctl/service-config.yaml` to use the fully qualified domain (FQDN) of your _server machine_.
++
+This step shouldn't be needed, so I'm trying skipping it.
 +
 [source,subs="verbatim,quotes"]
 --
@@ -89,8 +151,7 @@ global:
   auth:
 ...
 --
-+
-////
+
 .. In my rc1/2 testing, I used the IP address
 +
 [source,subs="verbatim,quotes"]
@@ -115,7 +176,7 @@ global:
 --
 ////
 
-.. Start the RHEM services
+.. Start the RHEM services.
 +
 [source,subs="verbatim,quotes"]
 --
@@ -130,7 +191,7 @@ When it is all done, it is expected that some services will display `exited` as 
 +
 [source,subs="verbatim,quotes"]
 --
-$ *systemctl list-units 'flightctl*' --all*
+$ **sudo systemctl list-units 'flightctl*' --all**
   UNIT                                 LOAD   ACTIVE SUB     DESCRIPTION                                             
   flightctl-alert-exporter.service     loaded active running Flight Control Alert Exporter service
   flightctl-alertmanager-proxy.service loaded active running Flight Control Alertmanager Proxy service
@@ -160,6 +221,122 @@ Legend: LOAD   → Reflects whether the unit definition was properly loaded.
 20 loaded units listed.
 To show all installed unit files use 'systemctl list-unit-files'.
 --
++
+////
+
+Interesting, the upstream 1.0.0 contains fewer services than the downstream 1.0.0 GA
+Or maybe because I installed all off-line packages, I might have installed optional components from GA?
+
+Oh crap, failed and missing units using the GA packages :-(
+
+[student@servera ~]$ systemctl list-units 'flightctl*' --all
+  UNIT                                 LOAD      ACTIVE     SUB          DESCRIPTION                                             
+● flightctl-alert-exporter.service     loaded    activating auto-restart Flight Control Alert Exporter service
+● flightctl-alertmanager-proxy.service loaded    activating auto-restart Flight Control Alertmanager Proxy service
+● flightctl-alertmanager.service       loaded    activating auto-restart Flight Control Alertmanager service
+  flightctl-api-init.service           loaded    active     exited       Flight Control API Initialization
+● flightctl-api.service                loaded    activating auto-restart Flight Control API server
+  flightctl-certs-init.service         loaded    active     exited       Flight Control Certificates Initialization
+  flightctl-cli-artifacts-init.service loaded    active     exited       Flight Control CLI Artifacts Certificates Initialization
+● flightctl-cli-artifacts.service      loaded    activating auto-restart Flight Control CLI Artifacts service
+● flightctl-db-migrate.service         loaded    activating auto-restart Flight Control Database Migration service
+● flightctl-db-users-init.service      loaded    failed     failed       Flight Control Database Users Initialization
+● flightctl-db-wait.service            loaded    failed     failed       Flight Control Database Wait
+● flightctl-db.service                 loaded    activating auto-restart Flight Control Database service
+  flightctl-grafana.service            loaded    inactive   dead         Flight Control Grafana Dashboard
+● flightctl-kv.service                 loaded    activating auto-restart Flight Control Key Value service
+  flightctl-network.service            loaded    active     exited       flightctl-network.service
+● flightctl-pam-issuer.service         loaded    activating auto-restart Flight Control PAM OIDC Issuer server
+● flightctl-periodic.service           loaded    activating auto-restart Flight Control Periodic service
+  flightctl-prometheus.service         loaded    inactive   dead         Flight Control Prometheus Metrics Server
+  flightctl-telemetry-gateway.service  loaded    inactive   dead         Flight Control Telemetry Gateway service
+  flightctl-ui-init.service            loaded    active     exited       Flight Control UI Initialization
+● flightctl-ui.service                 loaded    activating auto-restart Flight Control UI
+● flightctl-userinfo-proxy.service     not-found inactive   dead         flightctl-userinfo-proxy.service
+● flightctl-worker.service             loaded    activating auto-restart Flight Control Worker service                           
+  flightctl-observability.target       loaded    inactive   dead         Flight Control Full Observability Stack target
+  flightctl-telemetry-gateway.target   loaded    inactive   dead         Flight Control Telemetry Gateway target
+  flightctl.target                     loaded    active     active       Flight Control Services Group
+
+Legend: LOAD   → Reflects whether the unit definition was properly loaded.
+        ACTIVE → The high-level unit activation state, i.e. generalization of SUB.
+        SUB    → The low-level unit activation state, values depend on unit type.
+
+26 loaded units listed.
+To show all installed unit files use 'systemctl list-unit-files'.
+
+And no running containers at all
+[student@servera ~]$ sudo podman ps
+CONTAINER ID  IMAGE       COMMAND     CREATED     STATUS      PORTS       NAMES
+[student@servera ~]$ sudo podman ps -a
+CONTAINER ID  IMAGE       COMMAND     CREATED     STATUS      PORTS       NAMES
+[student@servera ~]$
+
+All services are "activating" and on "auto-restart"... maybe it's just taking time to load container imges?
+
+From stage docs, it seems I need a sudo podman login registry.redhat.io BEFORE starting the services.
+Let's see if it auto-recovers after login... looks promising, got some images and containers after a few moments.
+
+After minutes, have a lot of "running" but not yet everything
+
+[student@servera ~]$ systemctl list-units 'flightctl*' --all
+  UNIT                                 LOAD      ACTIVE     SUB          DESCRIPTION                                             
+  flightctl-alert-exporter.service     loaded    active     running      Flight Control Alert Exporter service
+  flightctl-alertmanager-proxy.service loaded    active     running      Flight Control Alertmanager Proxy service
+  flightctl-alertmanager.service       loaded    active     running      Flight Control Alertmanager service
+  flightctl-api-init.service           loaded    active     exited       Flight Control API Initialization
+● flightctl-api.service                loaded    activating auto-restart Flight Control API server
+  flightctl-certs-init.service         loaded    active     exited       Flight Control Certificates Initialization
+  flightctl-cli-artifacts-init.service loaded    active     exited       Flight Control CLI Artifacts Certificates Initialization
+  flightctl-cli-artifacts.service      loaded    active     running      Flight Control CLI Artifacts service
+  flightctl-db-migrate.service         loaded    active     exited       Flight Control Database Migration service
+  flightctl-db-users-init.service      loaded    active     exited       Flight Control Database Users Initialization
+  flightctl-db-wait.service            loaded    active     exited       Flight Control Database Wait
+  flightctl-db.service                 loaded    active     running      Flight Control Database service
+  flightctl-grafana.service            loaded    inactive   dead         Flight Control Grafana Dashboard
+● flightctl-kv.service                 loaded    activating auto-restart Flight Control Key Value service
+  flightctl-network.service            loaded    active     exited       flightctl-network.service
+  flightctl-pam-issuer.service         loaded    active     running      Flight Control PAM OIDC Issuer server
+  flightctl-periodic.service           loaded    active     running      Flight Control Periodic service
+  flightctl-prometheus.service         loaded    inactive   dead         Flight Control Prometheus Metrics Server
+  flightctl-telemetry-gateway.service  loaded    inactive   dead         Flight Control Telemetry Gateway service
+  flightctl-ui-init.service            loaded    active     exited       Flight Control UI Initialization
+● flightctl-ui.service                 loaded    activating auto-restart Flight Control UI
+● flightctl-userinfo-proxy.service     not-found inactive   dead         flightctl-userinfo-proxy.service
+● flightctl-worker.service             loaded    activating auto-restart Flight Control Worker service                           
+  flightctl-observability.target       loaded    inactive   dead         Flight Control Full Observability Stack target
+  flightctl-telemetry-gateway.target   loaded    inactive   dead         Flight Control Telemetry Gateway target
+  flightctl.target                     loaded    active     active       Flight Control Services Group
+
+Legend: LOAD   → Reflects whether the unit definition was properly loaded.
+        ACTIVE → The high-level unit activation state, i.e. generalization of SUB.
+        SUB    → The low-level unit activation state, values depend on unit type.
+
+26 loaded units listed.
+To show all installed unit files use 'systemctl list-unit-files'.
+
+Looks like you need patience to get an api-service running, and even more to get the kv and ui.
+Or was it because I started without a registry login?
+
+Oops... api back to activating... after lunch, still have "activating"
+api is in a loop trying to connect to redis (kv?)
+kv fails to download its container image
+Jan 06 19:49:30 servera flightctl-kv[80024]: Pulling image //registry.redhat.io/rhel9/redis-7:9.6 inside systemd: setting pull timeout to 5m0s
+Jan 06 19:49:31 servera flightctl-kv[80024]: Error: unable to copy from source docker://registry.redhat.io/rhel9/redis-7:9.6: copying system image from manifest list: Source image rejected: None of the signatures were accepted, reasons: missing dev.sigstore.cosign/bundle annotation; missing dev.sigstore.cosign/bundle annotation; Signature for identity "registry.redhat.io/rhel9/redis-7:1" is not accepted; Signature for identity "registry.redhat.io/rhel9/redis-7:1-1762344503" is not accepted
+
+Similar error for ui
+Jan 06 19:50:58 servera flightctl-ui[80664]: Pulling image //registry.redhat.io/rhem/flightctl-ui-rhel9:1.0.0 inside systemd: setting pull timeout to 5m0s
+Jan 06 19:50:59 servera flightctl-ui[80664]: Error: unable to copy from source docker://registry.redhat.io/rhem/flightctl-ui-rhel9:1.0.0: copying system image from manifest list: Source image rejected: None of the signatures were accepted, reasons: missing dev.sigstore.cosign/bundle annotation; missing dev.sigstore.cosign/bundle annotation
+Jan 06 19:50:59 servera podman[80664]: 2026-01-06 19:50:59.396191482 +0000 UTC m=+1.135604067 image pull-error  registry.redhat.io/rhem/flightctl-ui-rhel9:1.0.0 unable to copy from source docker://registry.redhat.io/rhem/flightctl-ui-rhel9:1.0.0: copying system image from manifest list: Source image rejected: None of the signatures were accepted, reasons: missing dev.sigstore.cosign/bundle annotation; missing dev.sigstore.cosign/bundle annotation
+
+Will try again from scratch, to see if doing podman login sooner would fix anything.
+Well, it looked much faster... but got the same errors with the kv and ui services. :-(
+Maybe I need something which was not on RHEL 10.0 at GA?
+Attempting a complete "dnf update" (more than 700 packages), I hope I don't get the kernel/boot update issues I had with HOL014
+/etc/redhat-release says I'm at 10.1 let's see if it survives reboot.
+It survived, but after a new podman login got the same signature errors.
+So recreating the classroom to try the upstream 1.0.0
+////
 
 .. If some of services do not start, you can check their status and log messages, for example:
 +
@@ -172,7 +349,7 @@ $ *sudo systemctl status flightctl-api*
 ...
 $ *sudo journalctl -u flightctl-api*
 Dec 15 13:45:24 servera systemd[1]: Starting flightctl-api.service - Flight Control API server...
-Dec 15 13:45:26 servera flightctl-api[2032]: Trying to pull quay.io/flightctl/flightctl-api:1.0.0-rc2...
+Dec 15 13:45:26 servera flightctl-api[2032]: Trying to pull quay.io/flightctl/flightctl-api:1.0.0...
 ..
 --
 
@@ -181,6 +358,21 @@ Dec 15 13:45:26 servera flightctl-api[2032]: Trying to pull quay.io/flightctl/fl
 [source,subs="verbatim,quotes"]
 --
 $ *sudo podman ps*
+CONTAINER ID  IMAGE                                                 COMMAND               CREATED        STATUS        PORTS                                           NAMES
+5e4f160e9960  docker.io/library/redis:7.4.1                         /bin/sh -c redis-...  3 minutes ago  Up 3 minutes  6379/tcp                                        flightctl-kv
+3af809caa1ce  quay.io/sclorg/postgresql-16-c9s:20250214             run-postgresql        3 minutes ago  Up 3 minutes  5432/tcp                                        flightctl-db
+fbb088c20e9e  quay.io/flightctl/flightctl-pam-issuer:1.0.0          ./flightctl-pam-i...  3 minutes ago  Up 3 minutes  0.0.0.0:8444->8444/tcp                          flightctl-pam-issuer
+538587d0fd89  quay.io/flightctl/flightctl-cli-artifacts:1.0.0                             3 minutes ago  Up 3 minutes  0.0.0.0:8090->8090/tcp                          flightctl-cli-artifacts
+416eae4717da  quay.io/prometheus/alertmanager:v0.28.1               --config.file=/us...  3 minutes ago  Up 3 minutes  9093/tcp                                        flightctl-alertmanager
+4f8004841ec7  quay.io/flightctl/flightctl-api:1.0.0                 /bin/sh -c ./flig...  3 minutes ago  Up 3 minutes  0.0.0.0:3443->3443/tcp, 0.0.0.0:7443->7443/tcp  flightctl-api
+48d43e7b0fa5  quay.io/flightctl/flightctl-worker:1.0.0              /bin/sh -c ./flig...  3 minutes ago  Up 3 minutes                                                  flightctl-worker
+1a11c7715407  quay.io/flightctl/flightctl-alertmanager-proxy:1.0.0  /bin/sh -c ./flig...  3 minutes ago  Up 3 minutes  0.0.0.0:8443->8443/tcp                          flightctl-alertmanager-proxy
+3ace447e222b  quay.io/flightctl/flightctl-alert-exporter:1.0.0      /bin/sh -c ./flig...  3 minutes ago  Up 3 minutes                                                  flightctl-alert-exporter
+37f1b68a7e79  quay.io/flightctl/flightctl-ui:1.0.0                  /bin/sh -c ./flig...  3 minutes ago  Up 3 minutes  0.0.0.0:443->8080/tcp                           flightctl-ui
+f837128ddba2  quay.io/flightctl/flightctl-periodic:1.0.0            /bin/sh -c ./flig...  3 minutes ago  Up 3 minutes                                                  flightctl-periodic
+--
++
+////
 CONTAINER ID  IMAGE                                                     COMMAND               CREATED        STATUS        PORTS                                           NAMES
 88fee8adbc8a  docker.io/library/redis:7.4.1                             /bin/sh -c redis-...  2 minutes ago  Up 2 minutes  6379/tcp                                        flightctl-kv
 dcec17e5ce36  quay.io/sclorg/postgresql-16-c9s:20250214                 run-postgresql        2 minutes ago  Up 2 minutes  5432/tcp                                        flightctl-db
@@ -194,6 +386,7 @@ b4f26b0f4fa4  quay.io/flightctl/flightctl-ui:1.0.0-rc2                  /bin/sh 
 f204d574cd11  quay.io/flightctl/flightctl-periodic:1.0.0-rc2            /bin/sh -c ./flig...  2 minutes ago  Up 2 minutes                                                  flightctl-periodic
 aac92db2a9a6  quay.io/flightctl/flightctl-cli-artifacts:1.0.0-rc2                             2 minutes ago  Up 2 minutes  0.0.0.0:8090->8090/tcp                          flightctl-cli-artifacts
 --
+////
 
 .. You can also get logs directly from the containers, or enter then with `podman exec` for deeper troubleshooting.
 +
@@ -271,9 +464,10 @@ workstation
 [source,subs="verbatim,quotes"]
 --
 $ *sudo dnf config-manager --add-repo https://rpm.flightctl.io/flightctl-epel.repo*
-GRAB OUTPUT
-$ *sudo dnf install -y flightctl-cli*
-GRAB OUTPUT
+Adding repo from: https://rpm.flightctl.io/flightctl-epel.repo
+$ *sudo dnf install flightctl-cli*
+...
+Complete!
 --
 
 .. Verify that the `flightctl` command is in your command PATH.
@@ -281,8 +475,9 @@ GRAB OUTPUT
 [source,subs="verbatim,quotes"]
 --
 $ *flightctl version*
-Client Version: v1.0.0-rc2
+Client Version: v1.0.0
 Server Version: Could not read server version
+You must log in to view the server version. Please use the 'login' command to authenticate before proceeding
 --
 
 .. Copy the self-signed certificate of the RHEM server and add it to the system's trusted CA set.
@@ -300,39 +495,30 @@ $ *sudo update-ca-trust extract*
 [source,subs="verbatim,quotes"]
 --
 $ *flightctl login -u admin -p redhat https://servera.lab.example.com:3443*
-Login successful.
---
-+
-////
-.. ONCE I CLEAN, WILL IT WARN ABOUT AUTO-SELECTING AN ORG?
-+
-[source,subs="verbatim,quotes"]
---
-$ flightctl login -u admin -p redhat  https://172.25.250.10:3443
 Auto-selected organization: 00000000-0000-0000-0000-000000000000 Default
 Login successful.
 --
-////
 
 .. Verify that the CLI can now get the server's version, and that there are no managed devices yet.
 +
 [source,subs="verbatim,quotes"]
 --
 $ *flightctl version*
-Client Version: v1.0.0-rc2
-Server Version: v1.0.0-rc2
-$ *flightctl get dev*
+Client Version: v1.0.0
+Server Version: v1.0.0
+$ *flightctl get device*
 NAME    ALIAS   OWNER   SYSTEM  UPDATED APPLICATIONS
 --
 
 4. Access the RHEM web UI.
 
-.. Open a web browser and visit `https://servera.lab.example.com`.
+.. Open a web browser and visit `\https://servera.lab.example.com`.
 You should get a login screen without any web browser warnings about certificate issues.
 
 .. Log in as the `student` user, with password `student`. 
 +
-If you get a "CSRF error", just try again.
+If you wait too long iddle on the login page, you may get a "CSRF error".
+If it happens, just try again.
 
 .. You should get the RHEM Overview page, with three gray circles because there are no managed devices to report a status summary.
 

@@ -130,10 +130,12 @@ Tough the `workstation` VM has Podman preinstalled, you will need the full suite
 +
 [source,subs="verbatim,quotes"]
 --
-$ *sudo dnf install container-tools*
+$ *sudo dnf install skopeo buildah*
 ...
 Complete!
 --
++
+// RHEL 10 updates reintroduce the container-tools meta package.
 
 .. Install the libvirt tools and enable its QEMU socket service.
 +
@@ -161,6 +163,8 @@ CPU model:           x86_64
 
 .. Register your _development machine_ with the Red Hat subscription manager.
 +
+If you are using the upstream Flight Control packages, you can use the login from a free Red Hat Developer subscription for individuals.
++
 NOTE: The `workstation` VM is preconfigured with access a private mirror containing RHEL 10 packages, but it will need RHEL 9 packages to build bootc container images for edge devices that will be managed by RHEM.
 +
 [source,subs="verbatim,quotes"]
@@ -170,9 +174,17 @@ $ *sudo subscription-manager register*
 The registered system name is: workstation
 --
 +
-//.. Verify that you have access to the RHEM packages [CANNOT DO IT YET BECAUSE IT'S NOT ON THE CUSTOMER PORTAL]
+////
+
+.. Verify that you have access to the RHEM packages [CANNOT DO IT YET BECAUSE IT'S NOT ON THE CUSTOMER PORTAL]
+
+.. May need to add a subscription for the RHEM packages, to get the RHEM agent during bootc container builds
+
+////
 
 .. Log in on the Red Hat container registry.
++
+Use the same Red Hat login that you used with subscription manager.
 +
 [source,subs="verbatim,quotes"]
 --
@@ -180,6 +192,32 @@ $ *podman login registry.redhat.io*
 ...
 Login Succeeded!
 --
+
+.. Verify that you can access the bootc image builder container image.
+You may get a different hash, because the container image was updated since these instructions were written.
++
+[source,subs="verbatim,quotes"]
+--
+$ *skopeo inspect --format '{{.Digest}}' docker://registry.redhat.io/rhel9/bootc-image-builder:9.6*
+sha256:f5e1860fae45c9d01fb612fcfad6c1d3a93e9ea4533bf01ea1c4d47ae2226580
+--
+
+.. Download the bootc image builder to the container storage of the root user.
++
+You will run bootc image builder as root, so you must log in again on the Red Hat container registry.
++
+[source,subs="verbatim,quotes"]
+--
+$ *sudo podman login registry.redhat.io*
+...
+Login Succeeded!
+$ *podman pull docker://registry.redhat.io/rhel9/bootc-image-builder:9.6*
+...
+Storing signatures
+a93aa271855242ac292133fb261c2132dd88859abb7edc29fb5681d30db422f2
+--
+
+////
 
 .. Verify that you can find container images with the name `rhem/flightctl`.
 +
@@ -199,6 +237,10 @@ registry.redhat.io/rhem/flightctl-cli-artifacts-rhel9       Flight Control CLI D
 $ *skopeo inspect --format '{{.Digest}}' docker://registry.redhat.io/rhem/flightctl-api-rhel9:v1.0.0*
 sha256:059f44efe0fa7fc440d25ae5ea9036ffb7d7be2404707ce910d20591ee742b77
 --
+
+////
+
+Now your _development machine_ ready to build bootc container images with RHEL 9 for edge devices, run local VMs as virtual edge devices, and access a Red Hat Edge Manager server which you will configure in this course and will manage those virtual edge devices.
 
 == What's next
 
