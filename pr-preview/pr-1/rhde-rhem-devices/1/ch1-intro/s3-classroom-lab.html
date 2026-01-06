@@ -398,7 +398,7 @@ LICENSE  README.md  antora.yml  config  enroll  modules  webapp</code></pre>
 Tough the <code>workstation</code> VM has Podman preinstalled, you will need the full suite of container tools in this course.</p>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>sudo dnf install container-tools</strong>
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>sudo dnf install skopeo buildah</strong>
 ...
 Complete!</code></pre>
 </div>
@@ -437,6 +437,9 @@ CPU model:           x86_64
 <ol class="loweralpha" type="a">
 <li>
 <p>Register your <em>development machine</em> with the Red Hat subscription manager.</p>
+<div class="paragraph">
+<p>If you are using the upstream Flight Control packages, you can use the login from a free Red Hat Developer subscription for individuals.</p>
+</div>
 <div class="admonitionblock note">
 <table>
 <tr>
@@ -459,6 +462,9 @@ The registered system name is: workstation</code></pre>
 </li>
 <li>
 <p>Log in on the Red Hat container registry.</p>
+<div class="paragraph">
+<p>Use the same Red Hat login that you used with subscription manager.</p>
+</div>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>podman login registry.redhat.io</strong>
@@ -468,23 +474,29 @@ Login Succeeded!</code></pre>
 </div>
 </li>
 <li>
-<p>Verify that you can find container images with the name <code>rhem/flightctl</code>.</p>
+<p>Verify that you can access the bootc image builder container image.
+You may get a different hash, because the container image was updated since these instructions were written.</p>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>podman search registry.redhat.io/rhem/flightctl</strong>
-NAME                                                        DESCRIPTION
-registry.redhat.io/rhem/flightctl-ui-rhel9                  Flight Control UI
-registry.redhat.io/rhem/flightctl-cli-artifacts-rhel9       Flight Control CLI Downloads
-...</code></pre>
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>skopeo inspect --format '{{.Digest}}' docker://registry.redhat.io/rhel9/bootc-image-builder:9.6</strong>
+sha256:f5e1860fae45c9d01fb612fcfad6c1d3a93e9ea4533bf01ea1c4d47ae2226580</code></pre>
 </div>
 </div>
 </li>
 <li>
-<p>Verify that you can access RHEM container images.</p>
+<p>Download the bootc image builder to the container storage of the root user.</p>
+<div class="paragraph">
+<p>You will run bootc image builder as root, so you must log in again on the Red Hat container registry.</p>
+</div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>skopeo inspect --format '{{.Digest}}' docker://registry.redhat.io/rhem/flightctl-api-rhel9:v1.0.0</strong>
-sha256:059f44efe0fa7fc440d25ae5ea9036ffb7d7be2404707ce910d20591ee742b77</code></pre>
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>sudo podman login registry.redhat.io</strong>
+...
+Login Succeeded!
+$ <strong>podman pull docker://registry.redhat.io/rhel9/bootc-image-builder:9.6</strong>
+...
+Storing signatures
+a93aa271855242ac292133fb261c2132dd88859abb7edc29fb5681d30db422f2</code></pre>
 </div>
 </div>
 </li>
@@ -492,6 +504,9 @@ sha256:059f44efe0fa7fc440d25ae5ea9036ffb7d7be2404707ce910d20591ee742b77</code></
 </div>
 </li>
 </ol>
+</div>
+<div class="paragraph">
+<p>Now your <em>development machine</em> ready to build bootc container images with RHEL 9 for edge devices, run local VMs as virtual edge devices, and access a Red Hat Edge Manager server which you will configure in this course and will manage those virtual edge devices.</p>
 </div>
 </div>
 </div>

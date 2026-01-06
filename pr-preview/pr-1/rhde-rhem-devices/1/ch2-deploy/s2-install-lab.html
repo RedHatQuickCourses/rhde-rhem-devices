@@ -213,15 +213,8 @@ Work in progress
 <h2 id="_before_you_begin"><a class="anchor" href="#_before_you_begin"></a>Before you begin</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>You need a customer portal account with access to a Red Hat Enterprise Linux (RHEL) subscription.
-It could be a <a href="https://developers.redhat.com/products/rhel/download">Red Hat Developer program</a> free subscription.</p>
-</div>
-<div class="paragraph">
-<p>+
-IMPORTANT: The GA release of RHEM may require a RHDE subscription and NOT be part of the developer program individual subscription.</p>
-</div>
-<div class="paragraph">
-<p>You need a <em>development machine</em> running RHEL, to which you have unrestricted sudo access, and enough capacity to run a few VMs.</p>
+<p>You need a <em>development machine</em> running RHEL, to which you have unrestricted sudo access, and enough capacity to run a few VMs.
+Your <em>development machine</em> is already registered to Red Hat with a valid RHDE subscription.</p>
 </div>
 <div class="paragraph">
 <p>You also need a <em>server machine</em> running RHEL, to which you also have unrestricted sudo access.</p>
@@ -241,7 +234,7 @@ Alternatively, you can open a shell or a console directly on the <code>servera</
 <h2 id="_instructions"><a class="anchor" href="#_instructions"></a>Instructions</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>You will install and configure RHEM on your <em>server machine</em>, and then you will use your <em>development machine</em> to run the web UI and the CLI of RHEM to verify that your new RHEM instance is up and running.</p>
+<p>You will install and configure RHEM on your <em>server machine</em>, configure a couple users with different permissions, and then you will use your <em>development machine</em> to run the web UI and the CLI of RHEM and verify that your new RHEM instance is healthy.</p>
 </div>
 <div class="admonitionblock note">
 <table>
@@ -250,7 +243,7 @@ Alternatively, you can open a shell or a console directly on the <code>servera</
 <i class="fa icon-note" title="Note"></i>
 </td>
 <td class="content">
-The instructions here use the community artifacts from the flightctl projects, but are expected to work with the product artifacts from RHEM, when they become available, by just switching from the community repository to the RHEM product repository and using the Red Hat subscription manager.
+The instructions here use the community artifacts from the flightctl projects, but are expected to work with the product artifacts from RHEM, when they become available, by just switching from the community repository to the RHEM product repository and using the Red Hat subscription manager to register your <em>server machine</em>.
 </td>
 </tr>
 </table>
@@ -271,11 +264,21 @@ servera</code></pre>
 </div>
 </li>
 <li>
-<p>Enable the Flightctl repository from EPEL.</p>
+<p>Install the container tools on your <em>server machine</em> because the RHEM packages just configure Systemd to run the RHEM services as quadlets, that is, as Podman containers.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>sudo dnf install podman skopeo</strong>
+...
+Complete!</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Enable the Flight Control repository from EPEL.</p>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>sudo dnf config-manager --add-repo https://rpm.flightctl.io/flightctl-epel.repo</strong>
-GRAB OUTPUT</code></pre>
+Adding repo from: https://rpm.flightctl.io/flightctl-epel.repo</code></pre>
 </div>
 </div>
 <div class="admonitionblock note">
@@ -285,7 +288,7 @@ GRAB OUTPUT</code></pre>
 <i class="fa icon-note" title="Note"></i>
 </td>
 <td class="content">
-There is no need to register <code>servera</code> because the RHEM services package contains no dependencies other than a container engine (Podman) and the classroom environment contains a mirror of the RHEL 10 packages, which the <code>sererva</code> machine is preconfigured to use.
+There is no need to register <code>servera</code> because the Flight Control services package contains no dependencies other than a container engine (Podman) and the classroom environment contains a mirror of the RHEL 10 packages, which the <code>sererva</code> machine is preconfigured to use.
 </td>
 </tr>
 </table>
@@ -295,8 +298,9 @@ There is no need to register <code>servera</code> because the RHEM services pack
 <p>Install the RHEM services.</p>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>sudo dnf install -y flightctl-services-1.0.0~rc2</strong>
-GRAB OUTPUT</code></pre>
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>sudo dnf install -y flightctl-services-1.0.0</strong>
+...
+Complete!</code></pre>
 </div>
 </div>
 <div class="admonitionblock note">
@@ -306,25 +310,14 @@ GRAB OUTPUT</code></pre>
 <i class="fa icon-note" title="Note"></i>
 </td>
 <td class="content">
-If you want to try the current lastest release from the upstream project, remove the version component <code>-1.0.0-rc2</code> from the package <code>flightctl-services</code> in the command above.
+If you want to try the current lastest release from the upstream project, remove the version component <code>-1.0.0</code> from the package <code>flightctl-services</code> in the command above.
 </td>
 </tr>
 </table>
 </div>
 </li>
 <li>
-<p>Edit the RHEM configuration in <code>/etc/flightctl/service-config.yaml</code> to use the fully qualified domain (FQDN) of your <em>server machine</em>.</p>
-<div class="listingblock">
-<div class="content">
-<pre class="highlightjs highlight"><code class="language-none hljs">global:
-  baseDomain: <strong>servera.lab.example.com</strong>
-  auth:
-...</code></pre>
-</div>
-</div>
-</li>
-<li>
-<p>Start the RHEM services</p>
+<p>Start the RHEM services.</p>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>sudo systemctl enable --now flightctl.target</strong>
@@ -340,7 +333,7 @@ When it is all done, it is expected that some services will display <code>exited
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>systemctl list-units 'flightctl</strong>' --all*
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>sudo systemctl list-units 'flightctl*' --all</strong>
   UNIT                                 LOAD   ACTIVE SUB     DESCRIPTION
   flightctl-alert-exporter.service     loaded active running Flight Control Alert Exporter service
   flightctl-alertmanager-proxy.service loaded active running Flight Control Alertmanager Proxy service
@@ -383,7 +376,7 @@ To show all installed unit files use 'systemctl list-unit-files'.</code></pre>
 ...
 $ <strong>sudo journalctl -u flightctl-api</strong>
 Dec 15 13:45:24 servera systemd[1]: Starting flightctl-api.service - Flight Control API server...
-Dec 15 13:45:26 servera flightctl-api[2032]: Trying to pull quay.io/flightctl/flightctl-api:1.0.0-rc2...
+Dec 15 13:45:26 servera flightctl-api[2032]: Trying to pull quay.io/flightctl/flightctl-api:1.0.0...
 ..</code></pre>
 </div>
 </div>
@@ -393,18 +386,18 @@ Dec 15 13:45:26 servera flightctl-api[2032]: Trying to pull quay.io/flightctl/fl
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>sudo podman ps</strong>
-CONTAINER ID  IMAGE                                                     COMMAND               CREATED        STATUS        PORTS                                           NAMES
-88fee8adbc8a  docker.io/library/redis:7.4.1                             /bin/sh -c redis-...  2 minutes ago  Up 2 minutes  6379/tcp                                        flightctl-kv
-dcec17e5ce36  quay.io/sclorg/postgresql-16-c9s:20250214                 run-postgresql        2 minutes ago  Up 2 minutes  5432/tcp                                        flightctl-db
-ae375cbd787d  quay.io/prometheus/alertmanager:v0.28.1                   --config.file=/us...  2 minutes ago  Up 2 minutes  9093/tcp                                        flightctl-alertmanager
-6735c35b4c94  quay.io/flightctl/flightctl-alert-exporter:1.0.0-rc2      /bin/sh -c ./flig...  2 minutes ago  Up 2 minutes                                                  flightctl-alert-exporter
-4adbea0863c4  quay.io/flightctl/flightctl-pam-issuer:1.0.0-rc2          ./flightctl-pam-i...  2 minutes ago  Up 2 minutes  0.0.0.0:8444-&gt;8444/tcp                          flightctl-pam-issuer
-f7bc10df3b84  quay.io/flightctl/flightctl-worker:1.0.0-rc2              /bin/sh -c ./flig...  2 minutes ago  Up 2 minutes                                                  flightctl-worker
-ef129d3b0ba0  quay.io/flightctl/flightctl-alertmanager-proxy:1.0.0-rc2  /bin/sh -c ./flig...  2 minutes ago  Up 2 minutes  0.0.0.0:8443-&gt;8443/tcp                          flightctl-alertmanager-proxy
-25603c3e2bd3  quay.io/flightctl/flightctl-api:1.0.0-rc2                 /bin/sh -c ./flig...  2 minutes ago  Up 2 minutes  0.0.0.0:3443-&gt;3443/tcp, 0.0.0.0:7443-&gt;7443/tcp  flightctl-api
-b4f26b0f4fa4  quay.io/flightctl/flightctl-ui:1.0.0-rc2                  /bin/sh -c ./flig...  2 minutes ago  Up 2 minutes  0.0.0.0:443-&gt;8080/tcp                           flightctl-ui
-f204d574cd11  quay.io/flightctl/flightctl-periodic:1.0.0-rc2            /bin/sh -c ./flig...  2 minutes ago  Up 2 minutes                                                  flightctl-periodic
-aac92db2a9a6  quay.io/flightctl/flightctl-cli-artifacts:1.0.0-rc2                             2 minutes ago  Up 2 minutes  0.0.0.0:8090-&gt;8090/tcp                          flightctl-cli-artifacts</code></pre>
+CONTAINER ID  IMAGE                                                 COMMAND               CREATED        STATUS        PORTS                                           NAMES
+5e4f160e9960  docker.io/library/redis:7.4.1                         /bin/sh -c redis-...  3 minutes ago  Up 3 minutes  6379/tcp                                        flightctl-kv
+3af809caa1ce  quay.io/sclorg/postgresql-16-c9s:20250214             run-postgresql        3 minutes ago  Up 3 minutes  5432/tcp                                        flightctl-db
+fbb088c20e9e  quay.io/flightctl/flightctl-pam-issuer:1.0.0          ./flightctl-pam-i...  3 minutes ago  Up 3 minutes  0.0.0.0:8444-&gt;8444/tcp                          flightctl-pam-issuer
+538587d0fd89  quay.io/flightctl/flightctl-cli-artifacts:1.0.0                             3 minutes ago  Up 3 minutes  0.0.0.0:8090-&gt;8090/tcp                          flightctl-cli-artifacts
+416eae4717da  quay.io/prometheus/alertmanager:v0.28.1               --config.file=/us...  3 minutes ago  Up 3 minutes  9093/tcp                                        flightctl-alertmanager
+4f8004841ec7  quay.io/flightctl/flightctl-api:1.0.0                 /bin/sh -c ./flig...  3 minutes ago  Up 3 minutes  0.0.0.0:3443-&gt;3443/tcp, 0.0.0.0:7443-&gt;7443/tcp  flightctl-api
+48d43e7b0fa5  quay.io/flightctl/flightctl-worker:1.0.0              /bin/sh -c ./flig...  3 minutes ago  Up 3 minutes                                                  flightctl-worker
+1a11c7715407  quay.io/flightctl/flightctl-alertmanager-proxy:1.0.0  /bin/sh -c ./flig...  3 minutes ago  Up 3 minutes  0.0.0.0:8443-&gt;8443/tcp                          flightctl-alertmanager-proxy
+3ace447e222b  quay.io/flightctl/flightctl-alert-exporter:1.0.0      /bin/sh -c ./flig...  3 minutes ago  Up 3 minutes                                                  flightctl-alert-exporter
+37f1b68a7e79  quay.io/flightctl/flightctl-ui:1.0.0                  /bin/sh -c ./flig...  3 minutes ago  Up 3 minutes  0.0.0.0:443-&gt;8080/tcp                           flightctl-ui
+f837128ddba2  quay.io/flightctl/flightctl-periodic:1.0.0            /bin/sh -c ./flig...  3 minutes ago  Up 3 minutes                                                  flightctl-periodic</code></pre>
 </div>
 </div>
 </li>
@@ -502,9 +495,10 @@ workstation</code></pre>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>sudo dnf config-manager --add-repo https://rpm.flightctl.io/flightctl-epel.repo</strong>
-GRAB OUTPUT
-$ <strong>sudo dnf install -y flightctl-cli</strong>
-GRAB OUTPUT</code></pre>
+Adding repo from: https://rpm.flightctl.io/flightctl-epel.repo
+$ <strong>sudo dnf install flightctl-cli</strong>
+...
+Complete!</code></pre>
 </div>
 </div>
 </li>
@@ -513,8 +507,9 @@ GRAB OUTPUT</code></pre>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>flightctl version</strong>
-Client Version: v1.0.0-rc2
-Server Version: Could not read server version</code></pre>
+Client Version: v1.0.0
+Server Version: Could not read server version
+You must log in to view the server version. Please use the 'login' command to authenticate before proceeding</code></pre>
 </div>
 </div>
 </li>
@@ -534,6 +529,7 @@ $ <strong>sudo update-ca-trust extract</strong></code></pre>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>flightctl login -u admin -p redhat https://servera.lab.example.com:3443</strong>
+Auto-selected organization: 00000000-0000-0000-0000-000000000000 Default
 Login successful.</code></pre>
 </div>
 </div>
@@ -543,9 +539,9 @@ Login successful.</code></pre>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>flightctl version</strong>
-Client Version: v1.0.0-rc2
-Server Version: v1.0.0-rc2
-$ <strong>flightctl get dev</strong>
+Client Version: v1.0.0
+Server Version: v1.0.0
+$ <strong>flightctl get device</strong>
 NAME    ALIAS   OWNER   SYSTEM  UPDATED APPLICATIONS</code></pre>
 </div>
 </div>
@@ -558,13 +554,14 @@ NAME    ALIAS   OWNER   SYSTEM  UPDATED APPLICATIONS</code></pre>
 <div class="olist loweralpha">
 <ol class="loweralpha" type="a">
 <li>
-<p>Open a web browser and visit <code><a href="https://servera.lab.example.com" class="bare">https://servera.lab.example.com</a></code>.
+<p>Open a web browser and visit <code>https://servera.lab.example.com</code>.
 You should get a login screen without any web browser warnings about certificate issues.</p>
 </li>
 <li>
 <p>Log in as the <code>student</code> user, with password <code>student</code>.</p>
 <div class="paragraph">
-<p>If you get a "CSRF error", just try again.</p>
+<p>If you wait too long iddle on the login page, you may get a "CSRF error".
+If it happens, just try again.</p>
 </div>
 </li>
 <li>
