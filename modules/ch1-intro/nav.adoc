@@ -1,6 +1,6 @@
 * xref:index.adoc[]
-////
 ** xref:s1-architecture.adoc[]
-** xref:section2.adoc[]
+** xref:s3-classroom-lab.adoc[]
+////
 ** xref:section3.adoc[]
 ////

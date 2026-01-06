@@ -1,0 +1,205 @@
+:time_estimate: 5
+
+= Lab: Prepare to Install Red Hat Edge Manager
+
+_Estimated reading time: *{time_estimate} minutes*._
+
+Objective::
+
+Prepare the environment for deploying RHEM by verifying that you have access to all its artifacts.
+
+WARNING: Work in progress
+
+== Before you begin
+
+You need a customer portal account with access to a Red Hat Enterprise Linux (RHEL) subscription.
+It could be a https://developers.redhat.com/products/rhel/download[Red Hat Developer program] free subscription, if you use the https://github.com/flightctl/flightctl-rpm[upstream packages] from the https://github.com/flightctl/flightctl[Flight Control^] project.
+
+WARNING: Be aware that, as time passes, there might be significant differences between the upstream releases and the Red Hat product releases.
+
+IMPORTANT: The GA release of RHEM requires a Red Hat Device Edge (RHDE) subscription and it is NOT included of the developer program individual subscription.
+
+You need a _development machine_ running RHEL, to which you have unrestricted sudo access, and enough capacity to run a few local VMs.
+
+You also need a _server machine_ running RHEL, to which you also have unrestricted sudo access.
+
+Both your _development machine_ and _server machine_ require internet access to download RPM packages and container images.
+
+If you are using the course classroom, your _development machine_ is the `workstation` VM.
+Log in as the user `student` with password `student`.
+From that machine, you may start SSH sessions to the `servera` VM, which is your _server_ machine, using the same user.
+Alternatively, you can open a shell or a console directly on the `servera` VM.
+
+== Instructions
+
+////
+
+Prepare the environment for deploying RHEM by verifying that you have access to all its artifacts.
+
+* Access to RHEM packages in the Red Hat Customer Portal
+
+* Access to RHEM container images in Red Hat container registries
+
+* Access to RHEL packages in the Red Hat Customer Portal
+
+* Access to RHEL container images  in Red Hat container registries
+
+* Warn about the not-customized HOL019 classroom and the use of RHEL 10 hosts (only RHEL 9 is supported for RHEL 1.0.0 GA)
+
+////
+
+You can adapt the instructions in this course to any environment where you can install RPM packages, run Podman containers, and create virtual machines using libvirt.
+With a bit more effort, you could run everything on a Windows or MacOS workstation, using a single large VM running RHEL and nested virtualization, or a few smaller VMs, but this course does *NOT* provide instructions for doing so.
+
+This course was tested using a Red Hat Learning Environment (ROL) classroom which was originally created for another quick course series.
+There was no customization for the specific needs of RHEM, and there was no attempt at providing all requirements to install RHEM in disconnected mode.
+
+IMPORTANT: Some of the requirements of RHEM can be satisfied by the existing RPM package and container image mirrors in the ROL classroom, but some of them require internet access, a valid Red Hat login, and Red Hat subscription entitlements.
+
+This activity does NOT provide you with step-by-step instructions for operating the ROL environment.
+It starts with a check list of tasks you need to know how to perform on ROL for this course, and then describes the customizations you require to be able to perform this course activities using the recommended HOL019 ROL clasroom.
+
+Please check the on-line documentation available on ROL itself if it is your first time using a ROL classroom.
+
+1. Access the graphical console of your _development machine_.
+
+.. Ensure you can open the virtual console console of the `workstation` VM, which should be already logged in.
+If you need to log in again, use the `student` user with the `student` password.
+
+.. Ensure you can open a Firefox web browser on the `workstation` VM.
+
+.. If you wish, you can open the termimal application and perform as tasks which require a Linux shell on the graphical console of the `workstation` VM, but most learners find that the classroom web application is more confortable, especially if you want to cut-and-paste commands and file names from the course contents to the shell.
+
+2. Access the web application to get a shell on your _development machine_.
+
+.. Ensure you can open the classroom web application and open a workstation shell.
+
+.. Ensure you can escalate privileges by using the `sudo` command.
+You do not require the `root` user password, because the `student` user has unrestricted access to`sudo`.
+
+3. Open a terminal on your _server machine_.
+
+.. If you have a shell on `workstation` VM, you can start a SSH session to the `servera` VM.
+There is no need to specify the user because the `servera` VM is preconfigured with an SSH key for the `student` user.
+
+.. Alternatively, you can open the virtual console of the `servera` VM, and then log in as the `student` user, with the `student` password.
+
+.. As another alternative, the classroom web application can provide a shell on the `servera` VM, which is actually a SSH session from the `worstation` VM.
+
+4. For most activities in this course, you will need to keep three windows open:
+
+.. A `workstation` VM console, to use a web browser and access the RHEM web interface.
+
+.. A `workstation` VM shell, to use the RHEM CLI and RHEL administrator commands.
+
+.. A `servera` VM shell, to use RHEL administrator commands.
+
+
+5. On your _development machine_, download the sample code for this course.
+
+.. Using a shell on your _development machine_ (which is the `workstation VM`), ensure you are on your home directory.
+All labs start from there, but they will use different work directories, so this course starts all labs from the same reference point.
++
+[source,subs="verbatim,quotes"]
+--
+$ *cd*
+--
+
+.. Clone the course samples repository.
++
+[source,subs="verbatim,quotes"]
+--
+$ *git clone https://github.com/RedHatQuickCourses/rhde-rhem-samples.git*
+Cloning into 'rhde-rhem-samples'...
+...
+--
+
+.. The samples repository contains a number of subdirectories, but you will not make any changes directly on them.
+All changes will be made to copies which you will create on temporary work directories.
++
+[source,subs="verbatim,quotes"]
+--
+$ *ls rhde-rhem-samples*
+LICENSE  README.md  antora.yml  config  enroll  modules  webapp
+--
+
+6. Install tools for managing containers and virtual machines on your _development machine_.
+
+.. Install the `container-tools` meta-package.
+Tough the `workstation` VM has Podman preinstalled, you will need the full suite of container tools in this course.
++
+[source,subs="verbatim,quotes"]
+--
+$ *sudo dnf install container-tools*
+...
+Complete!
+--
+
+.. Install the libvirt tools and enable its QEMU socket service.
++
+[source,subs="verbatim,quotes"]
+--
+$ *sudo dnf install qemu-kvm libvirt virt-install virt-viewer*
+...
+Complete!
+$ *sudo systemctl enable virtqemud.socket --now*
+Created symlink /etc/systemd/system/multi-user.target.wants/virtqemud.socket → /usr/lib/systemd/system/virtqemud.socket.
+--
+
+.. Check that your unprivileged user can connect using the libvirt session interface.
++
+[source,subs="verbatim,quotes"]
+--
+$ *virsh uri*
+qemu:///session
+$ *virsh nodeinfo*
+CPU model:           x86_64
+...
+--
+
+7. Configure your _development machine_ to access to RPM packages and container images from Red Hat, over the internet.
+
+.. Register your _development machine_ with the Red Hat subscription manager.
++
+NOTE: The `workstation` VM is preconfigured with access a private mirror containing RHEL 10 packages, but it will need RHEL 9 packages to build bootc container images for edge devices that will be managed by RHEM.
++
+[source,subs="verbatim,quotes"]
+--
+$ *sudo subscription-manager register*
+...
+The registered system name is: workstation
+--
++
+//.. Verify that you have access to the RHEM packages [CANNOT DO IT YET BECAUSE IT'S NOT ON THE CUSTOMER PORTAL]
+
+.. Log in on the Red Hat container registry.
++
+[source,subs="verbatim,quotes"]
+--
+$ *podman login registry.redhat.io*
+...
+Login Succeeded!
+--
+
+.. Verify that you can find container images with the name `rhem/flightctl`.
++
+[source,subs="verbatim,quotes"]
+--
+$ *podman search registry.redhat.io/rhem/flightctl*
+NAME                                                        DESCRIPTION
+registry.redhat.io/rhem/flightctl-ui-rhel9                  Flight Control UI
+registry.redhat.io/rhem/flightctl-cli-artifacts-rhel9       Flight Control CLI Downloads
+...
+--
+
+.. Verify that you can access RHEM container images.
++
+[source,subs="verbatim,quotes"]
+--
+$ *skopeo inspect --format '{{.Digest}}' docker://registry.redhat.io/rhem/flightctl-api-rhel9:v1.0.0*
+sha256:059f44efe0fa7fc440d25ae5ea9036ffb7d7be2404707ce910d20591ee742b77
+--
+
+== What's next
+
+In the next lab, you will install and configure a RHEM server on your _server machine_ and configure administrator and non-administrator users on the RHEM server.

@@ -1,6 +1,39 @@
-= Section 1
+:time_estimate: 5
 
-* Create multiple copies of this section as needed.
-* Remove any unnecessary sections or chapter pages.
-* Customize the section as appropriate.
-* Ensure that each page contains a manageable amount of content.
+= Managing Edge Device with Red Hat Edge Manager
+
+_Estimated reading time: *{time_estimate} minutes*._
+
+Objective::
+
+Describe what is RHDE, its high level architecture, and relations to other infrastructure management tools from Red Hat, such as Red Hat Satellite, Red Hat Ansible Automation Platform (AAP), and Red Hat Advanced Cluster Management (ACM).
+
+
+WARNING: Not started yet
+
+Lorem ipsum dolor sit amet
+
+////
+
+Describe what is RHDE, its architecture, and relations to other infrastructure management tools from Red Hat, such as Red Hat Satellite, Red Hat Ansible Automation Platform (AAP), and Red Hat Advanced Cluster Management (ACM).
+
+* Focus on the role of each tool and the actual requirements of RHEM and RHDE: an authentication provider, DNF package repositories, and a container image registry.
+
+* Mention edge servers (RHEL) and edge gateways/devices (RHDE) as existing in a typical edge site and that RHEM can manage both. It is not tied to RHDE only.
+
+* This course does not address the specifics of managing RHDE devices running MicroShift.
+
+* Provide simple examples of tasks you could perform with either RHEM or ACM, or with either RHEM or RHDE, from this blog post.
+https://www.redhat.com/en/blog/managing-red-hat-device-edge-tools-and-strategies
+
+* High-level architecture of RHEM, not detailing its components.
+
+* Why an agent-based approach (pull) is best suited to the challenges of edge devices and edge sites, compared to a centralized (push) approach.
+
+* RHEM requires managed devices to run image mode for RHEL (bootc).
+
+* RHEM is inspired by Kubernetes, sharing many of the same design patterns, and enables a similar style of GitOps for the operating system. But RHEM does not require Kubernetes to run. It can run on Kubernetes, if you like, and also manage Kubernetes (MicroShift), if you want.
+
+* Do we need a quick introduction/refresher about RHDE?
+
+////
