@@ -12,10 +12,8 @@ WARNING: Work in progress
 
 == Before you begin
 
-You need a customer portal account with access to a Red Hat Enterprise Linux (RHEL) subscription.
-It could be a https://developers.redhat.com/products/rhel/download[Red Hat Developer program] free subscription.
-
 You need a _development machine_ running RHEL, to which you have unrestricted sudo access, and enough capacity to run a few VMs.
+Your _development machine_ is already registered to Red Hat with a valid RHDE subscription.
 
 You also need a _server machine_ running RHEL, to which you also have unrestricted sudo access, which was already configured with RHEM by the xref:ch2-deploy:s2-install-lab.adoc[previous lab].
 
@@ -56,16 +54,75 @@ You will build a minimal bootc container image which contains the RHEM agent and
 Then you will use that ISO to provision a test VM, which stands in for a managed edge device, and verify that it attempts to enroll in your RHEM server.
 Finally, you will approve that device enrollment request, and verify that you can use the same ISO, unchanged, to provision additional edge devices.
 
-1. On your _development machine_, create a bootc container image including the RHEM agent.
+1. Verify that you have the outcomes of previous labs.
+If you do not, go back and complete them, because you need their outcomes to continue with this course.
 
-.. Clone the course samples repository
+.. On your _development machine_, verify that there is a clone of the course samples repository on your home directory.
 +
 [source,subs="verbatim,quotes"]
 --
-$ *git clone https://github.com/RedHatQuickCourses/rhde-rhem-samples.git*
-Cloning into 'rhde-rhem-samples'...
+$ *cd*
+$ *ls rhde-rhem-samples*
+LICENSE  README.md  antora.yml  enroll  modules  webapp
+--
+
+.. Verify that your unprivileged user can connect using the libvirt session interface.
++
+[source,subs="verbatim,quotes"]
+--
+$ *virsh uri*
+qemu:///session
+$ *virsh nodeinfo*
+CPU model:           x86_64
 ...
 --
+
+.. Verify that your _development machine_ is registered to Red Hat, so it can access package repositories of any RHEL version.
++
+[source,subs="verbatim,quotes"]
+--
+$ *sudo subscription-manager status*
++-------------------------------------------+
+   System Status Details
++-------------------------------------------+
+Overall Status: Registered
+--
+
+.. Verify that you can access RHEL containers.
+You may get a different hash for the RHEL base bootc container image because `9.6` is a floating tag.
++
+[source,subs="verbatim,quotes"]
+--
+$ *podman login registry.redhat.io*
+...
+Login Succeeded!
+$ *skopeo inspect --format '{{.Digest}}' docker://registry.redhat.io/rhel9/rhel-bootc:9.6*
+sha256:d64013d886f00ff8afd3141918139d6a6789612d7ce4d3b5c4ffc3b98fc9dec1
+--
+
+.. Verify that you have access to a private container registry.
++
+[source,subs="verbatim,quotes"]
+--
+$ *podman login -u student -p redhat registry.lab.example.com:5000*
+Login Succeeded!
+$ *podman search registry.lab.example.com:5000/ubi9*
+NAME                                     DESCRIPTION
+registry.lab.example.com:5000/ubi9/ubi
+--
++
+NOTE: You will login again on both the Red Hat registry and your private registry as the root user, because different Linux users do not share container registry authentication tokens.
+
+.. Verify that you have administrator access to a RHEM server.
++
+[source,subs="verbatim,quotes"]
+--
+$ *flightctl login -u admin -p redhat https://servera.lab.example.com:3443*
+Auto-selected organization: 00000000-0000-0000-0000-000000000000 Default
+Login successful.
+--
+
+2. Create a bootc container image which includes the RHEM agent.
 
 .. Copy the Containerfile and related files for the enrollment image to a work directory.
 Then make the work directory your current directory.
@@ -97,35 +154,19 @@ $ *less Containerfile*
 include::1@samples:enroll:example$Containerfile[]
 --
 +
-NOTE: If you want to try with the current lastest release of the upstream project, edit your Containerfile to remove the version component `-1.0.0~rc` from the package `flightctl-agent`.
-
-.. Register your _development machine_ with the Red Hat subscription manager and log in on the Red Hat registry.
-+
-NOTE: You need to register the `workstation` VM because it needs to fetch RHEL 9 packages from Red Hat.
-The configured mirror package repositories contain only RHEL 10 packages.
-By the way, it is fully supported building RHEL 9 containers from a RHEL 10 host.
-+
-[source,subs="verbatim,quotes"]
---
-$ *sudo subscription-manager register*
-...
-The registered system name is: workstation
-$ *podman login registry.redhat.io*
-Login Succeeded!
---
-+
-// Do registration, pre-pull, and other steps in an extra lab in ch1?
+NOTE: If you want to try with the current lastest release of the upstream project, edit your Containerfile to remove the version component `-1.0.0` from the package `flightctl-agent`.
 
 .. Copy the CA certificate of the private container registry.
+Notice that the last argument of the `scp` command is a period, for the current directory.
 +
 [source,subs="verbatim,quotes"]
 --
-$ *scp student@utility:/opt/registry/certs/domain.crt*
+$ *scp student@utility:/opt/registry/certs/domain.crt .*
 domain.crt
 --
 
 .. Build the bootc container image.
-Notice that the `podman build` command finnishes with period, for the current directory.
+Notice that the `podman build` command finnishes with a period, for the current directory.
 +
 [source,subs="verbatim,quotes,attributes"]
 --
@@ -140,14 +181,12 @@ Successfully tagged localhost/rhem-enroll:latest
 +
 [source,subs="verbatim,quotes,attributes"]
 --
-$ *podman login -u student -p redhat registry.lab.example.com:5000*
-Login Succeeded!
 $ *skopeo copy containers-storage:localhost/rhem-enroll:latest docker://registry.lab.example.com:5000/rhem-enroll:v1.0*
 ...
 Writing manifest to image destination
 --
 
-2. Create an installable ISO containing the bootc container image from the previous step.
+3. Create an installable ISO containing the bootc container image from the previous step.
 
 .. Pull your bootc container image to the container storage of the root user.
 +
@@ -191,12 +230,8 @@ $ *sed -i "s|REPLACE_WITH_SSH_KEY|$SSH_PUB_KEY|" config.toml*
 
 .. Retrieve the enrollment configuration and certificate from RHEM and embed it in your kickstart script.
 +
-It may be necessary to login again to RHEM, depending on how much time is elabled since you completed the previous lab.
-+
 [source,subs="verbatim,quotes"]
 --
-$ *flightctl login -u admin -p redhat https://servera.lab.example.com:3443*
-Login successful.
 $ *flightctl certificate request --expiration=365d --output=embedded > config.yaml*
 Creating new ECDSA key pair and writing to "client-enrollment.key".
 Submitting certificate signing request "client-enrollment-ddbfd221"... success.
@@ -204,7 +239,7 @@ Waiting for certificate to be approved and issued.... success.
 $ *sed -i -e '/REPLACE_WITH_CONFIG_YAML/r config.yaml' -e '/REPLACE_WITH_CONFIG_YAML/d' config.toml*
 --
 
-.. Review your `config.toml` file to be sure that all `REPLACE_WITH...` markers are gone.
+.. Review your `config.toml` file to be sure that all `REPLACE_WITH` markers are gone.
 +
 NOTE: You can remove the files named `ca.crt`, `client-enrollment.crt`, and `client-enrollment.key`, created by the `flightctl certificate request` command, because their contents are embedded in the `client.yaml` file.
 
@@ -212,6 +247,9 @@ NOTE: You can remove the files named `ca.crt`, `client-enrollment.crt`, and `cli
 +
 [source,subs="verbatim,quotes"]
 --
+$ *sudo podman login registry.redhat.io*
+...
+Login Succeeded!
 $ *mkdir output*
 $ *bash bib-iso.sh*
 ...
@@ -219,7 +257,7 @@ Build complete!
 Results saved in .
 --
 
-3. Create a test VM using the installable ISO.
+4. Create a test VM using the installable ISO.
 
 .. Copy the generated ISO image file to a more recognizable name, outside the temporary directory.
 +
@@ -267,6 +305,8 @@ $ *ssh -i edge-key -p 8122 core@127.0.0.1*
 
 .. On your test VM, verify that it's booted from a bootc container image and that the `flightctl-agent` service is active.
 +
+Remember that the password set by kickstart for the `core` user is `redhat123`.
++
 [source,subs="verbatim,quotes,attributes"]
 --
 $ *sudo bootc status*
@@ -277,6 +317,8 @@ active
 --
 
 .. Notice that, in the begining of the RHEM agent logs, it generates a certificate signing request (CSR) for its own individual enrollment request with the RHEM server, and its own unique UUID.
++
+Look for the entry with the message "Bootstrapping device".
 +
 [source,subs="verbatim,quotes,attributes"]
 --
@@ -309,10 +351,8 @@ Dec 17 21:42:42 enroll flightctl-agent[1163]: time="2025-12-17T21:42:42.143024Z"
 $ *sudo journalctl -u flightctl-agent | grep 'QR code' -A1 -B1 | tail -n 3*
 Dec 17 21:44:59 enroll flightctl-agent[1194]: Enroll your device to flightctl by scanning
 Dec 17 21:44:59 enroll flightctl-agent[1194]: the above QR code or following this URL:
-Dec 17 21:44:59 enroll flightctl-agent[1194]: https://172.25.250.10:443/enroll/{edge-1-uuid-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}
+Dec 17 21:44:59 enroll flightctl-agent[1194]: https://servera.lab.example.com:443/enroll/{edge-1-uuid-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}
 --
-+
-TODO: REVIEW IF THE URL ABOVE CHANGES TO USE THE FQDN
 
 .. You can now leave the SSH session and return to your host shell.
 +
@@ -321,7 +361,7 @@ TODO: REVIEW IF THE URL ABOVE CHANGES TO USE THE FQDN
 $ *exit*
 --
 
-4. On your _development machine_, approve the enrollment request
+5. On your _development machine_, approve the enrollment request
 
 .. Verify that there is an enrollment request with an UUID which corresponds to the one in the logs of your test VM, but no devices.
 +
@@ -340,20 +380,21 @@ Be sure you use the same UUID you got from the previous step to refer to the enr
 +
 [source,subs="verbatim,quotes,attributes"]
 --
-$ *flightctl approve enrollmentrequest _{edge-1-uuid-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}_ -l alias=edge-1 -l rhel=9.6 -l type=noapp*
-GRAB OUTPUT
+$ *flightctl approve enrollmentrequest _{edge-1-uuid-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}_ -l alias=edge-1 -l rhel=9.6 -l type=noapps*
 --
++
+// There's no output from the approve command
 
 .. Verify that the enrollment request now is set to approved and there is a managed device.
 +
 [source,subs="verbatim,quotes,attributes"]
 --
-$ *flightctl get device -o wide*
-NAME                                                    ALIAS   OWNER   SYSTEM  UPDATED         APPLICATIONS    LABELS
-{edge-1-uuid-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}    edge-1  <none>  Online  OutOfDate       NoApplications  alias=edge-1,rhel=9.6,type=noapp
 $ *flightctl get enrollmentrequest*
 NAME                                                    APPROVAL        APPROVER        APPROVED LABELS
-{edge-1-uuid-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}    Approved        admin           alias=edge-1,rhel=9.6,type=noapp
+{edge-1-uuid-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}    Approved        admin           alias=edge-1,rhel=9.6,type=noapps
+$ *flightctl get device -o wide*
+NAME                                                    ALIAS   OWNER   SYSTEM  UPDATED         APPLICATIONS    LABELS
+{edge-1-uuid-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}    edge-1  <none>  Online  OutOfDate       NoApplications  alias=edge-1,rhel=9.6,type=noapps
 --
 
 .. Wait a few moments while the RHEM agent finishes synchronizing the device with the configurations set by RHEM.
@@ -365,7 +406,7 @@ NAME                                                    ALIAS   OWNER   SYSTEM  
 {edge-1-uuid-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}    edge-1  <none>  Online  UpToDate        NoApplications  alias=edge-1,rhel=9.6,type=noapp
 --
 
-5. Verify that the test VM is now managed by RHEM.
+6. Verify that the test VM is now managed by RHEM.
 
 .. Because the device was just enrolled and it is not a member of a fleet, its configuration is empty, that is, it contains an empty `spec` field.
 Also notice that its `status` field reports a good amount of information.
@@ -384,7 +425,7 @@ metadata:
   labels:
     alias: edge-1
     rhel: "9.6"
-    type: noapp
+    type: noapps
   name: {edge-1-uuid-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}
   resourceVersion: "10"
 spec: {}
@@ -445,6 +486,13 @@ status:
     status: UpToDate
 --
 
+.. If you did not set the correct labels, during approval, you can use the following command do edit the device resource and add the three entries under `labels:` and the previous listing as a guide.
++
+[source,subs="verbatim,quotes,attributes"]
+--
+$ *flightctl edit device {edge-1-uuid-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}*
+--
+
 .. The flightctl CLI does not provide built-in filtering, but you can pipe its JSON output to the `jq` utility and filter just the information you need, for example:
 +
 [source,subs="verbatim,quotes,attributes"]
@@ -498,7 +546,7 @@ managed #1
 # *exit*
 --
 
-6. Provision another test VM using the same installable ISO.
+7. Provision another test VM using the same installable ISO.
 
 .. Use the provided script to create a second test VM.
 Reember to give it a different digit from the previous one.
@@ -532,12 +580,12 @@ $ *ssh -i edge-key -p 8222 core@127.0.0.1*
 +
 [source,subs="verbatim,quotes,attributes"]
 --
-$ *sudo journalctl -u flightctl-agent | grep Bootstrapping*
+$ *sudo journalctl -u flightctl-agent | grep -m 1 Bootstrapping*
 Dec 17 22:16:47 enroll flightctl-agent[844]: time="2025-12-17T22:16:47.552079Z" level=info msg="Bootstrapping device: {edge-2-uuid-bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb}"
 $ *exit*
 --
 
-7. Enroll your second test VM on RHEM, but this time using its web interface and a non-administrator user.
+8. Enroll your second test VM on RHEM, but this time using its web interface and a non-administrator user.
 
 .. Open a web browser and visit `\https://servera.lab.example.com`.
 
@@ -572,7 +620,7 @@ GRAB SCREENSHOT
 +
 GRAB SCREENSHOT
 
-.. Type `edge-2` as tha alias of the device and click on *Add label* to show a text field where you will type the key and value for a single label.
+.. Type `edge-2` as the alias of the device and click on *Add label* to show a text field where you will type the key and value for the next label.
 +
 GRAB SCREENSHOT
 
@@ -595,7 +643,7 @@ GRAB SCREENSHOT
 +
 GRAB SCREENSHOT
 
-8. Verify that, despite being provisioned from the same enrollment request data, each test VM retains its own identity and configuration from RHEM.
+9. Verify that, despite being provisioned from the same enrollment request data, each test VM retains its own identity and configuration from RHEM.
 
 .. On the *Devices* page, click on the *edge-2* alias to enter the manged device details page of your second test VM.
 +

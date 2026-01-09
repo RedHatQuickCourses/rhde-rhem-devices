@@ -13,7 +13,7 @@ WARNING: Work in progress
 == Before you begin
 
 You need a _development machine_ running RHEL, to which you have unrestricted sudo access, and enough capacity to run a few VMs.
-Your _development machine_ is already registered to Red Hat with a valid RHDE subscription.
+Your _development machine_ is already registered to Red Hat with a valid RHDE subscription by the xref:ch1-intro:s3-classroom-lab.adoc[first lab].
 
 You also need a _server machine_ running RHEL, to which you also have unrestricted sudo access.
 
@@ -70,7 +70,32 @@ Cannot use the current RHEM artifacts, their containers fail signature check. Ha
 
 ////
 
-1. Install the RHEM services on your _server machine_.
+1. Verify that you have the outcomes of previous labs.
+If you do not, go back and complete them, because you need their outcomes to continue with this course.
+
+.. On your _development machine_, verify that there is a clone of the course samples repository on your home directory.
++
+[source,subs="verbatim,quotes"]
+--
+$ *cd*
+$ *ls rhde-rhem-samples*
+LICENSE  README.md  antora.yml  enroll  modules  webapp
+--
+
+.. Verify that your _development machine_ is registered to Red Hat, so it can access package repositories of any RHEL version.
++
+[source,subs="verbatim,quotes"]
+--
+$ *sudo subscription-manager status*
++-------------------------------------------+
+   System Status Details
++-------------------------------------------+
+Overall Status: Registered
+--
+
+.. Other preparation tasks performed during the xref:ch1-intro:s3-classroom-lab.adoc[first lab] of this course are not required yet, because most of this lab happens on the _server machine_, but they will be necessary for the remaining labs.
+
+2. Install the RHEM services on your _server machine_.
 
 .. Make sure your current shell is on the right machine.
 +
@@ -336,6 +361,8 @@ Attempting a complete "dnf update" (more than 700 packages), I hope I don't get 
 /etc/redhat-release says I'm at 10.1 let's see if it survives reboot.
 It survived, but after a new podman login got the same signature errors.
 So recreating the classroom to try the upstream 1.0.0
+
+Tested on a RHEL 9.7 VM (installed as 9.6 then updated to 9.7) and RHEM packages just work. Too bad it's not an environment I can easily add virtual edge devices. And even worse it's not something I can easily replicate on ROLE: I'd have to build a new custom classroom (a new HOLxxx) which adds days/weeks to my schedule. :-(
 ////
 
 .. If some of services do not start, you can check their status and log messages, for example:
@@ -397,7 +424,7 @@ time="2025-12-15T13:45:34Z" level=info msg="Starting API service" func=main.main
 ..
 --
 
-2. For simplicity, configure local users for the RHEM services, on the PAM issuer container.
+3. For simplicity, configure local users for the RHEM services, on the PAM issuer container.
 
 .. Create groups which correspond to the `admin`, `operator`, and `viewer` roles.
 +
@@ -450,7 +477,7 @@ $ *sudo podman exec -i flightctl-pam-issuer getent group flightctl-operator*
 flightctl-operator:x:1001:student
 --
 
-3. Install the RHEM CLI on your _development machine_
+4. Install the RHEM CLI on your _development machine_
 
 .. Make sure your current shell is on the right machine.
 +
@@ -510,7 +537,7 @@ $ *flightctl get device*
 NAME    ALIAS   OWNER   SYSTEM  UPDATED APPLICATIONS
 --
 
-4. Access the RHEM web UI.
+5. Access the RHEM web UI.
 
 .. Open a web browser and visit `\https://servera.lab.example.com`.
 You should get a login screen without any web browser warnings about certificate issues.
