@@ -324,7 +324,7 @@ $ <strong>cd temp-webapp</strong></code></pre>
 <pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>less Containerfile</strong>
 FROM registry.redhat.io/rhel9/rhel-bootc:9.6
 RUN dnf -y config-manager --add-repo https://rpm.flightctl.io/flightctl-epel.repo &amp;&amp; \
-    dnf -y install flightctl-agent-1.0.0~rc2 firewalld httpd &amp;&amp; \
+    dnf -y install flightctl-agent-1.0.0 firewalld httpd &amp;&amp; \
     dnf clean all &amp;&amp; \
     systemctl enable flightctl-agent &amp;&amp; \
     systemctl mask bootc-fetch-apply-updates.timer &amp;&amp; \

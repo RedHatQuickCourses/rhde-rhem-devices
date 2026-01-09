@@ -214,7 +214,7 @@ Work in progress
 <div class="sectionbody">
 <div class="paragraph">
 <p>You need a <em>development machine</em> running RHEL, to which you have unrestricted sudo access, and enough capacity to run a few VMs.
-Your <em>development machine</em> is already registered to Red Hat with a valid RHDE subscription.</p>
+Your <em>development machine</em> is already registered to Red Hat with a valid RHDE subscription by the <a href="../ch1-intro/s3-classroom-lab.html" class="xref page">first lab</a>.</p>
 </div>
 <div class="paragraph">
 <p>You also need a <em>server machine</em> running RHEL, to which you also have unrestricted sudo access.</p>
@@ -250,6 +250,39 @@ The instructions here use the community artifacts from the flightctl projects, b
 </div>
 <div class="olist arabic">
 <ol class="arabic">
+<li>
+<p>Verify that you have the outcomes of previous labs.
+If you do not, go back and complete them, because you need their outcomes to continue with this course.</p>
+<div class="olist loweralpha">
+<ol class="loweralpha" type="a">
+<li>
+<p>On your <em>development machine</em>, verify that there is a clone of the course samples repository on your home directory.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>cd</strong>
+$ <strong>ls rhde-rhem-samples</strong>
+LICENSE  README.md  antora.yml  enroll  modules  webapp</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Verify that your <em>development machine</em> is registered to Red Hat, so it can access package repositories of any RHEL version.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>sudo subscription-manager status</strong>
++-------------------------------------------+
+   System Status Details
++-------------------------------------------+
+Overall Status: Registered</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Other preparation tasks performed during the <a href="../ch1-intro/s3-classroom-lab.html" class="xref page">first lab</a> of this course are not required yet, because most of this lab happens on the <em>server machine</em>, but they will be necessary for the remaining labs.</p>
+</li>
+</ol>
+</div>
+</li>
 <li>
 <p>Install the RHEM services on your <em>server machine</em>.</p>
 <div class="olist loweralpha">

@@ -213,11 +213,8 @@ Work in progress
 <h2 id="_before_you_begin"><a class="anchor" href="#_before_you_begin"></a>Before you begin</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>You need a customer portal account with access to a Red Hat Enterprise Linux (RHEL) subscription.
-It could be a <a href="https://developers.redhat.com/products/rhel/download">Red Hat Developer program</a> free subscription.</p>
-</div>
-<div class="paragraph">
-<p>You need a <em>development machine</em> running RHEL, to which you have unrestricted sudo access, and enough capacity to run a few VMs.</p>
+<p>You need a <em>development machine</em> running RHEL, to which you have unrestricted sudo access, and enough capacity to run a few VMs.
+Your <em>development machine</em> is already registered to Red Hat with a valid RHDE subscription.</p>
 </div>
 <div class="paragraph">
 <p>You also need a <em>server machine</em> running RHEL, to which you also have unrestricted sudo access, which was already configured with RHEM by the <a href="../ch2-deploy/s2-install-lab.html" class="xref page">previous lab</a>.</p>
@@ -245,19 +242,98 @@ Finally, you will approve that device enrollment request, and verify that you ca
 <div class="olist arabic">
 <ol class="arabic">
 <li>
-<p>On your <em>development machine</em>, create a bootc container image including the RHEM agent.</p>
+<p>Verify that you have the outcomes of previous labs.
+If you do not, go back and complete them, because you need their outcomes to continue with this course.</p>
 <div class="olist loweralpha">
 <ol class="loweralpha" type="a">
 <li>
-<p>Clone the course samples repository</p>
+<p>On your <em>development machine</em>, verify that there is a clone of the course samples repository on your home directory.</p>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>git clone https://github.com/RedHatQuickCourses/rhde-rhem-samples.git</strong>
-Cloning into 'rhde-rhem-samples'...
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>cd</strong>
+$ <strong>ls rhde-rhem-samples</strong>
+LICENSE  README.md  antora.yml  enroll  modules  webapp</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Verify that your unprivileged user can connect using the libvirt session interface.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>virsh uri</strong>
+qemu:///session
+$ <strong>virsh nodeinfo</strong>
+CPU model:           x86_64
 ...</code></pre>
 </div>
 </div>
 </li>
+<li>
+<p>Verify that your <em>development machine</em> is registered to Red Hat, so it can access package repositories of any RHEL version.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>sudo subscription-manager status</strong>
++-------------------------------------------+
+   System Status Details
++-------------------------------------------+
+Overall Status: Registered</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Verify that you can access RHEL containers.
+You may get a different hash for the RHEL base bootc container image because <code>9.6</code> is a floating tag.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>podman login registry.redhat.io</strong>
+...
+Login Succeeded!
+$ <strong>skopeo inspect --format '{{.Digest}}' docker://registry.redhat.io/rhel9/rhel-bootc:9.6</strong>
+sha256:d64013d886f00ff8afd3141918139d6a6789612d7ce4d3b5c4ffc3b98fc9dec1</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Verify that you have access to a private container registry.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>podman login -u student -p redhat registry.lab.example.com:5000</strong>
+Login Succeeded!
+$ <strong>podman search registry.lab.example.com:5000/ubi9</strong>
+NAME                                     DESCRIPTION
+registry.lab.example.com:5000/ubi9/ubi</code></pre>
+</div>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+You will login again on both the Red Hat registry and your private registry as the root user, because different Linux users do not share container registry authentication tokens.
+</td>
+</tr>
+</table>
+</div>
+</li>
+<li>
+<p>Verify that you have administrator access to a RHEM server.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>flightctl login -u admin -p redhat https://servera.lab.example.com:3443</strong>
+Auto-selected organization: 00000000-0000-0000-0000-000000000000 Default
+Login successful.</code></pre>
+</div>
+</div>
+</li>
+</ol>
+</div>
+</li>
+<li>
+<p>Create a bootc container image which includes the RHEM agent.</p>
+<div class="olist loweralpha">
+<ol class="loweralpha" type="a">
 <li>
 <p>Copy the Containerfile and related files for the enrollment image to a work directory.
 Then make the work directory your current directory.</p>
@@ -299,7 +375,7 @@ Your organization may opt to add more things to that image, for example anti-mal
 <pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>less Containerfile</strong>
 FROM registry.redhat.io/rhel9/rhel-bootc:9.6
 RUN dnf -y config-manager --add-repo https://rpm.flightctl.io/flightctl-epel.repo &amp;&amp; \
-    dnf -y install flightctl-agent-1.0.0~rc2 &amp;&amp; \
+    dnf -y install flightctl-agent-1.0.0 &amp;&amp; \
     dnf clean all &amp;&amp; \
     systemctl enable flightctl-agent &amp;&amp; \
     systemctl mask bootc-fetch-apply-updates.timer
@@ -316,50 +392,25 @@ RUN update-ca-trust
 <i class="fa icon-note" title="Note"></i>
 </td>
 <td class="content">
-If you want to try with the current lastest release of the upstream project, edit your Containerfile to remove the version component <code>-1.0.0~rc</code> from the package <code>flightctl-agent</code>.
+If you want to try with the current lastest release of the upstream project, edit your Containerfile to remove the version component <code>-1.0.0</code> from the package <code>flightctl-agent</code>.
 </td>
 </tr>
 </table>
 </div>
 </li>
 <li>
-<p>Register your <em>development machine</em> with the Red Hat subscription manager and log in on the Red Hat registry.</p>
-<div class="admonitionblock note">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-note" title="Note"></i>
-</td>
-<td class="content">
-You need to register the <code>workstation</code> VM because it needs to fetch RHEL 9 packages from Red Hat.
-The configured mirror package repositories contain only RHEL 10 packages.
-By the way, it is fully supported building RHEL 9 containers from a RHEL 10 host.
-</td>
-</tr>
-</table>
-</div>
+<p>Copy the CA certificate of the private container registry.
+Notice that the last argument of the <code>scp</code> command is a period, for the current directory.</p>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>sudo subscription-manager register</strong>
-...
-The registered system name is: workstation
-$ <strong>podman login registry.redhat.io</strong>
-Login Succeeded!</code></pre>
-</div>
-</div>
-</li>
-<li>
-<p>Copy the CA certificate of the private container registry.</p>
-<div class="listingblock">
-<div class="content">
-<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>scp student@utility:/opt/registry/certs/domain.crt</strong>
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>scp student@utility:/opt/registry/certs/domain.crt .</strong>
 domain.crt</code></pre>
 </div>
 </div>
 </li>
 <li>
 <p>Build the bootc container image.
-Notice that the <code>podman build</code> command finnishes with period, for the current directory.</p>
+Notice that the <code>podman build</code> command finnishes with a period, for the current directory.</p>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>podman build -t rhem-enroll .</strong>
@@ -374,9 +425,7 @@ Successfully tagged localhost/rhem-enroll:latest
 <p>Publish the container image in the private registry.</p>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>podman login -u student -p redhat registry.lab.example.com:5000</strong>
-Login Succeeded!
-$ <strong>skopeo copy containers-storage:localhost/rhem-enroll:latest docker://registry.lab.example.com:5000/rhem-enroll:v1.0</strong>
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>skopeo copy containers-storage:localhost/rhem-enroll:latest docker://registry.lab.example.com:5000/rhem-enroll:v1.0</strong>
 ...
 Writing manifest to image destination</code></pre>
 </div>
@@ -469,14 +518,9 @@ $ <strong>sed -i "s|REPLACE_WITH_SSH_KEY|$SSH_PUB_KEY|" config.toml</strong></co
 </li>
 <li>
 <p>Retrieve the enrollment configuration and certificate from RHEM and embed it in your kickstart script.</p>
-<div class="paragraph">
-<p>It may be necessary to login again to RHEM, depending on how much time is elabled since you completed the previous lab.</p>
-</div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>flightctl login -u admin -p redhat https://servera.lab.example.com:3443</strong>
-Login successful.
-$ <strong>flightctl certificate request --expiration=365d --output=embedded &gt; config.yaml</strong>
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>flightctl certificate request --expiration=365d --output=embedded &gt; config.yaml</strong>
 Creating new ECDSA key pair and writing to "client-enrollment.key".
 Submitting certificate signing request "client-enrollment-ddbfd221"... success.
 Waiting for certificate to be approved and issued.... success.
@@ -485,7 +529,7 @@ $ <strong>sed -i -e '/REPLACE_WITH_CONFIG_YAML/r config.yaml' -e '/REPLACE_WITH_
 </div>
 </li>
 <li>
-<p>Review your <code>config.toml</code> file to be sure that all <code>REPLACE_WITH&#8230;&#8203;</code> markers are gone.</p>
+<p>Review your <code>config.toml</code> file to be sure that all <code>REPLACE_WITH</code> markers are gone.</p>
 <div class="admonitionblock note">
 <table>
 <tr>
@@ -503,7 +547,10 @@ You can remove the files named <code>ca.crt</code>, <code>client-enrollment.crt<
 <p>Create a temporary directory and use the provided script to invoke bootc image builder to produce an installable ISO image.</p>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>mkdir output</strong>
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>sudo podman login registry.redhat.io</strong>
+...
+Login Succeeded!
+$ <strong>mkdir output</strong>
 $ <strong>bash bib-iso.sh</strong>
 ...
 Build complete!
@@ -570,6 +617,9 @@ Domain 'edge-1' has been undefined</code></pre>
 </li>
 <li>
 <p>On your test VM, verify that it&#8217;s booted from a bootc container image and that the <code>flightctl-agent</code> service is active.</p>
+<div class="paragraph">
+<p>Remember that the password set by kickstart for the <code>core</code> user is <code>redhat123</code>.</p>
+</div>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>sudo bootc status</strong>
@@ -582,6 +632,9 @@ active</code></pre>
 </li>
 <li>
 <p>Notice that, in the begining of the RHEM agent logs, it generates a certificate signing request (CSR) for its own individual enrollment request with the RHEM server, and its own unique UUID.</p>
+<div class="paragraph">
+<p>Look for the entry with the message "Bootstrapping device".</p>
+</div>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>sudo journalctl -u flightctl-agent | head -n 10</strong>
@@ -615,11 +668,8 @@ Dec 17 21:42:42 enroll flightctl-agent[1163]: time="2025-12-17T21:42:42.143024Z"
 <pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>sudo journalctl -u flightctl-agent | grep 'QR code' -A1 -B1 | tail -n 3</strong>
 Dec 17 21:44:59 enroll flightctl-agent[1194]: Enroll your device to flightctl by scanning
 Dec 17 21:44:59 enroll flightctl-agent[1194]: the above QR code or following this URL:
-Dec 17 21:44:59 enroll flightctl-agent[1194]: https://172.25.250.10:443/enroll/1u63hvsgtua9tjjbmla9bgh5h2s77cb8esepphnf68m3ocf8qfng</code></pre>
+Dec 17 21:44:59 enroll flightctl-agent[1194]: https://servera.lab.example.com:443/enroll/1u63hvsgtua9tjjbmla9bgh5h2s77cb8esepphnf68m3ocf8qfng</code></pre>
 </div>
-</div>
-<div class="paragraph">
-<p>TODO: REVIEW IF THE URL ABOVE CHANGES TO USE THE FQDN</p>
 </div>
 </li>
 <li>
@@ -656,8 +706,7 @@ NAME                                                    APPROVAL        APPROVER
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>flightctl approve enrollmentrequest <em>1u63hvsgtua9tjjbmla9bgh5h2s77cb8esepphnf68m3ocf8qfng</em> -l alias=edge-1 -l rhel=9.6 -l type=noapp</strong>
-GRAB OUTPUT</code></pre>
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>flightctl approve enrollmentrequest <em>1u63hvsgtua9tjjbmla9bgh5h2s77cb8esepphnf68m3ocf8qfng</em> -l alias=edge-1 -l rhel=9.6 -l type=noapps</strong></code></pre>
 </div>
 </div>
 </li>
@@ -665,12 +714,12 @@ GRAB OUTPUT</code></pre>
 <p>Verify that the enrollment request now is set to approved and there is a managed device.</p>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>flightctl get device -o wide</strong>
-NAME                                                    ALIAS   OWNER   SYSTEM  UPDATED         APPLICATIONS    LABELS
-1u63hvsgtua9tjjbmla9bgh5h2s77cb8esepphnf68m3ocf8qfng    edge-1  &lt;none&gt;  Online  OutOfDate       NoApplications  alias=edge-1,rhel=9.6,type=noapp
-$ <strong>flightctl get enrollmentrequest</strong>
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>flightctl get enrollmentrequest</strong>
 NAME                                                    APPROVAL        APPROVER        APPROVED LABELS
-1u63hvsgtua9tjjbmla9bgh5h2s77cb8esepphnf68m3ocf8qfng    Approved        admin           alias=edge-1,rhel=9.6,type=noapp</code></pre>
+1u63hvsgtua9tjjbmla9bgh5h2s77cb8esepphnf68m3ocf8qfng    Approved        admin           alias=edge-1,rhel=9.6,type=noapps
+$ <strong>flightctl get device -o wide</strong>
+NAME                                                    ALIAS   OWNER   SYSTEM  UPDATED         APPLICATIONS    LABELS
+1u63hvsgtua9tjjbmla9bgh5h2s77cb8esepphnf68m3ocf8qfng    edge-1  &lt;none&gt;  Online  OutOfDate       NoApplications  alias=edge-1,rhel=9.6,type=noapps</code></pre>
 </div>
 </div>
 </li>
@@ -708,7 +757,7 @@ metadata:
   labels:
     alias: edge-1
     rhel: "9.6"
-    type: noapp
+    type: noapps
   name: 1u63hvsgtua9tjjbmla9bgh5h2s77cb8esepphnf68m3ocf8qfng
   resourceVersion: "10"
 spec: {}
@@ -767,6 +816,14 @@ status:
   updated:
     info: Device was updated to the latest device spec.
     status: UpToDate</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>If you did not set the correct labels, during approval, you can use the following command do edit the device resource and add the three entries under <code>labels:</code> and the previous listing as a guide.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>flightctl edit device 1u63hvsgtua9tjjbmla9bgh5h2s77cb8esepphnf68m3ocf8qfng</strong></code></pre>
 </div>
 </div>
 </li>
@@ -870,7 +927,7 @@ Notice it has the same hostname as the first test VM, because that configuration
 <p>On your second test VM, verify that it generated a different UUID to identify itself to RHEM and return to your host shell.</p>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>sudo journalctl -u flightctl-agent | grep Bootstrapping</strong>
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>sudo journalctl -u flightctl-agent | grep -m 1 Bootstrapping</strong>
 Dec 17 22:16:47 enroll flightctl-agent[844]: time="2025-12-17T22:16:47.552079Z" level=info msg="Bootstrapping device: g7ombcqk46tqq458j9uju454441mf1lgt9qqqva8ti0fnvosm57g"
 $ <strong>exit</strong></code></pre>
 </div>
@@ -933,7 +990,7 @@ You can then see information about the device, such as its MAC address, if you m
 </div>
 </li>
 <li>
-<p>Type <code>edge-2</code> as tha alias of the device and click on <strong>Add label</strong> to show a text field where you will type the key and value for a single label.</p>
+<p>Type <code>edge-2</code> as the alias of the device and click on <strong>Add label</strong> to show a text field where you will type the key and value for the next label.</p>
 <div class="paragraph">
 <p>GRAB SCREENSHOT</p>
 </div>
