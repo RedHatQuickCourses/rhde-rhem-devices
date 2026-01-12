@@ -56,8 +56,8 @@ Configure devices so they can access a private OCI container registry, and switc
 
 ////
 
-You will also configure your managed devices with secrets required to access a private OCI container registry, so they can fetch bootc container images, and update them to use a different image than the one used during enrollment.
-The new bootc container image contains an embedded web application.
+You will configure your managed devices with secrets required to access a private OCI container registry, so they can fetch bootc container images, and update them to use a different image than the one used during enrollment.
+The new bootc container image and contains an embedded web application, which you will access to verify that the update completed sucessfully.
 
 1. Verify that you have the outcomes of previous labs.
 If you do not, go back and complete them, because you need their outcomes to proceed with this lab.
@@ -126,13 +126,14 @@ NAME                                     DESCRIPTION
 registry.lab.example.com:5000/ubi9/ubi
 --
 +
-NOTE: You will login again on both the Red Hat registry and your private registry as the root user, because different Linux users do not share container registry authentication tokens.
+NOTE: Later in this lab, you will login again on both the Red Hat registry and your private registry as the root user, because different Linux users do not share container registry authentication tokens.
 
 .. Log in on RHEM, as a non-administrator, and verify that there are two managed devices, which correspond to the two test VMs.
 +
 [source,subs="verbatim,quotes,attributes"]
 --
 $ *flightctl login -u student -p student https://servera.lab.example.com:3443*
+Auto-selected organization: 00000000-0000-0000-0000-000000000000 Default
 Login successful.
 $ *flightctl get device -o wide*
 NAME                                                    ALIAS   OWNER   SYSTEM  UPDATED         APPLICATIONS    LABELS
@@ -163,23 +164,17 @@ $ *less Containerfile*
 include::1@samples:webapp:example$Containerfile[]
 --
 +
-NOTE: If you want to try with the current lastest release of the upstream project, edit your Containerfile to remove the version component `-1.0.0~rc2` from the package `flightctl-agent`.
+NOTE: If you want to try with the current lastest release of the upstream project, edit your Containerfile to remove the version component `-1.0.0` from the package `flightctl-agent`.
 +
-IMPORTANT: The previous Containerfile relies on a custom configuration for the Systemd tempfiles services, which ensures the Apache HTTP Server finds work directories it needs in the `/var` and `/run` directories.
+IMPORTANT: The previous Containerfile relies on a custom configuration for the Systemd tempfiles service, which ensures the Apache HTTP Server finds work directories it needs in the `/var` and `/run` directories.
 These directories are setup by its RPM packages, and such setup only works at first provisioning, failing at `bootc update` and `bootc switch`.
 Using the Systemd tempfiles services is a common workaround for such scenarios.
 
-.. Your _development machine_ should be already registered with the Red Hat subscription manager, from a previous lab, but you may have to log in again on the Red Hat registry before you can build you new bootc container image.
+.. Copy the public certificate of the private container registry.
 +
-[source,subs="verbatim,quotes"]
+[source,subs="verbatim,quotes,attributes"]
 --
-$ *sudo subscription-manager status*
-+-------------------------------------------+
-   System Status Details
-+-------------------------------------------+
-Overall Status: Registered
-$ *podman login registry.redhat.io*
-Login Succeeded!
+$ *cp ../temp-enroll/domain.crt .*
 --
 
 .. Build the bootc container image.
@@ -197,8 +192,6 @@ Successfully tagged localhost/rhem-webapp:latest
 +
 [source,subs="verbatim,quotes,attributes"]
 --
-$ *podman login -u student -p redhat registry.lab.example.com:5000*
-Login Succeeded!
 $ *skopeo copy containers-storage:localhost/rhem-webapp:latest docker://registry.lab.example.com:5000/rhem-webapp:v1.0*
 ...
 Writing manifest to image destination
@@ -224,9 +217,9 @@ Open shell on utility, sudo -i
 
 .. There is no need to create an installation disk from that image, because RHEM will handle switching managed devices to it.
 
-3. Update the second test VM to use the new image, by using the web interface.
+3. Update your second test VM to use the new image, by using the web interface.
 +
-IMPORTANT: The first attempt is expected to fail, but we will troubleshoot the issue and fix it.
+IMPORTANT: The first attempt at updating your test VM is expected to fail, but we will troubleshoot for the root cause of the issue and fix it.
 
 .. Open a web browser and visit `\https://servera.lab.example.com`
 
@@ -253,7 +246,8 @@ GRAB SCREENSHOT
 GRAB SCREENSHOT
 
 .. After a few moments, the *Update status* will change to `Updating`, meaning it is attempting to download and switch to the new booc container image.
-You can click the `Updating` status to see a longer message describring what updates are pending, in this case, pending download of the bootc container image.
++
+You can click the `Updating` status to see a longer message describing what updates are pending, in this case, pending download of the bootc container image.
 +
 GRAB SCREENSHOT
 
@@ -261,7 +255,7 @@ GRAB SCREENSHOT
 +
 GRAB SCREENSHOT
 
-.. The private registry requires authentication credentails, but these were not provided by its bootc image nor kickstart during provisioning.
+.. The private registry requires authentication credentails, but these were not provided by its bootc image nor by kickstart during provisioning.
 We will solve the issue by providing those credentials using RHEM.
 +
 //.. ALSO NEED THE CA CERTIFICATE. TOO MUCH TO DO USING THE GUI??? No, because of SELinux issues.
@@ -295,7 +289,8 @@ $ *cat auth.json*
 
 .. Back to your web browser, enter the manged device details page for the `edge-2` device end edit its device configurations.
 
-.. Click menu:Add configuration[] and fill in the fields as follows:
+.. Scroll down until you see the link menu:Add configuration[] and click it.
+Fill in the fields as follows:
 +
 --
 ... *Source name*: `registry-auth`
@@ -323,7 +318,8 @@ NOTE: You can also monitor the update status of the device from the *Devices* pa
 5. Verify that the device is running the new system image.
 
 .. Enter the device details page for the `edge-2` device, if you are not already there, and click the menu:Terminal[] tab.
-Run the `bootc status` command, to show that the webapp bootc container is the corrently booted system image, and the enrollment bootc container is now the rollback image.
++
+Run the `bootc status` command, to show that the webapp bootc container is the currently booted system image, and the enrollment bootc container is now the rollback image.
 +
 You can also verify that the `httpd` service is active and use the `curl` command do see its default web page.
 +
@@ -367,9 +363,9 @@ $ *curl 127.0.0.1:8208*
 This would be the HTML and JavaScript code of a single-page web application.
 --
 
-6. Update the first test VM to use the new image, by using the CLI.
+6. Update your first test VM to use the new image, by using the CLI.
 
-.. Now you will apply the same operating system + configuration update, but using YAML manifests.
+.. Now you will apply the same operating system and configuration update, but using YAML manifests.
 Start by reviewing the `edge-1-webapp.yaml` file, which is in the same folder as the Containerfile for the new bootc image.
 +
 There should be nothing new to you in this manifest: it includes the updated SSH key and message of day files from the previous lab, and adds the private registry credentials and the reference to the new bootc container image, just like you did for the `edge-2` device.
@@ -431,7 +427,7 @@ NAME                                                    ALIAS   OWNER   SYSTEM  
 {edge-1-uuid-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}    edge-1  <none>  Online  UpToDate        NoApplications  alias=edge-1,rhel=9.6,type=noapps
 --
 
-7. Verify that the first test VM is running with updates applied.
+7. Verify that your first test VM is running with updates applied.
 
 .. Verify the currently booted system image.
 +
@@ -463,7 +459,7 @@ $ *curl 127.0.0.1:8108*
 This would be the HTML and JavaScript code of a single-page web application.
 --
 
-In this lab, you performed operating system updated on two managed devices, by using the RHEM web interface and its CLI. 
+In this lab, you performed operating system updates on two managed devices, by using the RHEM web interface and its CLI. 
 You also demonstrated that the fact that a device can be provisioned from a bootc container image does not ensures that it is configured to fetch bootc container updates from private registries, and that RHEM is able to provide such configurations at the same time it updates the system image of managed devices.
 
 == What's next

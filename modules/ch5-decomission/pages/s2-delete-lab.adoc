@@ -81,7 +81,7 @@ $ *virsh start edge-2*
 Domain 'edge-2' started
 --
 
-.. Enter the `test-enroll` directory, which contains the Containerfile, kickstart script, and SSH key used to provision the two test VMs.
+.. Enter the `test-enroll` directory, which contains the SSH keys used to provision and access your two test VMs.
 +
 [source,subs="verbatim,quotes"]
 --
@@ -95,6 +95,7 @@ Containerfile  bib-iso.sh  config.toml  config.yaml  edge-key  edge-key.pub  out
 [source,subs="verbatim,quotes,attributes"]
 --
 $ *flightctl login -u admin -p redhat https://servera.lab.example.com:3443*
+Auto-selected organization: 00000000-0000-0000-0000-000000000000 Default
 Login successful.
 $ *flightctl get device -o wide*
 NAME                                                    ALIAS   OWNER   SYSTEM  UPDATED         APPLICATIONS    LABELS
@@ -113,7 +114,8 @@ On the left pane, select the menu:Devices[] page, and click the three vertical d
 +
 GRAB SCREENSHOT
 
-.. Notice that there is no action do either decomission or delete a device.
+.. Notice that there is no action do either decomission or delete a device, but only to edit device configurations and view device details.
++
 Also notice, to the top of page, bellow the device filters, a slider button to display decommissioned devices.
 +
 GRAB SCREENSHOT
@@ -151,8 +153,10 @@ GRAB SCREENSHOT
 
 4. Delete the decommissioned device.
 
-.. Return to the menu:Devices[] page and click again menu:Show decommissioned devices[]. 
-Click the actions menu button for the only device listed and select menu:Delete device[].
+.. You could keep the device as being decomissioned for as long as you wish, but after a time you probably want to remove its records from the RHEM database.
++
+To remove the record for the device you just decomissioned, return to the menu:Devices[] page and click again menu:Show decommissioned devices[]. 
+Then click the actions menu button for the only device listed and select menu:Delete device[].
 +
 GRAB SCREENSHOT
 
@@ -204,6 +208,7 @@ $ *exit*
 [source,subs="verbatim,quotes,attributes"]
 --
 $ *flightctl login -u student -p student https://servera.lab.example.com:3443*
+Auto-selected organization: 00000000-0000-0000-0000-000000000000 Default
 Login successful.
 $ *flightctl get device -o wide*
 NAME                                                    ALIAS   OWNER   SYSTEM  UPDATED         APPLICATIONS    LABELS
@@ -217,6 +222,7 @@ Error: unsuccessful decommissioning device request {edge-1-uuid-aaaaaaaaaaaaaaaa
 [source,subs="verbatim,quotes,attributes"]
 --
 $ *flightctl login -u admin -p redhat https://servera.lab.example.com:3443*
+Auto-selected organization: 00000000-0000-0000-0000-000000000000 Default
 Login successful.
 $ *flightctl get device -o wide*
 NAME                                                    ALIAS   OWNER   SYSTEM  UPDATED         APPLICATIONS    LABELS
@@ -257,29 +263,46 @@ Deletion request for device "{edge-1-uuid-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 
 .. Verify that your device list is now empty.
 +
-[source,subs="verbatim,quotes,attributes"]
+[source,subs="verbatim,quotes"]
 --
 $ *flightctl get device -o wide*
 NAME    ALIAS   OWNER   SYSTEM  UPDATED APPLICATIONS    LABELS
 --
 
-7. Verify that your test devices are asking to be enrolled again and reain their identities.
+7. Verify that your test devices cannot communicate with their RHEM server anymore.
 +
-If you wait long enough, and keep your devices running (or when you reboot them later), they still have a RHEM agent enabled, and they will attempt to re-enroll with the RHEM server.
-// Observed this after a reboot (my ROLE timer expired ant the classroom was stopped) would it happen after a time of innactivity?
+////
+Behavior changed from RC to 1.0.0. Devices used to attempt to re-enroll, now they don't.
+////
 
-.. Open a SSH session to one of your test VMs and verify that it is waiting to be re-enrolled in RHEM.
+.. Open a SSH session to one of your test VMs and shutdown it.
++
+[source,subs="verbatim,quotes"]
+--
+$ *ssh -i edge-2-key -p 8222 core@127.0.0.1*
+Under new management!
+...
+[core@enroll ~]$ *sudo shutdown -r now*
+--
+
+.. Give it time to reboot and reconnect using SSH.
++
+Verify that the device believes it is already enrolled with RHEM, but it cannot update its status on the RHEM server.
 +
 [source,subs="verbatim,quotes,attributes"]
---
-$ *ssh -i edge-key -p 8222 core@127.0.0.1*
-Under new management!
-Last login: Tue Dec 23 20:12:56 2025 from 172.25.250.254
-[core@enroll ~]$ *sudo journalctl -u flightctl-agent | tail -n 1*
-Dec 23 20:20:33 enroll flightctl-agent[1693]: time="2025-12-23T20:20:33.857455Z" level=info msg="Enrollment request not yet approved"
-[core@enroll ~]$ *exit*
+-- 
+$ *ssh -i edge-2-key -p 8222 core@127.0.0.1*
+...
+[core@enroll ~]$ *sudo journalctl -u flightctl-agent | grep -A 5 enrolled | tail -n 6*
+Jan 12 19:56:56 enroll flightctl-agent[868]: Your device is enrolled to flightctl,
+Jan 12 19:56:56 enroll flightctl-agent[868]: you can manage your device scanning the above QR. or following this URL:
+Jan 12 19:56:56 enroll flightctl-agent[868]: https://servera.lab.example.com:443/manage/{edge-1-uuid-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}
+Jan 12 19:56:56 enroll systemd[1]: Started Flight Control management agent.
+Jan 12 19:56:56 enroll flightctl-agent[868]: time="2026-01-12T19:56:56.471334Z" level=info msg="No OS update in progress"
+Jan 12 19:56:56 enroll flightctl-agent[868]: time="2026-01-12T19:56:56.516268Z" level=warning msg="Failed to update device status: update device status failed: 404 Not Found" file="device/status/status.go:159"[core@enroll ~]$ *exit*
 --
 
+////
 .. Verify that there are two new device enrollment requests, and that they have the same UUIDs as they did before.
 +
 [source,subs="verbatim,quotes,attributes"]
@@ -291,10 +314,7 @@ NAME                                                    APPROVAL        APPROVER
 --
 
 .. Because they kept their configurations and identity, if you have a backup or their device manifests, you can re-enroll them and resynchronize with RHEM with no loss of service.
-
-// I see no message in agent logs about it being decomissioned.
-// Looks like the agent has no idea it happened, and just don't logs connection failures
-// Hey, now I see my two devices got new enrollmentrequests... is that exepcted?
+////
 
 You demonstrated that decommissioning and deleting managed devices on RHEM does not scrubs the devices.
 If they contained sentitive data, such as secrets to access corporate systems, that is still there, and you must implement a process for cleaning those devices of such data.

@@ -111,7 +111,7 @@ NAME                                     DESCRIPTION
 registry.lab.example.com:5000/ubi9/ubi
 --
 +
-NOTE: You will login again on both the Red Hat registry and your private registry as the root user, because different Linux users do not share container registry authentication tokens.
+NOTE: Later in this lab, you will login again on both the Red Hat registry and your private registry as the root user, because different Linux users do not share container registry authentication tokens.
 
 .. Verify that you have administrator access to a RHEM server.
 +

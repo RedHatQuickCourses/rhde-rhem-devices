@@ -19,8 +19,6 @@ You need a _development machine_ running RHEL, which contains two test VMs alrea
 
 You also need a _server machine_ running RHEL, to which you also have unrestricted sudo access, which was already configured with RHEM.
 
-Finally, you need a _private registry_ to store bootc container images for your managed edge devices.
-
 If you are using the course classroom, your _development machine_ is the `workstation` VM.
 Log in as the user `student` with password `student`.
 
@@ -95,7 +93,7 @@ $ *virsh start edge-2*
 Domain 'edge-2' started
 --
 
-.. Enter the `test-enroll` directory, which contains the SSH key used to access the two test VMs.
+.. Enter the `test-enroll` directory, which contains the SSH key used to access your two test VMs.
 +
 [source,subs="verbatim,quotes"]
 --
