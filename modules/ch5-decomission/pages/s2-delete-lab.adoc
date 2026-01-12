@@ -165,7 +165,7 @@ Now your menu:Devices[] page should list no more decommissioned devices.
 +
 GRAB SCREENSHOT
 
-4. Verify that decomissioned devices are not cleaned up.
+5. Verify that decomissioned devices are not cleaned up.
 
 .. Switch to a terminal and enter the `temp-enroll` directory, which contains the SSH keys for acessing your test VMs.
 +
@@ -201,7 +201,7 @@ $ *sudo bootc status*
 $ *exit*
 --
 
-5. Decomission another device, but now using the CLI.
+6. Decomission another device, but now using the CLI.
 
 .. Log in as the `student` user, just so you can see the error message you would get for insufficient permissions to perform the decommission operation.
 +
@@ -249,7 +249,7 @@ $ *flightctl get device $UUID -o json | jq -r '.status.lifecycle.status'*
 Decommissioning
 --
 
-6. Delete the last device, also by using the CLI.
+7. Delete the last device, also by using the CLI.
 
 .. Use the `UUID` shell variable that you set int the previous step to delete the device resource from RHEM.
 +
@@ -269,7 +269,7 @@ $ *flightctl get device -o wide*
 NAME    ALIAS   OWNER   SYSTEM  UPDATED APPLICATIONS    LABELS
 --
 
-7. Verify that your test devices cannot communicate with their RHEM server anymore.
+8. Verify that your test devices cannot communicate with their RHEM server anymore.
 +
 ////
 Behavior changed from RC to 1.0.0. Devices used to attempt to re-enroll, now they don't.
@@ -299,9 +299,10 @@ Jan 12 19:56:56 enroll flightctl-agent[868]: you can manage your device scanning
 Jan 12 19:56:56 enroll flightctl-agent[868]: https://servera.lab.example.com:443/manage/{edge-1-uuid-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}
 Jan 12 19:56:56 enroll systemd[1]: Started Flight Control management agent.
 Jan 12 19:56:56 enroll flightctl-agent[868]: time="2026-01-12T19:56:56.471334Z" level=info msg="No OS update in progress"
-Jan 12 19:56:56 enroll flightctl-agent[868]: time="2026-01-12T19:56:56.516268Z" level=warning msg="Failed to update device status: update device status failed: 404 Not Found" file="device/status/status.go:159"[core@enroll ~]$ *exit*
+Jan 12 19:56:56 enroll flightctl-agent[868]: time="2026-01-12T19:56:56.516268Z" level=warning msg="Failed to update device status: update device status failed: 404 Not Found" file="device/status/status.go:159"
+[core@enroll ~]$ *exit*
 --
-
++
 ////
 .. Verify that there are two new device enrollment requests, and that they have the same UUIDs as they did before.
 +
@@ -315,6 +316,14 @@ NAME                                                    APPROVAL        APPROVER
 
 .. Because they kept their configurations and identity, if you have a backup or their device manifests, you can re-enroll them and resynchronize with RHEM with no loss of service.
 ////
+
+9. Verify that the devices are still fully functional, by acessing their embedded web application.
++
+[source,subs="verbatim,quotes"]
+-- 
+$ *curl 127.0.0.1:8108*
+This would be the HTML and JavaScript code of a single-page web application.
+--
 
 You demonstrated that decommissioning and deleting managed devices on RHEM does not scrubs the devices.
 If they contained sentitive data, such as secrets to access corporate systems, that is still there, and you must implement a process for cleaning those devices of such data.
