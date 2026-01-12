@@ -246,7 +246,7 @@ You will remediate this by configuring your managed devices with different SSH k
 <ol class="arabic">
 <li>
 <p>Verify that you have the outcomes of previous labs.
-If you do not, go back and complete them, because you need their outcomes to continue with this course.</p>
+If you do not, go back and complete them, because you need their outcomes to proceed with this lab.</p>
 <div class="olist loweralpha">
 <ol class="loweralpha" type="a">
 <li>
@@ -283,7 +283,7 @@ Domain 'edge-2' started</code></pre>
 </div>
 </li>
 <li>
-<p>Enter the <code>test-enroll</code> directory, which contains the Containerfile, kickstart script, and SSH key used to provision the two test VMs.</p>
+<p>Enter the <code>test-enroll</code> directory, which contains the SSH key used to access the two test VMs.</p>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>cd temp-enroll</strong>
@@ -293,20 +293,45 @@ Containerfile  bib-iso.sh  config.toml  config.yaml  edge-key  edge-key.pub  out
 </div>
 </li>
 <li>
-<p>Log in on RHEM, as an administrator, and verify that there are two managed devices, which correspond to the two test VMs.</p>
+<p>Log in on RHEM, as a non-administrator, and verify that there are two managed devices, which correspond to the two test VMs.</p>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>flightctl login -u admin -p redhat https://servera.lab.example.com:3443</strong>
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>flightctl login -u student -p student https://servera.lab.example.com:3443</strong>
+Auto-selected organization: 00000000-0000-0000-0000-000000000000 Default
 Login successful.
 $ <strong>flightctl get device -o wide</strong>
 NAME                                                    ALIAS   OWNER   SYSTEM  UPDATED         APPLICATIONS    LABELS
-1u63hvsgtua9tjjbmla9bgh5h2s77cb8esepphnf68m3ocf8qfng    edge-1  &lt;none&gt;  Online  UpToDate        NoApplications  rhel=9.6,type=noapps,alias=edge-2
+1u63hvsgtua9tjjbmla9bgh5h2s77cb8esepphnf68m3ocf8qfng    edge-1  &lt;none&gt;  Online  UpToDate        NoApplications  rhel=9.6,type=noapps,alias=edge-1
 g7ombcqk46tqq458j9uju454441mf1lgt9qqqva8ti0fnvosm57g    edge-2  &lt;none&gt;  Unknown Unknown         Unknown         rhel=9.6,type=noapps,alias=edge-2</code></pre>
 </div>
 </div>
 </li>
 <li>
 <p>Wait a few moments and repeat the latest command until both managed devices return as <code>OnLine</code> and <code>UpToDate</code>.</p>
+<div class="admonitionblock important">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-important" title="Important"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>If it seems that your test VMs are staying for too long in the <code>Unknow</code> state, access them using SSH and verify if their clocks are accurate by using the <code>date -u</code> command and comparing the output with the same command on your <em>development machine</em>.</p>
+</div>
+<div class="paragraph">
+<p>It has been observed that, when you power off your test VMs without shutting them down, libvirt saves their in-memory state to disk and restores it on the next restart, which causes them to not resynchronize their system clocks.
+The clock skrew prevents them from synching with RHEM.</p>
+</div>
+<div class="paragraph">
+<p>Simply rebooting those VMs, using the <code>shutdown -r now</code> command, seems to resolve that issue.</p>
+</div>
+<div class="paragraph">
+<p>Alternatively, you could use the <code>--force-boot</code> option with the <code>virsh start</code> command every time you restart your test VMs.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
 </li>
 </ol>
 </div>
@@ -327,8 +352,19 @@ Notice we are NOT using the <code>admin</code> user, because you do NOT require 
 </li>
 <li>
 <p>On the left panel, click <strong>Devices</strong> and click the icon with three vertical icons in the row of the <code>edge-2</code> device.
-Then click <strong>Edit device configurations</strong>.
-NOTE: The same option is available from the <strong>Actions</strong> button in the device details page.</p>
+Then click <strong>Edit device configurations</strong>.</p>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+The same option is available from the <strong>Actions</strong> button in the device details page.
+</td>
+</tr>
+</table>
+</div>
 <div class="paragraph">
 <p>GRAB SCREENSHOT</p>
 </div>
@@ -492,7 +528,7 @@ Its <strong>System status</strong> panel should display an <strong>Update status
 </div>
 </li>
 <li>
-<p>Open a SSH session using the new key.</p>
+<p>Open a SSH session to the <code>edge-2</code> test VM using the new key.</p>
 <div class="paragraph">
 <p>Notice that, if you reuse a previous <code>ssh</code> command from your history, you would use the old key and it would ask for the password for the <code>core</code> user.
 Also notice the message from <code>/etc/motd</code>.</p>
@@ -570,6 +606,14 @@ Under new management!</code></pre>
 <pre class="highlightjs highlight"><code class="language-none hljs">$ timedatectl show -p Timezone
 Timezone=Europe/Rome
 $ <strong>sudo timedatectl set-timezone UTC</strong></code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Close the SSH connection and return to your <em>development machine</em> shell.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>exit</strong></code></pre>
 </div>
 </div>
 </li>
@@ -661,11 +705,11 @@ edge-1.yaml: applying device/1u63hvsgtua9tjjbmla9bgh5h2s77cb8esepphnf68m3ocf8qfn
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>flightctl get device $UUID -o wide</strong>
 NAME                                                    ALIAS   OWNER   SYSTEM  UPDATED         APPLICATIONS    LABELS
-1u63hvsgtua9tjjbmla9bgh5h2s77cb8esepphnf68m3ocf8qfng    edge-1  &lt;none&gt;  Online  OutOfDate        NoApplications  alias=edge-1,rhel=9.6,type=noapp
+1u63hvsgtua9tjjbmla9bgh5h2s77cb8esepphnf68m3ocf8qfng    edge-1  &lt;none&gt;  Online  OutOfDate        NoApplications  alias=edge-1,rhel=9.6,type=noapps
 ...
 $ <strong>flightctl get device $UUID -o wide</strong>
 NAME                                                    ALIAS   OWNER   SYSTEM  UPDATED         APPLICATIONS    LABELS
-1u63hvsgtua9tjjbmla9bgh5h2s77cb8esepphnf68m3ocf8qfng    edge-1  &lt;none&gt;  Online  UpToDate        NoApplications  alias=edge-1,rhel=9.6,type=noapp</code></pre>
+1u63hvsgtua9tjjbmla9bgh5h2s77cb8esepphnf68m3ocf8qfng    edge-1  &lt;none&gt;  Online  UpToDate        NoApplications  alias=edge-1,rhel=9.6,type=noapps</code></pre>
 </div>
 </div>
 </li>
@@ -695,7 +739,7 @@ anaconda-ks.cfg  buildinfo  device.txt  original-ks.cfg
 <h2 id="_whats_next"><a class="anchor" href="#_whats_next"></a>What&#8217;s next</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>In the next activity, you will update devices with a new RHEL release, by updating their bootc container image.</p>
+<p>In the next activity, you will update devices with a new bootc container image.</p>
 </div>
 </div>
 </div>
