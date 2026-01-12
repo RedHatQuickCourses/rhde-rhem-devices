@@ -286,7 +286,7 @@ Domain 'edge-2' started</code></pre>
 </div>
 </li>
 <li>
-<p>Enter the <code>test-enroll</code> directory, which contains the Containerfile, kickstart script, and SSH key used to provision the two test VMs.</p>
+<p>Enter the <code>test-enroll</code> directory, which contains the SSH keys used to provision and access your two test VMs.</p>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>cd temp-enroll</strong>
@@ -300,6 +300,7 @@ Containerfile  bib-iso.sh  config.toml  config.yaml  edge-key  edge-key.pub  out
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>flightctl login -u admin -p redhat https://servera.lab.example.com:3443</strong>
+Auto-selected organization: 00000000-0000-0000-0000-000000000000 Default
 Login successful.
 $ <strong>flightctl get device -o wide</strong>
 NAME                                                    ALIAS   OWNER   SYSTEM  UPDATED         APPLICATIONS    LABELS
@@ -329,8 +330,10 @@ On the left pane, select the <b class="menuref">Devices</b> page, and click the 
 </div>
 </li>
 <li>
-<p>Notice that there is no action do either decomission or delete a device.
-Also notice, to the top of page, bellow the device filters, a slider button to display decommissioned devices.</p>
+<p>Notice that there is no action do either decomission or delete a device, but only to edit device configurations and view device details.</p>
+<div class="paragraph">
+<p>Also notice, to the top of page, bellow the device filters, a slider button to display decommissioned devices.</p>
+</div>
 <div class="paragraph">
 <p>GRAB SCREENSHOT</p>
 </div>
@@ -392,8 +395,11 @@ Notice that, when you decomission a managed device, it loses all its labels but 
 <div class="olist loweralpha">
 <ol class="loweralpha" type="a">
 <li>
-<p>Return to the <b class="menuref">Devices</b> page and click again <b class="menuref">Show decommissioned devices</b>.
-Click the actions menu button for the only device listed and select <b class="menuref">Delete device</b>.</p>
+<p>You could keep the device as being decomissioned for as long as you wish, but after a time you probably want to remove its records from the RHEM database.</p>
+<div class="paragraph">
+<p>To remove the record for the device you just decomissioned, return to the <b class="menuref">Devices</b> page and click again <b class="menuref">Show decommissioned devices</b>.
+Then click the actions menu button for the only device listed and select <b class="menuref">Delete device</b>.</p>
+</div>
 <div class="paragraph">
 <p>GRAB SCREENSHOT</p>
 </div>
@@ -462,6 +468,7 @@ Last login: Thu Dec 19 14:05:12 2025 from 172.25.250.254
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>flightctl login -u student -p student https://servera.lab.example.com:3443</strong>
+Auto-selected organization: 00000000-0000-0000-0000-000000000000 Default
 Login successful.
 $ <strong>flightctl get device -o wide</strong>
 NAME                                                    ALIAS   OWNER   SYSTEM  UPDATED         APPLICATIONS    LABELS
@@ -476,6 +483,7 @@ Error: unsuccessful decommissioning device request 1u63hvsgtua9tjjbmla9bgh5h2s77
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>flightctl login -u admin -p redhat https://servera.lab.example.com:3443</strong>
+Auto-selected organization: 00000000-0000-0000-0000-000000000000 Default
 Login successful.
 $ <strong>flightctl get device -o wide</strong>
 NAME                                                    ALIAS   OWNER   SYSTEM  UPDATED         APPLICATIONS    LABELS
@@ -537,38 +545,38 @@ NAME    ALIAS   OWNER   SYSTEM  UPDATED APPLICATIONS    LABELS</code></pre>
 </div>
 </li>
 <li>
-<p>Verify that your test devices are asking to be enrolled again and reain their identities.</p>
-<div class="paragraph">
-<p>If you wait long enough, and keep your devices running (or when you reboot them later), they still have a RHEM agent enabled, and they will attempt to re-enroll with the RHEM server.</p>
-</div>
+<p>Verify that your test devices cannot communicate with their RHEM server anymore.</p>
 <div class="olist loweralpha">
 <ol class="loweralpha" type="a">
 <li>
-<p>Open a SSH session to one of your test VMs and verify that it is waiting to be re-enrolled in RHEM.</p>
+<p>Open a SSH session to one of your test VMs and shutdown it.</p>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>ssh -i edge-key -p 8222 core@127.0.0.1</strong>
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>ssh -i edge-2-key -p 8222 core@127.0.0.1</strong>
 Under new management!
-Last login: Tue Dec 23 20:12:56 2025 from 172.25.250.254
-[core@enroll ~]$ <strong>sudo journalctl -u flightctl-agent | tail -n 1</strong>
-Dec 23 20:20:33 enroll flightctl-agent[1693]: time="2025-12-23T20:20:33.857455Z" level=info msg="Enrollment request not yet approved"
-[core@enroll ~]$ <strong>exit</strong></code></pre>
+...
+[core@enroll ~]$ <strong>sudo shutdown -r now</strong></code></pre>
 </div>
 </div>
 </li>
 <li>
-<p>Verify that there are two new device enrollment requests, and that they have the same UUIDs as they did before.</p>
+<p>Give it time to reboot and reconnect using SSH.</p>
+<div class="paragraph">
+<p>Verify that the device believes it is already enrolled with RHEM, but it cannot update its status on the RHEM server.</p>
+</div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>flightctl get enrollmentrequest</strong>
-NAME                                                    APPROVAL        APPROVER        APPROVED LABELS
-1u63hvsgtua9tjjbmla9bgh5h2s77cb8esepphnf68m3ocf8qfng    Pending         &lt;none&gt;
-g7ombcqk46tqq458j9uju454441mf1lgt9qqqva8ti0fnvosm57g    Pending         &lt;none&gt;</code></pre>
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>ssh -i edge-2-key -p 8222 core@127.0.0.1</strong>
+...
+[core@enroll ~]$ <strong>sudo journalctl -u flightctl-agent | grep -A 5 enrolled | tail -n 6</strong>
+Jan 12 19:56:56 enroll flightctl-agent[868]: Your device is enrolled to flightctl,
+Jan 12 19:56:56 enroll flightctl-agent[868]: you can manage your device scanning the above QR. or following this URL:
+Jan 12 19:56:56 enroll flightctl-agent[868]: https://servera.lab.example.com:443/manage/1u63hvsgtua9tjjbmla9bgh5h2s77cb8esepphnf68m3ocf8qfng
+Jan 12 19:56:56 enroll systemd[1]: Started Flight Control management agent.
+Jan 12 19:56:56 enroll flightctl-agent[868]: time="2026-01-12T19:56:56.471334Z" level=info msg="No OS update in progress"
+Jan 12 19:56:56 enroll flightctl-agent[868]: time="2026-01-12T19:56:56.516268Z" level=warning msg="Failed to update device status: update device status failed: 404 Not Found" file="device/status/status.go:159"[core@enroll ~]$ <strong>exit</strong></code></pre>
 </div>
 </div>
-</li>
-<li>
-<p>Because they kept their configurations and identity, if you have a backup or their device manifests, you can re-enroll them and resynchronize with RHEM with no loss of service.</p>
 </li>
 </ol>
 </div>

@@ -238,8 +238,8 @@ Log in as the user <code>student</code> with password <code>student</code>.</p>
 <h2 id="_instructions"><a class="anchor" href="#_instructions"></a>Instructions</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>You will also configure your managed devices with secrets required to access a private OCI container registry, so they can fetch bootc container images, and update them to use a different image than the one used during enrollment.
-The new bootc container image contains an embedded web application.</p>
+<p>You will configure your managed devices with secrets required to access a private OCI container registry, so they can fetch bootc container images, and update them to use a different image than the one used during enrollment.
+The new bootc container image and contains an embedded web application, which you will access to verify that the update completed sucessfully.</p>
 </div>
 <div class="olist arabic">
 <ol class="arabic">
@@ -324,7 +324,7 @@ registry.lab.example.com:5000/ubi9/ubi</code></pre>
 <i class="fa icon-note" title="Note"></i>
 </td>
 <td class="content">
-You will login again on both the Red Hat registry and your private registry as the root user, because different Linux users do not share container registry authentication tokens.
+Later in this lab, you will login again on both the Red Hat registry and your private registry as the root user, because different Linux users do not share container registry authentication tokens.
 </td>
 </tr>
 </table>
@@ -335,6 +335,7 @@ You will login again on both the Red Hat registry and your private registry as t
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>flightctl login -u student -p student https://servera.lab.example.com:3443</strong>
+Auto-selected organization: 00000000-0000-0000-0000-000000000000 Default
 Login successful.
 $ <strong>flightctl get device -o wide</strong>
 NAME                                                    ALIAS   OWNER   SYSTEM  UPDATED         APPLICATIONS    LABELS
@@ -396,7 +397,7 @@ ADD tmpfiles.d /usr/lib/tmpfiles.d</code></pre>
 <i class="fa icon-note" title="Note"></i>
 </td>
 <td class="content">
-If you want to try with the current lastest release of the upstream project, edit your Containerfile to remove the version component <code>-1.0.0~rc2</code> from the package <code>flightctl-agent</code>.
+If you want to try with the current lastest release of the upstream project, edit your Containerfile to remove the version component <code>-1.0.0</code> from the package <code>flightctl-agent</code>.
 </td>
 </tr>
 </table>
@@ -408,7 +409,7 @@ If you want to try with the current lastest release of the upstream project, edi
 <i class="fa icon-important" title="Important"></i>
 </td>
 <td class="content">
-The previous Containerfile relies on a custom configuration for the Systemd tempfiles services, which ensures the Apache HTTP Server finds work directories it needs in the <code>/var</code> and <code>/run</code> directories.
+The previous Containerfile relies on a custom configuration for the Systemd tempfiles service, which ensures the Apache HTTP Server finds work directories it needs in the <code>/var</code> and <code>/run</code> directories.
 These directories are setup by its RPM packages, and such setup only works at first provisioning, failing at <code>bootc update</code> and <code>bootc switch</code>.
 Using the Systemd tempfiles services is a common workaround for such scenarios.
 </td>
@@ -417,16 +418,10 @@ Using the Systemd tempfiles services is a common workaround for such scenarios.
 </div>
 </li>
 <li>
-<p>Your <em>development machine</em> should be already registered with the Red Hat subscription manager, from a previous lab, but you may have to log in again on the Red Hat registry before you can build you new bootc container image.</p>
+<p>Copy the public certificate of the private container registry.</p>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>sudo subscription-manager status</strong>
-+-------------------------------------------+
-   System Status Details
-+-------------------------------------------+
-Overall Status: Registered
-$ <strong>podman login registry.redhat.io</strong>
-Login Succeeded!</code></pre>
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>cp ../temp-enroll/domain.crt .</strong></code></pre>
 </div>
 </div>
 </li>
@@ -446,9 +441,7 @@ Successfully tagged localhost/rhem-webapp:latest
 <p>Publish the container image in the private registry.</p>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>podman login -u student -p redhat registry.lab.example.com:5000</strong>
-Login Succeeded!
-$ <strong>skopeo copy containers-storage:localhost/rhem-webapp:latest docker://registry.lab.example.com:5000/rhem-webapp:v1.0</strong>
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>skopeo copy containers-storage:localhost/rhem-webapp:latest docker://registry.lab.example.com:5000/rhem-webapp:v1.0</strong>
 ...
 Writing manifest to image destination</code></pre>
 </div>
@@ -461,7 +454,7 @@ Writing manifest to image destination</code></pre>
 </div>
 </li>
 <li>
-<p>Update the second test VM to use the new image, by using the web interface.</p>
+<p>Update your second test VM to use the new image, by using the web interface.</p>
 <div class="admonitionblock important">
 <table>
 <tr>
@@ -469,7 +462,7 @@ Writing manifest to image destination</code></pre>
 <i class="fa icon-important" title="Important"></i>
 </td>
 <td class="content">
-The first attempt is expected to fail, but we will troubleshoot the issue and fix it.
+The first attempt at updating your test VM is expected to fail, but we will troubleshoot for the root cause of the issue and fix it.
 </td>
 </tr>
 </table>
@@ -513,8 +506,10 @@ The first attempt is expected to fail, but we will troubleshoot the issue and fi
 </div>
 </li>
 <li>
-<p>After a few moments, the <strong>Update status</strong> will change to <code>Updating</code>, meaning it is attempting to download and switch to the new booc container image.
-You can click the <code>Updating</code> status to see a longer message describring what updates are pending, in this case, pending download of the bootc container image.</p>
+<p>After a few moments, the <strong>Update status</strong> will change to <code>Updating</code>, meaning it is attempting to download and switch to the new booc container image.</p>
+<div class="paragraph">
+<p>You can click the <code>Updating</code> status to see a longer message describing what updates are pending, in this case, pending download of the bootc container image.</p>
+</div>
 <div class="paragraph">
 <p>GRAB SCREENSHOT</p>
 </div>
@@ -526,7 +521,7 @@ You can click the <code>Updating</code> status to see a longer message describri
 </div>
 </li>
 <li>
-<p>The private registry requires authentication credentails, but these were not provided by its bootc image nor kickstart during provisioning.
+<p>The private registry requires authentication credentails, but these were not provided by its bootc image nor by kickstart during provisioning.
 We will solve the issue by providing those credentials using RHEM.</p>
 </li>
 </ol>
@@ -563,7 +558,8 @@ $ <strong>cat auth.json</strong>
 <p>Back to your web browser, enter the manged device details page for the <code>edge-2</code> device end edit its device configurations.</p>
 </li>
 <li>
-<p>Click <b class="menuref">Add configuration</b> and fill in the fields as follows:</p>
+<p>Scroll down until you see the link <b class="menuref">Add configuration</b> and click it.
+Fill in the fields as follows:</p>
 <div class="openblock">
 <div class="content">
 <div class="olist lowerroman">
@@ -621,8 +617,10 @@ You can also monitor the update status of the device from the <strong>Devices</s
 <div class="olist loweralpha">
 <ol class="loweralpha" type="a">
 <li>
-<p>Enter the device details page for the <code>edge-2</code> device, if you are not already there, and click the <b class="menuref">Terminal</b> tab.
-Run the <code>bootc status</code> command, to show that the webapp bootc container is the corrently booted system image, and the enrollment bootc container is now the rollback image.</p>
+<p>Enter the device details page for the <code>edge-2</code> device, if you are not already there, and click the <b class="menuref">Terminal</b> tab.</p>
+<div class="paragraph">
+<p>Run the <code>bootc status</code> command, to show that the webapp bootc container is the currently booted system image, and the enrollment bootc container is now the rollback image.</p>
+</div>
 <div class="paragraph">
 <p>You can also verify that the <code>httpd</code> service is active and use the <code>curl</code> command do see its default web page.</p>
 </div>
@@ -643,11 +641,11 @@ This would be the HTML and JavaScript code of a single-page web application.</co
 </div>
 </li>
 <li>
-<p>Update the first test VM to use the new image, by using the CLI.</p>
+<p>Update your first test VM to use the new image, by using the CLI.</p>
 <div class="olist loweralpha">
 <ol class="loweralpha" type="a">
 <li>
-<p>Now you will apply the same operating system + configuration update, but using YAML manifests.
+<p>Now you will apply the same operating system and configuration update, but using YAML manifests.
 Start by reviewing the <code>edge-1-webapp.yaml</code> file, which is in the same folder as the Containerfile for the new bootc image.</p>
 <div class="paragraph">
 <p>There should be nothing new to you in this manifest: it includes the updated SSH key and message of day files from the previous lab, and adds the private registry credentials and the reference to the new bootc container image, just like you did for the <code>edge-2</code> device.</p>
@@ -748,7 +746,7 @@ NAME                                                    ALIAS   OWNER   SYSTEM  
 </div>
 </li>
 <li>
-<p>Verify that the first test VM is running with updates applied.</p>
+<p>Verify that your first test VM is running with updates applied.</p>
 <div class="olist loweralpha">
 <ol class="loweralpha" type="a">
 <li>
@@ -790,7 +788,7 @@ This would be the HTML and JavaScript code of a single-page web application.</co
 </ol>
 </div>
 <div class="paragraph">
-<p>In this lab, you performed operating system updated on two managed devices, by using the RHEM web interface and its CLI.
+<p>In this lab, you performed operating system updates on two managed devices, by using the RHEM web interface and its CLI.
 You also demonstrated that the fact that a device can be provisioned from a bootc container image does not ensures that it is configured to fetch bootc container updates from private registries, and that RHEM is able to provide such configurations at the same time it updates the system image of managed devices.</p>
 </div>
 </div>
