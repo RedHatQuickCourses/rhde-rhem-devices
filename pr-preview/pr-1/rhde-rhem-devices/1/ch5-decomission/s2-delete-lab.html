@@ -574,11 +574,21 @@ Jan 12 19:56:56 enroll flightctl-agent[868]: you can manage your device scanning
 Jan 12 19:56:56 enroll flightctl-agent[868]: https://servera.lab.example.com:443/manage/1u63hvsgtua9tjjbmla9bgh5h2s77cb8esepphnf68m3ocf8qfng
 Jan 12 19:56:56 enroll systemd[1]: Started Flight Control management agent.
 Jan 12 19:56:56 enroll flightctl-agent[868]: time="2026-01-12T19:56:56.471334Z" level=info msg="No OS update in progress"
-Jan 12 19:56:56 enroll flightctl-agent[868]: time="2026-01-12T19:56:56.516268Z" level=warning msg="Failed to update device status: update device status failed: 404 Not Found" file="device/status/status.go:159"[core@enroll ~]$ <strong>exit</strong></code></pre>
+Jan 12 19:56:56 enroll flightctl-agent[868]: time="2026-01-12T19:56:56.516268Z" level=warning msg="Failed to update device status: update device status failed: 404 Not Found" file="device/status/status.go:159"
+[core@enroll ~]$ <strong>exit</strong></code></pre>
 </div>
 </div>
 </li>
 </ol>
+</div>
+</li>
+<li>
+<p>Verify that the devices are still fully functional, by acessing their embedded web application.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>curl 127.0.0.1:8108</strong>
+This would be the HTML and JavaScript code of a single-page web application.</code></pre>
+</div>
 </div>
 </li>
 </ol>
