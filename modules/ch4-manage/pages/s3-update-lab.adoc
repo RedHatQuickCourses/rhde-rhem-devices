@@ -60,7 +60,7 @@ You will also configure your managed devices with secrets required to access a p
 The new bootc container image contains an embedded web application.
 
 1. Verify that you have the outcomes of previous labs.
-If you do not, go back and complete them, because you need their outcomes to continue with this course.
+If you do not, go back and complete them, because you need their outcomes to proceed with this lab.
 
 .. There is a clone of the course samples repository on your home directory.
 +
@@ -92,15 +92,51 @@ $ *virsh start edge-2*
 Domain 'edge-2' started
 --
 
+.. Verify that your _development machine_ is registered to Red Hat, so it can access package repositories of any RHEL version.
++
+[source,subs="verbatim,quotes"]
+--
+$ *sudo subscription-manager status*
++-------------------------------------------+
+   System Status Details
++-------------------------------------------+
+Overall Status: Registered
+--
+
+.. Verify that you can access RHEL containers.
+You may get a different hash for the RHEL base bootc container image because `9.6` is a floating tag.
++
+[source,subs="verbatim,quotes"]
+--
+$ *podman login registry.redhat.io*
+...
+Login Succeeded!
+$ *skopeo inspect --format '{{.Digest}}' docker://registry.redhat.io/rhel9/rhel-bootc:9.6*
+sha256:d64013d886f00ff8afd3141918139d6a6789612d7ce4d3b5c4ffc3b98fc9dec1
+--
+
+.. Verify that you have access to a private container registry.
++
+[source,subs="verbatim,quotes"]
+--
+$ *podman login -u student -p redhat registry.lab.example.com:5000*
+Login Succeeded!
+$ *podman search registry.lab.example.com:5000/ubi9*
+NAME                                     DESCRIPTION
+registry.lab.example.com:5000/ubi9/ubi
+--
++
+NOTE: You will login again on both the Red Hat registry and your private registry as the root user, because different Linux users do not share container registry authentication tokens.
+
 .. Log in on RHEM, as a non-administrator, and verify that there are two managed devices, which correspond to the two test VMs.
 +
 [source,subs="verbatim,quotes,attributes"]
 --
-$ *flightctl login -u admin -p redhat https://servera.lab.example.com:3443*
+$ *flightctl login -u student -p student https://servera.lab.example.com:3443*
 Login successful.
 $ *flightctl get device -o wide*
 NAME                                                    ALIAS   OWNER   SYSTEM  UPDATED         APPLICATIONS    LABELS
-{edge-1-uuid-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}    edge-1  <none>  Online  UpToDate        NoApplications  rhel=9.6,type=noapps,alias=edge-2
+{edge-1-uuid-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}    edge-1  <none>  Online  UpToDate        NoApplications  rhel=9.6,type=noapps,alias=edge-1
 {edge-2-uuid-bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb}    edge-2  <none>  Unknown Unknown         Unknown         rhel=9.6,type=noapps,alias=edge-2
 --
 

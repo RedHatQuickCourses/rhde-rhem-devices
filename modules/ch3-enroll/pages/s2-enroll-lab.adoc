@@ -55,7 +55,7 @@ Then you will use that ISO to provision a test VM, which stands in for a managed
 Finally, you will approve that device enrollment request, and verify that you can use the same ISO, unchanged, to provision additional edge devices.
 
 1. Verify that you have the outcomes of previous labs.
-If you do not, go back and complete them, because you need their outcomes to continue with this course.
+If you do not, go back and complete them, because you need their outcomes to proceed with this lab.
 
 .. On your _development machine_, verify that there is a clone of the course samples repository on your home directory.
 +

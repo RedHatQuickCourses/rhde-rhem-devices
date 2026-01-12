@@ -43,7 +43,7 @@ Decommissioning devices in RHEM.
 You will decommission and delete both managed devices you enrolled and configured in previous labs, and you will verify that the configurations set by RHEM remain on the devices after they are not managed anymore.
 
 1. Verify that you have the outcomes of previous labs.
-If you do not, go back and complete them, because you need their outcomes to continue with this course.
+If you do not, go back and complete them, because you need their outcomes to proceed with this lab.
 +
 NOTE: While this activity does not depend on outcomes from _all_ of the previous labs, it works better if you already perform some configuration of managed devices, after enrolling them.
 
@@ -55,6 +55,10 @@ $ *cd*
 $ *ls rhde-rhem-samples*
 LICENSE  README.md  antora.yml  enroll  modules  webapp
 --
++
+// No need to access RPM packages here
++
+// No need to access container images either
 
 .. There are two local test VMs, named `edge-1` and `edge-2`.
 +
@@ -94,7 +98,7 @@ $ *flightctl login -u admin -p redhat https://servera.lab.example.com:3443*
 Login successful.
 $ *flightctl get device -o wide*
 NAME                                                    ALIAS   OWNER   SYSTEM  UPDATED         APPLICATIONS    LABELS
-{edge-1-uuid-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}    edge-1  <none>  Online  UpToDate        NoApplications  rhel=9.6,type=noapps,alias=edge-2
+{edge-1-uuid-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}    edge-1  <none>  Online  UpToDate        NoApplications  rhel=9.6,type=noapps,alias=edge-1
 {edge-2-uuid-bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb}    edge-2  <none>  Unknown Unknown         Unknown         rhel=9.6,type=noapps,alias=edge-2
 --
 
