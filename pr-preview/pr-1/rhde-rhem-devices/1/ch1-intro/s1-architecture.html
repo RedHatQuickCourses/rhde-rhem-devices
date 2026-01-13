@@ -281,6 +281,20 @@ Most RHEL subscriptions assume data center servers, which many CPUs, lots of mem
 <p>RHDE, on the other hand, has a cost which is compatible with small devices, which are single-CPU, have a small amount of memory, and usually run a single application for a single user at a time.
 Nothing prevents RHDE from running multiple applications in parallel, serving some dozen users, and this is common in a class of edge devices usually known as <em>edge gateways</em>, which collect data and control multiple smaller edge devices, like security cameras and industrial sensors, which would not be able to run RHDE by themselves.</p>
 </div>
+<div class="paragraph">
+<p>RHDE is only one of many solutions that Red Hat offers for edge computing.
+For example, your edge devices may be capable of running Red Hat OpenShift using the single node, two nodes, or three nodes (compact cluster) topology and support legacy virtualization applications.</p>
+</div>
+<div class="paragraph">
+<p>Another example, connectivity may be good enough that you could run Red Satelite capsule servers and Ansible execution nodes on your edge sites, and even a regional ACM cluster, conected to a central global hub cluster, and threat them mostly as you would treat a regional data center or campus.</p>
+</div>
+<div class="paragraph">
+<p>Some edge sites may be best designed with a mix of solutions: some large servers and applications run with data center tools, such as package mode RHEL and Red Hat OpenShift, but smaller edge devices and gateways run with RHDE and RHEM.
+For such sites, running RHEM integrated with ACM or AAP may be the best approach.</p>
+</div>
+<div class="paragraph">
+<p>This course does not attempt to enable all those variations, and focuses on RHEM with RHDE, even though there is more than RHDE and RHEM about edge computing with Red Hat</p>
+</div>
 </div>
 </div>
 <div class="sect1">
