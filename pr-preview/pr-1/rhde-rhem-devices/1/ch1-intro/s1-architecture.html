@@ -286,14 +286,14 @@ Nothing prevents RHDE from running multiple applications in parallel, serving so
 For example, your edge devices may be capable of running Red Hat OpenShift using the single node, two nodes, or three nodes (compact cluster) topology and support legacy virtualization applications.</p>
 </div>
 <div class="paragraph">
-<p>Another example, connectivity may be good enough that you could run Red Satelite capsule servers and Ansible execution nodes on your edge sites, and even a regional ACM cluster, conected to a central global hub cluster, and threat them mostly as you would treat a regional data center or campus.</p>
+<p>Another example: connectivity may be good enough that you could run Red Satelite capsule servers and Ansible execution nodes (from Ansible automation mesh) on your edge sites, and even a regional ACM cluster, conected to a central global hub cluster, and manage them mostly as you would manage a regional data center or campus.</p>
 </div>
 <div class="paragraph">
-<p>Some edge sites may be best designed with a mix of solutions: some large servers and applications run with data center tools, such as package mode RHEL and Red Hat OpenShift, but smaller edge devices and gateways run with RHDE and RHEM.
+<p>Some edge sites may be best designed with a mix of solutions: a few large servers and applications run with data center tools, such as package mode RHEL and Red Hat OpenShift, and armies of smaller edge devices and gateways run with RHDE and RHEM.
 For such sites, running RHEM integrated with ACM or AAP may be the best approach.</p>
 </div>
 <div class="paragraph">
-<p>This course does not attempt to enable all those variations, and focuses on RHEM with RHDE, even though there is more than RHDE and RHEM about edge computing with Red Hat</p>
+<p>This course does not attempt to provide skills about all those variations, and focuses only on RHEM with RHDE, even though there is more than RHDE and RHEM about edge computing with Red Hat products.</p>
 </div>
 </div>
 </div>
@@ -301,12 +301,21 @@ For such sites, running RHEM integrated with ACM or AAP may be the best approach
 <h2 id="_introduction_to_red_hat_edge_manager"><a class="anchor" href="#_introduction_to_red_hat_edge_manager"></a>Introduction to Red Hat Edge Manager</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>The best way of describing Red Hat Edge Manager is as <em>Kubernetes-style GitOps for the operating system</em>.
-RHEM manages declarative state about managed devices and continuouly monitor that state, reconcilliating any deviations.
-If an administrator alters the declared state, RHEM ensures that managed devices are changed to be consistent with the new state.</p>
+<p>The best way of describing Red Hat Edge Manager is as providing <em>Kubernetes-style GitOps for the operating system</em>.
+RHEM manages declarative state about managed devices and continuouly monitor that state, reconcilliating any deviations:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>If an administrator alters the declared state, RHEM ensures that managed devices are changed to be consistent with the new state.</p>
+</li>
+<li>
+<p>If an administrator changes the state of a device that is managed by RHEM, for example using a direct SSH connection, RHEM reverts that change to maintain the device consistent with the declared state.</p>
+</li>
+</ul>
 </div>
 <div class="paragraph">
-<p>You can store the declarative configuration of managed devices inside of RHEM&#8217;s own database, but the recommended practice is to store it in a git repository, which makes updates and testing easier.</p>
+<p>You can store the declarative configuration of managed devices inside of RHEM&#8217;s own database, as inline configurations, but the recommended practice is to store most of them in a git repository, which makes updates, testing, and troubleshooting easier.</p>
 </div>
 <div class="paragraph">
 <p>Red Hat Edge Manager controls three aspects of device configurations:</p>
@@ -314,7 +323,7 @@ If an administrator alters the declared state, RHEM ensures that managed devices
 <div class="olist arabic">
 <ol class="arabic">
 <li>
-<p>The operating system image running on devices, as a bootc container image (image mode for RHEL).</p>
+<p>The operating system image running on devices, as a bootc container image from image mode for RHEL.</p>
 </li>
 <li>
 <p>Operating system and application configuration files in <code>/etc</code> and <code>/var</code>.</p>
@@ -329,9 +338,17 @@ If an administrator alters the declared state, RHEM ensures that managed devices
 Future releases of RHEM may support managing devices not running image mode for RHEL and additional types of applications, such as Helm applications.</p>
 </div>
 <div class="paragraph">
-<p>The way RHEM supports image mode for RHEL and containerized applications adapts to differnet ways IT and OT teams organize themselves.
-Some teams may opt for a fully "appliance" approach, where applications are embeded into the operating system image as a single artifact, and OT field people just turns the device on.
-Other teams may opt for a right separation of concern, where an infrastructure team manages operating system configurations and hardware lifecycle, while business other teams manage application lifecycle and data.</p>
+<p>The way RHEM supports image mode for RHEL and containerized applications adapts to differnet ways IT and OT teams organize themselves:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Some teams may opt for a fully "appliance" approach, where applications are embeded into the operating system image as a single artifact, and OT field people just turns the device on.</p>
+</li>
+<li>
+<p>Other teams may opt for a right separation of concern, where an infrastructure team manages operating system configurations and hardware lifecycle, while business other teams manage application lifecycle and data.</p>
+</li>
+</ul>
 </div>
 <div class="paragraph">
 <p>The concept of <em>fleet management</em> is key to RHEM.
@@ -341,7 +358,7 @@ If you heard the analogy of <em>pets vs cattle</em>, RHEM enables you to manage 
 <div class="paragraph">
 <p>For example, you define once the configuration of all pont of sale (PoS) systems in all your stores, and let RHEM apply the configuration to all of them.
 RHEM will also let you know which ones were updated or not to the latest configuration.
-Or you could define a configuration only for the PoS systems in a singel store or all stores in a single a region, before applying it to all your remaining stores.</p>
+Or you could define a configuration only for the PoS systems in a single store or all stores in a single a region, before applying it to all your remaining stores.</p>
 </div>
 </div>
 </div>
@@ -356,7 +373,7 @@ Or you could define a configuration only for the PoS systems in a singel store o
 Teams that have mature practices and skills on such tools may benefit from using them together with RHEM, and over time adopt more and more of RHEM capabilities which they perceive as more reliable or easier to use than the capabilities they are alreaydy familiar with and were already using for data centers and clouds.</p>
 </div>
 <div class="paragraph">
-<p>If you opt for deploying RHEM integrated with either ACM or AAP, RHEL looks like it is part of those platforms, using the same authentication and permission mechanisms, but still offering its own features and APIs.
+<p>If you opt for deploying RHEM integrated with either ACM or AAP, RHEM looks like it is part of those platforms, integrated to their web interfaces, and using the same authentication and permission mechanisms, but still offering its own features and APIs.
 For example, if you deploy RHEM on OpenShift, with or without ACM, RHEM still stores managed device state on its own database instead of using kubernetes custom resources to store managed device state.</p>
 </div>
 <div class="paragraph">
@@ -365,7 +382,7 @@ For example, if you deploy RHEM on OpenShift, with or without ACM, RHEM still st
 <div class="ulist">
 <ul>
 <li>
-<p><strong>Red Hat Satellite</strong>, to manage RPM package repositories made available to developers who build operating system images.</p>
+<p><strong>Red Hat Satellite</strong>, to manage RPM package repositories made available to developers who build operating system images and network boot artifacts made available to edge sites.</p>
 </li>
 <li>
 <p><strong>Red Hat Quay</strong>, to manage operating system images (bootc container images), application container images, helm charts, Large Language Models (LLMs), and other software artifacts made available to developers and edge sites.</p>
@@ -382,7 +399,7 @@ For example, if you deploy RHEM on OpenShift, with or without ACM, RHEM still st
 </ul>
 </div>
 <div class="paragraph">
-<p>And you could opt to use tools for a number of vendors, other than Red Hat, to provide similar capabilities.</p>
+<p>Of course, you could use alternative tools from any other vendor to provide similar capabilities.</p>
 </div>
 <div class="paragraph">
 <p>In this course, we focus on the simplest deployment modes of RHEM standalone in RHEL, without other Red Hat tools, and using open source web servers and container registries to provide the minimum required infrastructure, so we can focus on operating RHEM and managing edge devices with RHEM.</p>
