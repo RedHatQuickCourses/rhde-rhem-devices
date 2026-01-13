@@ -182,14 +182,16 @@
 </aside>
 <article class="doc">
 <h1 class="page">Red Hat Edge Manager Services and Installation</h1>
+<div id="preamble">
+<div class="sectionbody">
 <div class="paragraph">
-<p><em>Estimated reading time: <strong>5 minutes</strong>.</em></p>
+<p><em>Estimated reading time: <strong>9 minutes</strong>.</em></p>
 </div>
 <div class="dlist">
 <dl>
 <dt class="hdlist1">Objective</dt>
 <dd>
-<p>Describe the main services that comprise RHEM and how to deploy them as quadlets in RHEL servers, without dependencies on external services such as ACM, AAP, or Keycloack.</p>
+<p>Describe the main services that comprise Red Hat Edge Manager and how to deploy them as quadlets in RHEL servers, without dependencies on external services such as ACM, AAP, or Keycloack.</p>
 </dd>
 </dl>
 </div>
@@ -200,13 +202,190 @@
 <i class="fa icon-warning" title="Warning"></i>
 </td>
 <td class="content">
-Not started yet
+Work in progress
 </td>
 </tr>
 </table>
 </div>
 <div class="paragraph">
-<p>Lorem ipsum dolor sit amet</p>
+<p>As we already say in the previous chapter, Red Hat Edge Manager (RHEM) is based on the Flight Control open source project and is composed of two main pieces: an RHEM server, which runs a collection of microservices, fronted by an API server, and a RHEM agent, which runs on individual managed devices.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="../ch1-intro/_images/agent-vs-server.svg" alt="agent vs server">
+</div>
+</div>
+<div class="paragraph">
+<p>You manage edge devices by making changes to the state of devices and fleets, using the RHEM API.
+The RHEM agent observes the state stored on the server and the state of the device itself, reconcilling any differences.</p>
+</div>
+<div class="paragraph">
+<p>There are many ways of deploying the RHEM microservices, and this course focuses on installing RHEM standalone on RHEL servers.
+RHEM microservices run as Podman containers, managed by the System Daemon (Systemd) using quadlets.</p>
+</div>
+<div class="paragraph">
+<p>Before describing how to install RHEM services and quadlets on a RHEL server, let&#8217;s take a closer look at the RHEM architecture and its microservices.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_api_command_line_and_web_interfaces"><a class="anchor" href="#_api_command_line_and_web_interfaces"></a>API, command-line, and web interfaces</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Though you could interact directly with the RHEM API, and there is even an <a href="https://galaxy.ansible.com/ui/repo/published/flightctl/core/docs/" target="_blank" rel="noopener">Ansible content collection</a> that does it, you would usually interact with RHEM by using either its command-line interface (CLI), provided by the <code>flightctl</code> command, or its web user interface (UI).</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="_images/RHEM-arch.svg" alt="RHEM arch">
+</div>
+<div class="title">Figure 1. High-level architecture of RHEM</div>
+</div>
+<div class="paragraph">
+<p>The CLI has native ports for all major operating system, and the web UI usually runs in the same machine as the RHEM microservices, though it does not need to.
+The majority of tasks can be performed using either the CLI or the web UI.
+As expected, the web UI offers ease of use, while the CLI offers scriptability.</p>
+</div>
+<div class="paragraph">
+<p>The RHEM microservices use a PostgreSQL relational database for persisting device state and its API resources, and can be configured with a number of different authentication, authorization, certificate, and configuration providers.</p>
+</div>
+<div class="paragraph">
+<p>Configuration of the RHEM microservices is not usually done using its API, but by editting configuration files (if RHEM is deployed in RHEL) or Kubernetes resources (if RHEM is deployed on OpenShift).</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+This course does not teach how to configure different providers and other aspects of RHEM microservices.
+It sticks to the installation defaults, which use Linux PAM for authentication and authorization, and a self-signed certificate.
+This course focuses on using the RHEM API to manage devices.
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>Depending on the authentication provider, it may not be possible to authenticate to RHEM using the CLI. In that case, the CLI can invoke a web browser to perform authentication and them use the returned token.</p>
+</div>
+<div class="paragraph">
+<p>RHEM agents also invoke the RHEM API, but using a different entrypoint than the CLI and web UI do, and authenticate using a certificate generated during device enrollment time.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_rhem_microservices"><a class="anchor" href="#_rhem_microservices"></a>RHEM microservices</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>RHEM runs a number of microservices, each on its own container, including a few optional observability microservices.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="_images/RHEM-components.svg" alt="RHEM components">
+</div>
+<div class="title">Figure 2. RHEM microservices</div>
+</div>
+<div class="paragraph">
+<p>If you deploy RHEM standalone on RHEL, each microservice becomes a System Daemon (Systemd) service unit, as well as their supporting services.
+The PostgreSQL database corresponds to the <code>flightctl-db</code> service and container, and the Redis cache corresponds to the <code>flightctl-kv</code> service and container.</p>
+</div>
+<div class="paragraph">
+<p>There may be a few service units and containers not included in the previous diagram, for example a service that provides downloads of the RHEM CLI. Tasks such as initializing the RHEM database, or migrating its schema during RHEM version updates, or generating TLS certificates for acessing RHEM API access, are also performed by containers running from one-shot Systemd units.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_pam_authentication_with_rhem"><a class="anchor" href="#_pam_authentication_with_rhem"></a>PAM authentication with RHEM</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>In the simplest deployment of standalone RHEM on RHEM, a special microservice called <code>flightctl-pam-issuer</code> runs an OpenID Connect (ODIC) provider based on Linux PAM.</p>
+</div>
+<div class="paragraph">
+<p>Using its default configuation, the PAM issuer service uses UNIX passwd, shadow, and group files to manage authentication and authorization for the RHEM API.</p>
+</div>
+<div class="paragraph">
+<p>The PAM issuer does not use the user and group files from its host RHEL server, but contains its own copy of these files.
+You must manage these files inside the container, using standard Linux tools such as the <code>useradd</code> command.
+The default configuration makes the Linux users of the PAM issuer container independent of the Linux users of its host, so a RHEM user does not get console or SSH access to the RHEM server host.</p>
+</div>
+<div class="paragraph">
+<p>Future releases of RHEM may expand the PAM issuer to support authentication and authorization using Red Hat Identity Manager (IdM), Microsoft Active Directory (MSAD), and other enterprise authentication systems based on the Kernberos and LDAP protocols by using the Secure System Services Daemon (sssd).</p>
+</div>
+<div class="admonitionblock important">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-important" title="Important"></i>
+</td>
+<td class="content">
+The recommended approach for a production-grade deployment of RHEM is configuring an ODIC provider which connects to an OAuth-based enterprise or cloud identity system, such as Red Hat build of Keycloack, Microsoft EntraID, Auth0 by Okta, or Google Cloud Authentication.
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_installing_rhem_standalone_on_rhel"><a class="anchor" href="#_installing_rhem_standalone_on_rhel"></a>Installing RHEM standalone on RHEL</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Before you attempt to install RHEM on RHEL, you must log in to the Red Hat registry (<code>registry.redhat.io</code>) using a valid Red Hat customer portal account, as the root user.
+This step is necessary because the RHEM packages only configure Systemd units and their respective Podman Quadlets.
+These units pull RHEM container images, but will fail if there is no registry access token in the container environment of the root user.</p>
+</div>
+<div class="paragraph">
+<p>To install RHEM on RHEL, you must have access to a Red Hat subscription with entitles RHEM and enable, using subcription manager, the package repository channel named <code>edge-manager-1.0-for-rhel-9-x86_64-rpms</code>.</p>
+</div>
+<div class="paragraph">
+<p>Alternatively, you could enable the <a href="https://github.com/flightctl/flightctl-rpm" target="_blank" rel="noopener">upstream RPM repository</a> from the Flight Control project, which works for learning purposes, especially given that early releases are likely to be functionally equivalent to the RHEM product.
+In that case, you do not need to log in to the Red Hat registry.</p>
+</div>
+<div class="paragraph">
+<p>Then you install the <code>flightctl-services</code> package, which configures Systemd units for all necessary RHEM microservices.
+The same package configures Systemd units to perform one-time initialization of the services which require it.
+Finally, you enable and start the <code>flightctl</code> target on Systemd.</p>
+</div>
+<div class="paragraph">
+<p>Additional <code>flightctl-*</code> packages provide optional microservices, such as the observability components, and the CLI, which you can install afterwards or before starting RHEM.</p>
+</div>
+<div class="paragraph">
+<p>If your RHEM server has firewall services enabled, you should check the product or upstream documentation for the list of TCP ports to open.
+You must expose not only the API and web UI ports, but also a few other services, for external network connections.</p>
+</div>
+<div class="paragraph">
+<p>You should expect it, but, anyway, we say it out loud: do not disable SELinux.
+RHEM includes a SELinux policy for the targeted mode, as you would expect from any production-grade software.</p>
+</div>
+<div class="paragraph">
+<p>After RHEM services are up and running, you may configure users and groups on the <code>flightctl-pam-issuer</code> container, or configure an enterprise OIDC provider.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_where_is_rhem_data_stored"><a class="anchor" href="#_where_is_rhem_data_stored"></a>Where is RHEM data stored?</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>After you start a RHEM server, you will not find a <code>/var/lib/pgsql/data/</code> directory for PostgreSQL data on your RHEM server host.
+That directory exists only inside the <code>flightctl-db</code> container, and it is a Podman volume.</p>
+</div>
+<div class="paragraph">
+<p>If you must perform database backups and other database management operations, you must perform them inside the database container.</p>
+</div>
+<div class="paragraph">
+<p>Similarly, you will not find Redis data directories or API access and audit logs on your RHEM server host, and must manage their Podman volumes or enter the respective container namespaces.</p>
+</div>
+<div class="paragraph">
+<p>Future releases of RHEM will support external databases, so you can provide a properly configured, high-available database server to store RHEM data and managed device state.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_whats_next"><a class="anchor" href="#_whats_next"></a>What&#8217;s Next</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The next activity installs and configures a RHEM server, and the next chapter provisions and enrolls managed edge devices on RHEM.</p>
+</div>
+</div>
 </div>
 <nav class="pagination">
   <span class="prev"><a href="index.html">Install Red Hat Edge Manager as Quadlets</a></span>
