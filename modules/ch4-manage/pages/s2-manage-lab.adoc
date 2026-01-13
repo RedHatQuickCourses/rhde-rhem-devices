@@ -403,6 +403,7 @@ anaconda-ks.cfg  buildinfo  device.txt  original-ks.cfg
 
 The agent has insufficient permissions (on its SELinux policy) to set the hostname.
 https://issues.redhat.com/browse/EDM-2833
+The fix is expected to be in 1.1.0 so I could use it for fleets in the next course
 
 I could workaround with 'setenforce 0' and wait for an update... but maybe I should have a "plan B" to not depend on it.
 

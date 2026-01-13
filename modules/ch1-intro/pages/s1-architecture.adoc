@@ -1,12 +1,12 @@
-:time_estimate: 5
+:time_estimate: 18
 
-= Managing Edge Device with Red Hat Edge Manager
+= Managing Edge Devices with Red Hat Edge Manager
 
 _Estimated reading time: *{time_estimate} minutes*._
 
 Objective::
 
-Describe what is RHDE, its high level architecture, and relations to other infrastructure management tools from Red Hat, such as Red Hat Satellite, Red Hat Ansible Automation Platform (AAP), and Red Hat Advanced Cluster Management (ACM).
+Describe what is Red Hat Edge Manager, its high level architecture, and relations to other infrastructure management tools from Red Hat, such as Red Hat Satellite, Red Hat Ansible Automation Platform, and Red Hat Advanced Cluster Management.
 
 
 WARNING: Work in progress
@@ -38,25 +38,29 @@ https://www.redhat.com/en/blog/managing-red-hat-device-edge-tools-and-strategies
 
 == Introduction do Edge Computing
 
-_Edge computing_ is any computing infrastructure that located close to the source of data generation or production, such as a plant floor, a retail store, or an offshore oil rig.
+_Edge computing_ is any computing infrastructure that is located close to the source of data generation or production, such as a plant floor, a retail store, or an offshore oil rig.
 
 An _edge site_ is any location where you have edge computing resources.
-It could be as small as a single automated teller machine in a retail store, a couple point of sale systems in a drug store, or an automated pick up location, such as an Amazon Locker, in a train terminal. 
+It could be as small as a single automated teller machine in a retail store, a few point of sale systems in a drug store, or an automated pick up location, such as an Amazon Locker, in a train terminal. 
+
+image::Edge-site.svg[title="Characteristics of edge sites"]
 
 Some edge sites, like a cruise ship or a department store, may contain a large number of computing resources and even a "server room" with compute and network racks, uninterruptive power supplies, and other resources similar to a data center.
-But other edge sites may put compute resources in an environment which the ower of the edge resources do not control, vulnerable to the climate and tampering by outsiders.
+But other edge sites may put compute resources in an environment which the ower of the edge resources do not fully control, exposed to the climate and to tampering by outsiders, including from customers.
 
-Unlike traditional centralized and regional data centers, and large office buildings and campuses, edge sites often face limitations regarding power, cooling, and hardware capabilities.
+Unlike traditional data centers and large office buildings, edge sites often face limitations regarding power, cooling, and hardware capabilities.
 Edge sites may also be disconnected, air-gapped, or have low bandwidth connections to the outside.
 
-But more important than hardware and networing capabilities, edge sites often lack on-site Information Technology (IT) expertise, prioritizing other needs from the _Operational Technology_ (OT) domain, such as PLC programming, radiology equipment maintenance, or non-IT and non-OT personel such as store management.
+But more important than hardware and networing capabilities, edge sites often lack on-site Information Technology (IT) expertise, prioritizing other needs from the _Operational Technology_ (OT) domain, such as PLC programming, radiology equipment maintenance, or non-IT and non-OT needs such as store management.
 
-Traditional IT management tools focus on the high capacity, always connected, and highly standardized world of data centers and cater to the needs of IT personel.
-Edge management tools, on the other hand, must be friendlier to OT personal and deal with the large variety of form factors, intermitent network connectivity, and limited capabilities, of edge sites.
+Traditional IT management tools focus on the high capacity, always connected, and highly standardized world of data centers and clouds, and they cater to the needs of IT personel only.
+Edge management tools, on the other hand, must be friendlier to OT personal and deal with the large variety of form factors, intermitent network connectivity, limited hardware capabilities, and possibly harsh conditions of edge sites.
 
-While edge computing used to be the domain of highly specialized and proprietary devices and software, there's a desire to be closer to the world of edge computing, to enable workload portability, better integration with corporate systems, and migrating to the edge novell applications such as artificial intelligence.
+While edge computing used to be the domain of highly specialized and proprietary devices and software, there's a desire to be closer to the world of cloud computing, to enable workload portability, better integration with corporate systems, and deployment of novell applications such as artificial intelligence, which require corporate resources for development or to integrate with larger business processes.
 
-Nowadays, there's an emerging class of edge devices which are much closer to traditional computers, having the capability to run Red Hat Enterprise Linux and benefit from containerized applications, and leading vendors are applying more and more of the open source tools and processes that used to be viable only for cloud computing also to edge computing.
+Nowadays, there's an emerging class of edge devices which are much closer to traditional computers, having the capability to run Red Hat Enterprise Linux and benefit from containerized applications, and leading vendors are applying to edge computing more and more of the open source tools and agile processes that used to be viable only for cloud computing.
+
+In that context of enabling the use of more standardized hardware and open source innovations for edge use cases, Red Hat offers a number of solutions, among them Red Hat Device Edge.
 
 == Introduction to Red Hat Device Edge
 
@@ -71,74 +75,104 @@ A lightweight Kubernetes distribution, based on Red Hat OpenShift, but optimized
 Red Hat Edge Manager (RHEM)::
 A control plane that streamlines fleet management of edge devices.
 
-Most of components of RHDE, except for MicroShift are available as part of other Red Hat products, and when that happens they are not changed compared to what is provided by Red Hat Device Edge.
+image::RHDE-benefits.svg[title="Benefits of Red Hat Device Edge"]
 
-For example, the RHEL you get from RHDE is the same RHEL you get from other products which include it.
-There are no changes in RHEL capabilities.
-It is the same Linux kernel, the same libraries, and the same system services.
+Most of components of RHDE, except for MicroShift, are available as part of other Red Hat products, and when that happens their contents are not changed in any way, compared to what is provided by Red Hat Device Edge.
+You get the same features from each component, no matter which product subscription provides them.
+
+For example, the RHEL you get from RHDE is the same RHEL you get from a regular RHEL subscription.
+There are no changes in RHEL capabilities and it provides the same packages and containers.
+It provides the same Linux kernel, the same libraries, and the same system services.
 This ensures that, as developers build and test applications on the data center, that software runs unchanged on edge devices running RHDE, as long as their applications do not demand more capabilities than available on the targer devices and sites.
 
-The main benefit of purchasing RHDE instead of other Red Hat products which provie these components is the cost.
-Most RHEL subscriptions assume data center servers, which many CPUs, lots of memory, which can serve hundreds or even thousand of users.
+image::RHEM-SKUs.svg[title="Two ways of procuring Red Hat Edge Manager"]
 
-RHDE, on the other hand, has a cost which is compatible with small devices, which are single-CPU, have a small amount of memory, and usually run a single application for a single user at a time.
-Nothing prevents RHDE from running multiple applications in parallel, serving some dozen users, and this is common in a class of edge devices usually known as _edge gateways_, which collect data and control multiple smaller edge devices, like security cameras and industrial sensors, which would not be able to run RHDE by themselves.
+The main benefit of purchasing RHDE, instead of other Red Hat products which provide the some of the same components, is lower cost.
+Most RHEL subscriptions assume data center servers, containing many CPUs, lots of memory, and capable of serving hundreds or even thousand of users.
 
-RHDE is only one of many solutions that Red Hat offers for edge computing.
-For example, your edge devices may be capable of running Red Hat OpenShift using the single node, two nodes, or three nodes (compact cluster) topology and support legacy virtualization applications.
+RHDE, on the other hand, has a cost that is aligned with small devices, which are single-CPU, have a small amount of memory, and usually run a single application for a single user at a time.
 
-Another example: connectivity may be good enough that you could run Red Satelite capsule servers and Ansible execution nodes (from Ansible automation mesh) on your edge sites, and even a regional ACM cluster, conected to a central global hub cluster, and manage them mostly as you would manage a regional data center or campus.
+Nothing prevents RHDE from running multiple applications in parallel, serving some dozen of users, and this is common in a class of edge devices usually known as _edge gateways_, which collect data and control multiple smaller edge devices, like security cameras and industrial sensors, that would not be able to run RHDE by themselves.
 
-Some edge sites may be best designed with a mix of solutions: a few large servers and applications run with data center tools, such as package mode RHEL and Red Hat OpenShift, and armies of smaller edge devices and gateways run with RHDE and RHEM.
+NOTE: This focuses on RHEM with RHEL.
+It does not attempt to address using RHEM with MicroShift.
+
+== The Red Hat Edge Computing Portfolio
+
+RHDE is only one of https://www.redhat.com/en/products/edge[many solutions^] that Red Hat offers for edge computing.
+For example, your edge devices may be powerful enough to run Red Hat OpenShift using the single node, two nodes, or three nodes (compact cluster) topologies and support legacy virtualization applications, while still being smaller than typical data center servers.
+In such cases, you could use distributed computing unit (DCU) SKUs of RHEL and OpenShift, for cost optimization.
+
+Another example: connectivity to your edge sites may be good enough that you could run Red Satelite capsule servers and Ansible execution nodes (from Ansible automation mesh) on your edge sites, and even a regional ACM cluster, conected to a central global hub cluster, and manage your edge computing resources mostly as you would manage a regional data center or campus.
+
+image::Edge-portfolio.svg[title="Red Hat edge porfolio: RHDE, OpenShift, RHEL, and Ansible"]
+
+Some edge sites may be best designed with a mix of solutions: a few larger servers and applications run with data center tools, such as package mode RHEL and Red Hat OpenShift, while armies of smaller edge devices and gateways run with RHDE and RHEM.
 For such sites, running RHEM integrated with ACM or AAP may be the best approach.
 
-This course does not attempt to provide skills about all those variations, and focuses only on RHEM with RHDE, even though there is more than RHDE and RHEM about edge computing with Red Hat products.
+NOTE: This course does not attempt to teach skills about all variations of deploying RHEM and integrating it with other Red Hat management tools. It focuses on RHEM with RHDE and RHEM with RHEL, even though there is more than RHDE and RHEM about edge computing with Red Hat products.
 
 == Introduction to Red Hat Edge Manager
 
 The best way of describing Red Hat Edge Manager is as providing _Kubernetes-style GitOps for the operating system_.
-RHEM manages declarative state about managed devices and continuouly monitor that state, reconcilliating any deviations:
+RHEM manages declarative state about managed devices and continuosuly monitors that state, detecting dift and reconcilliating any deviations:
 
 * If an administrator alters the declared state, RHEM ensures that managed devices are changed to be consistent with the new state.
 
-* If an administrator changes the state of a device that is managed by RHEM, for example using a direct SSH connection, RHEM reverts that change to maintain the device consistent with the declared state.
+* If an administrator changes some state of a device that is managed by RHEM, for example by using a direct SSH connection, RHEM reverts that change to maintain the device consistent with the declared state.
 
 You can store the declarative configuration of managed devices inside of RHEM's own database, as inline configurations, but the recommended practice is to store most of them in a git repository, which makes updates, testing, and troubleshooting easier.
 
+image::RHEM.svg[title="Benefits of Red Hat Edge Manager"]
+
 Red Hat Edge Manager controls three aspects of device configurations:
 
-. The operating system image running on devices, as a bootc container image from image mode for RHEL.
+. The operating system image running on managed devices, as a bootc container image from image mode for RHEL.
 
-. Operating system and application configuration files in `/etc` and `/var`.
+. Operating system and application configuration files on managed devices, usually stored in `/etc` and `/var` directories.
 
-. Containerized applications running on devices, from single containers to Podman Quadlets managed by the System Daemon (Systemd).
+. Containerized applications running on managed devices, from single containers to Podman Quadlets managed by the System Daemon (Systemd).
 
-Red Hat Edge Manager is based on the https://github.com/flightctl/flightctl[Flight Control] open source project, and its capabilities are expanding quickly.
-Future releases of RHEM may support managing devices not running image mode for RHEL and additional types of applications, such as Helm applications.
+image::RHEM-device-fleet-template.svg[title="RHEM device and fleet templates",width="80%",align="center"]
 
-The way RHEM supports image mode for RHEL and containerized applications adapts to differnet ways IT and OT teams organize themselves:
+Red Hat Edge Manager is based on the https://github.com/flightctl/flightctl[Flight Control^] open source project, and its capabilities are expanding quickly.
+Future releases of RHEM may add a number of features, sich as support for managing devices not running image mode for RHEL or additional types of applications, such as Helm applications.
+
+The way RHEM supports image mode for RHEL and containerized applications adapts to different apporoach that IT and OT teams take to their own organization:
 
 * Some teams may opt for a fully "appliance" approach, where applications are embeded into the operating system image as a single artifact, and OT field people just turns the device on.
 
-* Other teams may opt for a right separation of concern, where an infrastructure team manages operating system configurations and hardware lifecycle, while business other teams manage application lifecycle and data.
+* Other teams may opt for a right separation of concerns, where an infrastructure team manages operating system configurations and hardware lifecycle, while other teams manage application lifecycle and data.
+
+== Fleet Management with Red Hat Edge Manager
 
 The concept of _fleet management_ is key to RHEM.
-This concepts applies a proven cloud-based practice to operating system management: managing applications and cloud instances as undifferentiated sets, instead of unique instances each one with their specific settings.
+This concepts applies a proven cloud-based practice to operating system management: managing applications and cloud instances as undifferentiated sets, instead of unique entities, each one with their own specific settings.
 If you heard the analogy of _pets vs cattle_, RHEM enables you to manage the operating system and applications in edge devices as _cattle_.
 
+image::fleets.svg[title="Managing individual devices vs managing fleets of devices"]
+
 For example, you define once the configuration of all pont of sale (PoS) systems in all your stores, and let RHEM apply the configuration to all of them.
-RHEM will also let you know which ones were updated or not to the latest configuration.
-Or you could define a configuration only for the PoS systems in a single store or all stores in a single a region, before applying it to all your remaining stores.
+RHEM will also let you know which ones were updated or not to the latest configuration, so you can investigate the failure: is the device disconnected?
 
-== Red Hat Edge Manager standalone and with other management tools from Red Hat
+In fact, RHEM continuously monitors the health of its managed devices, as long as they can connect to the RHEM server, and report conditions such as low free disk space.
 
-RHEM may be used by itself, as the all-purpose device management tool, from provisioning to decomissioning, and to manage all applications running on managed devices.
+Alternatively you could define a configuration only for the PoS systems in a single store or all stores in a single a region, before applying it to all your remaining stores.
 
-Or it can work integrated with other management tools from Red Hat, such as Red Hat Ansible Automation Platform (AAP) and Red Hat Advanced Cluster Management (ACM).
-Teams that have mature practices and skills on such tools may benefit from using them together with RHEM, and over time adopt more and more of RHEM capabilities which they perceive as more reliable or easier to use than the capabilities they are alreaydy familiar with and were already using for data centers and clouds.
+RHEM provides mechanisms to create small variations to target individual devices of a fleet, or to create subsets of devices in the same fleet.
+It is not a rigid approach of all managed devices must be configured in exactly the same way, but it is flexible enough to address small variations in a centralized manner, for example the fact that each edge site may contains its own HTTP proxy server and all PoS systems must use the proxy from their own site.
 
-If you opt for deploying RHEM integrated with either ACM or AAP, RHEM looks like it is part of those platforms, integrated to their web interfaces, and using the same authentication and permission mechanisms, but still offering its own features and APIs.
-For example, if you deploy RHEM on OpenShift, with or without ACM, RHEM still stores managed device state on its own database instead of using kubernetes custom resources to store managed device state.
+NOTE: This course, as the first in a series, focus on managing the operating system on individual edge devices using RHEM, to build a strong conceptual and practical foundation for the next courses in the series, which focuses on managing fleets and applications.
+
+== Running Red Hat Edge Manager standalone and with other management tools from Red Hat
+
+RHEM can be used by itself, as the single edge device management tool, from provisioning to decomissioning, and to manage all applications running on managed devices.
+
+Alternatively, RHEM can work integrated with other https://www.redhat.com/en/blog/managing-red-hat-device-edge-tools-and-strategies[management tools from Red Hat^], such as Red Hat Ansible Automation Platform (AAP) and Red Hat Advanced Cluster Management (ACM).
+Teams that have mature practices and skills on such tools may benefit from using them together with RHEM, and over time adopt more and more of RHEM capabilities, as they perceive advantages of using them compared to the capabilities they are alreaydy familiar with and were already using for data centers and clouds.
+
+If you opt for deploying RHEM integrated with either ACM or AAP, RHEM looks like it is part of those platforms, integrated to their web interfaces, their API routing, and using their authentication and autjorization mechanisms, but still offering its own features and APIs.
+For example, if you deploy RHEM on OpenShift, with or without ACM, RHEM still stores managed device state on its own database instead of using Kubernetes custom resources to store managed device state.
 
 Even if you opt for deploying RHEM standalone on either RHEL or OpenShift, you may still need other tools to provide capabilities not included in RHEM, for example:
 
@@ -148,32 +182,51 @@ Even if you opt for deploying RHEM standalone on either RHEL or OpenShift, you m
 
 * *Red Hat Ansible Automation Platform* to manage networking gear in edge sites or between those sites and corporate data centers.
 
-* *Red Hat OpenShift Container Platform* to offer developers an application platform to build, test, and secure containerized applications that will be deployed on edge sites.
+* *Red Hat OpenShift Container Platform* to offer developers an application platform to build, test, and secure containerized applications and bootc container iamges that will be deployed on edge sites.
 
 * *Red Hat AI* to fine-tune standard LLMs, populate Retrieval-Aumented Generation (RAG) databases, test guard-rails to ensure model safety, evaluate models to avoid bias, and develop AI-enabled application that will be deployed on edge sites.
 
-Of course, you could use alternative tools from any other vendor to provide similar capabilities.
+Of course, you could use alternative tools from any other vendor to provide similar capabilities and still benefit from RHEM.
 
-In this course, we focus on the simplest deployment modes of RHEM standalone in RHEL, without other Red Hat tools, and using open source web servers and container registries to provide the minimum required infrastructure, so we can focus on operating RHEM and managing edge devices with RHEM.
+NOTE: In this course, we focus on the simplest deployment modes of RHEM standalone in RHEL, without other Red Hat tools, and using open source web servers and container registries to provide the minimum required infrastructure, so we can focus on operating RHEM and managing edge devices with RHEM.
 
 == Red Hat Edge Manager: Inspired by Kubernetes
 
-RHEM is inspired by Kubernetes, but it does not requires Kubernetes at all.
-IT and OT professionals who are already familiar with Kubernetes may notice many similarities between the structore of their APIs, their CLIs, and their underlying concepts, sich as the reconcilliation loop.
+RHEM is inspired by Kubernetes, but it does not require Kubernetes at all.
+IT and OT professionals who are already familiar with Kubernetes may notice many similarities between the structure of their APIs, their CLIs, and underlying concepts, such as the reconcilliation loop.
+
+image::agent-vs-server.svg[title="RHEM agent (on managed devices) and RHEM server"]
+
+If you make the analogy between RHEM and Kubernetes, the server piece of RHEM provides the API server, resource controllers, and state database.
+Individual managed devices runt he RHEM agent, which observes configuration changes from the API server and state changes from the device itself, and keeps them reconciles then.
 
 But RHEM is still a new product, and you may miss some of the conforts already provided by Kubernetes.
-We expect most of them will be added over time.
+We expect some of them will be added over time, based on community and customer demand.
 For example, RHEM does not provide a self-description of its own API resources, like Kubernetes offers with its `explain` command.
 And RHEM is not extensible with custom resource types.
 
 On the other hand, RHEM offers a much less intimimating learning curve, with a feature set tailored to the specific needs of edge device management.
-Kubernetes is considered difficult to master because it offers features for diverse IT needs, which are common in data center and cloud computing scenarios, from software development to virtual machine management.
-But you do not need all those features to manage edge devices and edge sites.
+Kubernetes is considered difficult to master because it offers a large number of features, targeting diverse IT needs.
+This nature makes it good for many data center and cloud computing scenarios, from software development to virtual machine management.
+But you do not require all those features to manage edge devices and edge sites.
 
 RHEM does not attempt to be the single tool to manage all your edge computing needs.
 For example, it is not designed to manage network geat at edge sites -- for that you may use Red Hat Ansible Automation Platform.
-RHEM is designed to manage edge devices running RHEL, with or withour MicroShift at scale and under the constraints of connectivity that common at edge sites, enabling workflows that are friendly to OT personel.
+RHEM is designed to manage edge devices running RHEL, with or withour MicroShift, at scale and under the constraints of connectivity that common at edge sites, enabling workflows that are friendly to OT personel.
 
 == What's Next
 
-The first activity of this course checks that you have all you need to perform the labs, such as access to RHEL packages and container images.
+Before we describe the detailed architecture of RHEM and is services, the first activity of this course checks that you have all you need to perform the labs, such as access to RHEL packages and container images.
+
+////
+Image sources (only available to Red Hat employees):
+
+New Edge Computing Overview (EBC) _DRAFT
+https://docs.google.com/presentation/d/1UxipniPummlg0QnMQzBkPlyZkGeaYxMtWjPuyb-PWGQ/edit?slide=id.g3af6ed57e6b_0_12977#slide=id.g3af6ed57e6b_0_12977
+
+RedHatEdgeManager_Overview_Draft
+https://docs.google.com/presentation/d/1zyP0QOMweqP3tdhUkG6mJyb5YnbNkIz7rj0FaUlhpPE/edit?slide=id.g3a204372679_0_903#slide=id.g3a204372679_0_903
+
+DRAFT Red Hat Edge Manager Technical Deck (Limited Share Audience)
+https://docs.google.com/presentation/d/17cWSUdQnS5mSHaiLQieJO24tiPp3VzAu9dIsKc-fyAw/edit?slide=id.g33d0db3e9fb_0_3709#slide=id.g33d0db3e9fb_0_3709
+////
