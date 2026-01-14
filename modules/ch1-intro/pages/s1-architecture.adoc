@@ -142,7 +142,7 @@ The way RHEM supports image mode for RHEL and containerized applications adapts 
 
 * Some teams may opt for a fully "appliance" approach, where applications are embeded into the operating system image as a single artifact, and OT field people just turns the device on.
 
-* Other teams may opt for a right separation of concerns, where an infrastructure team manages operating system configurations and hardware lifecycle, while other teams manage application lifecycle and data.
+* Other teams may opt for a strict separation of concerns, where an infrastructure team manages operating system configurations and hardware lifecycle, while other teams manage application lifecycle and data.
 
 == Fleet Management with Red Hat Edge Manager
 
