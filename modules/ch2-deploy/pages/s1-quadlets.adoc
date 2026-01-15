@@ -34,15 +34,16 @@ In this kind of deployment, RHEM microservices run as Podman containers, managed
 
 Before describing how to install RHEM services and quadlets on a RHEL server, let's take a closer look at the RHEM architecture and its microservices.
 
-== API, command-line, and web interfaces
+== API, command-line, web interfaces, and agents.
 
 Though you could interact directly with the RHEM API, and there is even an https://galaxy.ansible.com/ui/repo/published/flightctl/core/docs/[Ansible content collection^] that does it, you would usually interact with RHEM by using either its command-line interface (CLI), provided by the `flightctl` command, or its web user interface (UI).
 
 image::RHEM-arch.svg[title="High-level architecture of RHEM"]
 
-The CLI has native ports for all major operating system, and the web UI usually runs in the same machine as the RHEM microservices, though it does not need to.
-The majority of tasks can be performed using either the CLI or the web UI.
+The CLI has native ports for all major operating system, and the majority of tasks can be performed using either the CLI or the web UI.
 As expected, the web UI offers ease of use, while the CLI offers scriptability.
+
+If you install RHEM on RHEL, the web UI runs in the same server host as the RHEM API, but if you install RHEM on OpenShift, them the UI and microservices could run in different cluster nodes, as with any other application deployed on Kubernetes.
 
 The RHEM microservices use a PostgreSQL relational database for persisting device state and its API resources.
 They can also be configured with a number of different authentication, authorization, certificate, and configuration providers. 
@@ -55,7 +56,13 @@ This course focuses on using the RHEM API to manage devices.
 
 Depending on the authentication provider, it may not be possible to authenticate to RHEM using the CLI. In that case, the CLI can invoke a web browser to perform authentication and them use the returned token.
 
-RHEM agents also invoke the RHEM API, but using a different entrypoint than the CLI and web UI do, and authenticate using a certificate generated at device enrollment time.
+RHEM agents running on managed devices also invoke the RHEM API, but using a different entrypoint than the CLI and web UI do, and authenticate using a certificate generated at device enrollment time.
+All communication between a RHEM agent and the RHEM API is secured using mTLS.
+
+RHEM agents start network connections to the RHEM API, in a pull approach.
+A RHEM server does not start network connections to aggents, which would be a push approach.
+The pull approach enables deploying managed devices at edge sites which use private IP address ranges and rely on network address transation (NAT) to access external network resources and the internet.
+It even enables edge sites using cheap broadband network connections, similar to redidencial broadband internet.
 
 == RHEM microservices
 
@@ -75,12 +82,12 @@ In the simplest deployment of standalone RHEM on RHEM, a special microservice ca
 Using its default configuation, the PAM issuer service uses UNIX passwd, shadow, and group files to manage authentication and authorization for the RHEM API.
 
 The PAM issuer does not use the user and group files from its host RHEL server, but contains its own copy of these files.
-You must manage these files inside the container, using standard Linux tools such as the `useradd` command.
+You must manage these files inside the container, by using standard Linux tools such as the `useradd` command in the container namespaces, for example with `podman exec`.
 The default configuration makes the Linux users of the PAM issuer container independent of the Linux users of its host, so that a RHEM user does not get unintended console or SSH access to a RHEM server host.
 
 Future releases of RHEM may expand the PAM issuer to support authentication and authorization using Red Hat Identity Manager (IdM), Microsoft Active Directory (MSAD), and other enterprise authentication systems based on the Kerberos and LDAP protocols by using the Secure System Services Daemon (sssd).
 
-IMPORTANT: The recommended approach for a production-grade deployment of RHEM is configuring an ODIC provider which connects to an OAuth-based enterprise or cloud identity system, such as Red Hat build of Keycloack, Microsoft EntraID, Auth0 by Okta, or Google Cloud Authentication.
+IMPORTANT: The recommended approach for a production-grade deployment of RHEM is configuring an ODIC provider which connects to an OAuth-based enterprise or cloud identity management system, such as Red Hat build of Keycloack, Microsoft EntraID, Auth0 by Okta, or Google Cloud Authentication.
 
 == Installing RHEM on RHEL
 
@@ -137,11 +144,11 @@ That directory exists only inside the `flightctl-db` container, and it is a Podm
 
 Similarly, you will not find Redis data directories or API access and audit logs on your RHEM server host.
 
-If you must perform RHEM datadatabase backups and other database management operations,
-you must manage Podman volumes or enter container namespaces of RHEM containers.
+If you must perform RHEM database backups and other database management operations,
+you must manage Podman volumes or enter the container namespaces of RHEM containers.
 
 Future releases of RHEM will support external databases, so that organization having strict requirements on data management and availability can store RHEM data and managed device state in a database properly configured for their requirements.
 
 == What's Next
 
-The next activity installs and configures a RHEM server, and the next chapter provisions and enrolls managed edge devices on RHEM.
+The next activity shows how to install and configure a RHEM server, and the next chapter shows how to provision and enroll managed devices on RHEM.
