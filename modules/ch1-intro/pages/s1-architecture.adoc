@@ -136,7 +136,10 @@ Red Hat Edge Manager controls three aspects of device configurations:
 image::RHEM-device-fleet-template.svg[title="RHEM device and fleet templates",width="80%",align="center"]
 
 Red Hat Edge Manager is based on the https://github.com/flightctl/flightctl[Flight Control^] open source project, and its capabilities are expanding quickly.
+
+////
 Future releases of RHEM may add a number of features, sich as support for managing devices not running image mode for RHEL or additional types of applications, such as Helm applications.
+////
 
 The way RHEM supports image mode for RHEL and containerized applications adapts to different apporoach that IT and OT teams take to their own organization:
 

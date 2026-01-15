@@ -85,7 +85,9 @@ The PAM issuer does not use the user and group files from its host RHEL server, 
 You must manage these files inside the container, by using standard Linux tools such as the `useradd` command in the container namespaces, for example with `podman exec`.
 The default configuration makes the Linux users of the PAM issuer container independent of the Linux users of its host, so that a RHEM user does not get unintended console or SSH access to a RHEM server host.
 
+////
 Future releases of RHEM may expand the PAM issuer to support authentication and authorization using Red Hat Identity Manager (IdM), Microsoft Active Directory (MSAD), and other enterprise authentication systems based on the Kerberos and LDAP protocols by using the Secure System Services Daemon (sssd).
+////
 
 IMPORTANT: The recommended approach for a production-grade deployment of RHEM is configuring an ODIC provider which connects to an OAuth-based enterprise or cloud identity management system, such as Red Hat build of Keycloack, Microsoft EntraID, Auth0 by Okta, or Google Cloud Authentication.
 
