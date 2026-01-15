@@ -232,50 +232,61 @@ Work in progress
 </div>
 </div>
 <div class="sect1">
-<h2 id="_operating_system_configuration_at_image_build_time_day_1_and_day2"><a class="anchor" href="#_operating_system_configuration_at_image_build_time_day_1_and_day2"></a>Operating system configuration at image build time, day-1, and day2.</h2>
+<h2 id="_system_configuration_at_day_0_with_image_mode"><a class="anchor" href="#_system_configuration_at_day_0_with_image_mode"></a>System configuration at day-0 with image mode</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>With image mode for RHEL, it is expected that most configurations configurations are set by a bootc container image, which would be configurations set at day-0, before provisioning a system, during image build time.
 These configurations will be the same for all devices using the image.</p>
 </div>
 <div class="paragraph">
-<p>Having configurations applied to a system image, so they are applied together with installing the operating system, instead of applied only after installing the operating system, ensures devices have a know starting state and reduces the risk of accidental drift.</p>
+<p>Having configurations hardcoded in a system image, so they are applied when installing the operating system, instead of after installing the operating system, ensures devices have a know initial state and reduces the ammount of configurations to watch for drift.</p>
 </div>
 <div class="paragraph">
 <p>While it is possible to override configurations set by a bootc container image, because the <code>/etc</code> and <code>/var</code> directories are read-write, these changes should be kept to a minimum and done only on purpose.
 Modern Linux applications and services are expected to take their primary configurations from the <code>/usr/lib</code> directory, which is read-only on image mode systems, and use drop directories such as <code>/etc/something.d</code> for configuration snippets that add to or override their primary configurations.</p>
 </div>
 <div class="paragraph">
-<p>There is always some configuration settings that must vary between different devices, or between different edge sites, and writable configuation files in the <code>/etc</code> directory should be reserved such exceptions.</p>
+<p>There is always some configuration settings that must vary between different devices, or between different edge sites, and writable configuation files in the <code>/etc</code> directory would be reserved such exceptions.</p>
 </div>
 <div class="paragraph">
-<p>There is also the matter of secrets management: it is considered a very bad security practice to embed authentication credentials such as passwords, tokens, and certificates in system images.
-For example, you there should not exist any predefined user with a well-known password which could be used to access production systems, including edge devices.</p>
+<p>There is also the matter of secrets management: it is considered a very bad security to embed authentication credentials such as passwords, tokens, and certificates in system images.
+For example, there should not exist any predefined user, with a well-known password, that could be used to access production systems.
+This applies to edge devices as well as to data center servers.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_system_configuration_at_day_1_with_kickstart_and_cloud_init"><a class="anchor" href="#_system_configuration_at_day_1_with_kickstart_and_cloud_init"></a>System configuration at day-1 with kickstart and cloud-init</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Per-device and per-site configurations, and also secrets, can be applied to devices at day-1, that is, at device provisioning time (installation time), or at day-2, that is, as a regular day-to-day management operation.</p>
 </div>
 <div class="paragraph">
-<p>Per-device and per-site configurations, and also secrets, can be applied to devices at day-1, that is, at device provisioning time (or installation time), or at day-2, which really means as a regular day-to-day management operation.</p>
-</div>
-<div class="paragraph">
-<p>Most operating system installation and provisioning methods offer some way of adding configuration files and running configuration scripts.
-The RHEL installer, called Anaconda, provides the <strong>kickstart</strong> feature, which can set all settings the installer would otherwize prompt for during an interactive installation, and also run arbitrary scripts.
-It is a common practice to embed custom kickstart files in RHEL installation media, or in network boot servers, with both package and image modes.</p>
+<p>Most operating system installation and provisioning methods which offer some way of adding configuration files and running configuration scripts.
+The RHEL installer, called Anaconda, provides the <strong>kickstart</strong> feature, which can set all settings the installer would otherwize prompt for during an interactive installation, and also run arbitrary pre-installation and post-installation scripts.
+It is a common practice to embed kickstart files in custom RHEL installation media, or in network boot servers, for both package and image modes.</p>
 </div>
 <div class="paragraph">
 <p>Most hypervisors and cloud provides nowadays support the <strong>cloud-init</strong> configuration mechanism, which has similar capacities to kickstart, but with its own syntax.</p>
 </div>
 <div class="paragraph">
 <p>By using kickstart or cloud-init scripts, you can perform bootstrapping configurations such as setting a SSH key to access the newly provisioned machines.
-Having initial users and access credentials set this way makes them easier and safer to change at day-2, because they are not set by read-only files in the system image, and avoids the risk of reverting to whatever was set by the image.
+Having initial users and access credentials set this way makes them easier and safer to change at day-2, because they are not set by read-only files in the system image, and avoids the risk of accidentally reverting to whatever was set by the system image.
 But it also can be considered a risk of leak, when they are stored in installation media.</p>
 </div>
 <div class="paragraph">
 <p>Per-device and per-site configurations, if they are expected to be set only once, at provisioning time, and never (or rarely) changed on day-2, are good candidates for kickstart and cloud-init.</p>
 </div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_system_configuration_at_day_2_with_rhem"><a class="anchor" href="#_system_configuration_at_day_2_with_rhem"></a>System configuration at day-2 with RHEM</h2>
+<div class="sectionbody">
 <div class="paragraph">
 <p>Anything that you are expected to change regularly, after provisioning a device, is a good candidate for traditional operating system management tools, such as Red Hat Ansible Automation Platform, and also for edge management tools, such as RHEM.</p>
 </div>
 <div class="paragraph">
-<p>Some organizations prefer to use day-2 tools to perform first-time configuration of new devices, that is to perform day-1 configuration on those devices.
+<p>Some organizations prefer to use day-2 tools to perform first-time configuration of new devices, that is, to perform day-1 configuration on those devices.
 Such organizations could provision devices using a very generic image, use day-1 just to set credentials for a management tool, and them let the management tool perform the remaining day-1 configurations.</p>
 </div>
 </div>
@@ -284,13 +295,16 @@ Such organizations could provision devices using a very generic image, use day-1
 <h2 id="_oboarding_devices"><a class="anchor" href="#_oboarding_devices"></a>Oboarding devices</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>By the previous discussion, you know that RHEM adds configurations over whatever was already set by a bootc container image and by a provisioning mechanism, such as kickstart.
-RHEM is not supposed to take over and control all configurations of a device.
-You can still perform ad-hoc, manual configuration of anything that is not managed by RHEM.
-And you can configure some settings using a different day-2 configuration tool, such as Ansible.</p>
+<p>By the previous discussion, you know that RHEM adds to and potentially overrides configurations already set by a bootc container image and by a provisioning mechanism, such as kickstart, and also add new configurations on day-2.</p>
 </div>
 <div class="paragraph">
-<p>Of course, having a device configured by multiple different tools can be a challenge to manage, but you may find a scenario where it is easier, or more secure, doing it with a different tool, or using RHEM as one of the tools in a larger workflow.</p>
+<p>It may not he intuitive that RHEM is not supposed to take over and control all configurations of a device.
+RHEM does not have to the the only management tool configuring its managed devices:
+You can still perform ad-hoc, manual configuration of configurations that are not managed by RHEM.
+And you can configure some of those settings using a different day-2 configuration tool, such as Ansible.</p>
+</div>
+<div class="paragraph">
+<p>Of course, having a device configured by multiple tools can be a challenge to manage, but you may find scenarios where it is easier, or more secure, doing it with a combinations of tools, and using RHEM in a larger workflow.</p>
 </div>
 <div class="paragraph">
 <p>For example, by onboarding an edge device most organizations mean more than just performing its first-time (day-1) configuration.
@@ -299,7 +313,7 @@ Providing the required credentials securely is not a trivial task and there are 
 You could configure everything except secrets using RHEM, and let Vault configure secrets for the device.</p>
 </div>
 <div class="paragraph">
-<p>As another example, if your organization sets network access from devices based on their MAC address, you may need to configure networking gear as part of your device onboarding process, to set the MAC address to the desired fixed IP address, and to set the ethernet port of the device to the desired VLAN.</p>
+<p>As another example, if your organization sets network access from devices using layer 2, you may need to configure networking gear as part of its device onboarding process, to set their MAC addresses, IP addresses, and VLANs.</p>
 </div>
 <div class="paragraph">
 <p>If you must implement a more sophisticated onboarding workflow, you may need a tool capable of orchestrating RHEM together with other management tools.
@@ -316,25 +330,25 @@ If a file is not set by RHEM configurations in a device or fleet template, they 
 </div>
 <div class="paragraph">
 <p>You cannot use RHEM to forcibly lock down all configuration files in a device and prevent users or tools to perform unintended changes to those files.
-But, if a file is set by RHEM configurations, RHEM will detect changes to it (configuration drift) and fix it, reverting the file to whatever contents are set by RHEM.</p>
+But, if a file is managed by RHEM, RHEM will detect changes to it (configuration drift) and revert the file to whatever contents are expected by RHEM.</p>
 </div>
 <div class="paragraph">
-<p>While it is not practical to add too many configuration files to a device template "just in case", because such configurations would be huge (just check how many files exist in the <code>/etc</code> directory of any Linux system!), RHEM provides you with a reliable recovery path from unintended changes: reinstall the device, as if were is a newly provisioned device, and let RHEM apply the expected configurations to it.
+<p>While it is not practical to add all possible configuration files to a device template, because such configurations would be huge and impractical to maintain (just check how many files exist in the <code>/etc</code> directory of any Linux system!), RHEM provides you with a reliable recovery path from unintended changes outside of its set of managed files: reinstall the device, as if it were a newly provisioned device, and let RHEM apply the expected configurations to it.
 This way, you can restore any device to a known good configuration state, considering all of day-0, day-1, and day-2.</p>
 </div>
 <div class="paragraph">
-<p>Now that you have some ideas about what to configure and when to configure something in a device using RHEM, let&#8217;s focus on the mechanics of RHEM configurations.</p>
+<p>Now that you have some ideas about what to configure and when to configure something in a device using RHEM, let&#8217;s focus on the mechanics of RHEM device configurations.</p>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_rhem_configuration_types"><a class="anchor" href="#_rhem_configuration_types"></a>RHEM configuration types</h2>
+<h2 id="_rhem_device_configuration_types"><a class="anchor" href="#_rhem_device_configuration_types"></a>RHEM device configuration types</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>If a managed device is not a member of a fleet, its device API resource may contain a list of configuration items, a list of applications, and a reference to an operating system image.</p>
 </div>
 <div class="paragraph">
-<p>Each configuration item has a name, which is supposedly a descriptive name, and a type, which specifies the configuration provider responsible for retrieving the contents of the configuration files.</p>
+<p>Each configuration item has a name, which is supposedly a descriptive name, and a type, which specifies the configuration provider responsible for retrieving the contents of the files in that configuration.</p>
 </div>
 <div class="paragraph">
 <p>With RHEM on RHEL, you would normally use these three configuration providers:</p>
@@ -343,19 +357,19 @@ This way, you can restore any device to a known good configuration state, consid
 <dl>
 <dt class="hdlist1">inline</dt>
 <dd>
-<p>Inline configurations are stored in the device API resource itself, using the ignition format.
+<p>Configuration files are stored in the device API resource itself, using the ignition format.
 If these configuration files are text files, they are just YAML multiline string values.</p>
 </dd>
 <dt class="hdlist1">HTTP</dt>
 <dd>
-<p>Configurations are retrieved from a web server or anything that can respond to HTTP requests, like an S3-compatible object storage.
-This alternative is commonly used to simplify integration between management tools, for example when RHEM runs integrated with Red Hat Advanced Cluster Manager, so the other management tool provides configuration files for devices managed by RHEM.</p>
+<p>Configuration files are retrieved from a web server or anything that can respond to HTTP requests, like an S3-compatible object storage or a REST API endpoint.
+This provider is commonly used to simplify integration between management tools, for example when RHEM runs integrated with Red Hat Advanced Cluster Manager, so the other management tool provides configuration files for devices managed by RHEM.</p>
 </dd>
 <dt class="hdlist1">Git</dt>
 <dd>
-<p>Configurations are retrieved from a git repository.
+<p>Configuration files are retrieved from a git repository.
 This enables RHEM to work as GitOps for the operating system.
-It also enables easy testing and troubleshooting of configurations, because you do not need to extract and embed configuration files in a RHEM API resource: the configuration files are just regular files in a Git tree.</p>
+It also enables easy testing and troubleshooting of configuration files, because you do not need to extract and embed these files in a RHEM API resource: the configuration files are just regular files in a Git tree.</p>
 </dd>
 </dl>
 </div>
@@ -424,13 +438,13 @@ It does not need to be an update of the operating system, that is, it does not m
 If any of them fails, for whatever reason, the entire update operation, or reconcilliation, failed and the device status is set to <code>Out-of-Date</code>.</p>
 </div>
 <div class="paragraph">
-<p>If you check the device status details, you can get information about what the device failed to update, and why.
+<p>If you check the device status details, for example by getting the fill device resource in YAML format, you can get information about what the device failed to update, and why.
 For example, a device may fail to download a bootc container image because it lacks credentials to access a container image registry.</p>
 </div>
 <div class="paragraph">
 <p>RHEM has no concept of retrying an update.
 If there&#8217;s a failure during device reconcilliation, you must change the device template, thus forcing another update operation.
-RHEM assumes that updates must work all the times, else there is an issue with the device template itself, which must be fixed.</p>
+RHEM assumes that updates should work all the times, else there is an issue with the device template itself, which must be fixed.</p>
 </div>
 <div class="paragraph">
 <p>But how RHEM prevents intermitent errors?
