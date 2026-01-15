@@ -182,8 +182,10 @@
 </aside>
 <article class="doc">
 <h1 class="page">Decommission and Delete Edge Devices with RHEM</h1>
+<div id="preamble">
+<div class="sectionbody">
 <div class="paragraph">
-<p><em>Estimated reading time: <strong>5 minutes</strong>.</em></p>
+<p><em>Estimated reading time: <strong>2 minutes</strong>.</em></p>
 </div>
 <div class="dlist">
 <dl>
@@ -200,13 +202,62 @@
 <i class="fa icon-warning" title="Warning"></i>
 </td>
 <td class="content">
-Not started yet
+Work in progress
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_decommission_versus_delete_operations"><a class="anchor" href="#_decommission_versus_delete_operations"></a>Decommission versus delete operations</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>At some moment, you will have to remove your devices from RHEM management.
+Maybe a device is being sent to another location, for a different use.
+Maybe a device is just broken beyond repair, or lost.</p>
+</div>
+<div class="paragraph">
+<p>RHEM provides a decommission operation, which requires the administrator role, and removes all labels of a device, thus removing it from any fleet.
+The device status is set to decomissioned, so it is hidden from regular device listings in the web UI.</p>
+</div>
+<div class="paragraph">
+<p>The API resource of a decomissioned device is still stored, so you have a track record of device information.
+RHEM does not perform any scrubbing of the device: if there is sensitive data which must be securely deleted, you need a specialized tool for it.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+You could have a fleet configured just for running a scrubbing tool, and move devices there before decomissioning them.
 </td>
 </tr>
 </table>
 </div>
 <div class="paragraph">
-<p>Lorem ipsum dolor sit amet</p>
+<p>Decomissioned devices are not cleaned in any way: they retain the last system image, configurations, and applications that RHEM put there.
+Managed devices allways keep operating despite having access ro RHEM, including aftger being decomissioned.</p>
+</div>
+<div class="paragraph">
+<p>At some moment, you will want to remove records of decomissioned devices, to keep your RHEM database nimble.
+The delete operation also requires the administrator role and it is unrecoverable.</p>
+</div>
+<div class="paragraph">
+<p>After a device is deleted, it still contains a RHEM agent and an enrollment certificate, which could be used to re-enroll the device.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_whats_next"><a class="anchor" href="#_whats_next"></a>What&#8217;s next</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The final activity of this course exercises decomissioning and deleting devices.
+After you complete it, stay tuned for the next course in the series, which teaches fleet and application management.</p>
+</div>
+</div>
 </div>
 <nav class="pagination">
   <span class="prev"><a href="index.html">Remove Edge Devices from Red Hat Edge Manager</a></span>
