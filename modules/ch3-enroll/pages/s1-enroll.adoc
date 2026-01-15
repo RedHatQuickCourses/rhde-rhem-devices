@@ -8,9 +8,7 @@ Objective::
 
 Install the RHEM agent in managed devices, as part of their system images, and enroll managed devices in a RHEM server.
 
-WARNING: Not started yet
-
-Lorem ipsum dolor sit amet
+WARNING: Work in progress
 
 ////
 
@@ -22,3 +20,126 @@ RHEM agent, enrollment configuration, and enrollment certificate.
 * Assigning labels to devices.
 
 ////
+
+Now that you have a running RHEM server, the next step is onboarding devices to RHEM management, so they become known to RHEM and start reconcilling their state with a device or fleet template stored on RHEM.
+
+image::Device-oboarding.svg[title="Simplified device onboarding flow", width="80%"]
+
+Because all communication between managed devices and RHEM starts from devices, devices must begin their own enrollment process to become managed devices.
+
+The oboarding process usually consistis of two steps:
+
+* Enroll a device in RHEM.
+
+* Make the device a member of a fleet.
+
+Once a device is enrolled, it's state is set to `OutOfDate`, and it starts its own reconcilliation process.
+If a device is not joined to a fleet, there would be no state to reconcille, but you could change the individual device template afterwards to give it a new system image, operating system configurations, and applications.
+
+Insted of managing an individual device, you could change the new managed device labels so it becomes a member of a fleet, and them it gets all configurations from the fleet template.
+In fact, you can set managed device labels at enrollment time, and make it a member of a fleet from start, performing the two onboarding steps at once.
+
+== Adding the RHEM agent to a system image
+
+Because RHEM assumes its managed devices run image mode for RHEL, you must include the RHEM agent, that is, the `flightctl-agent` RPM package, in all bootc container iamges that you intent to use with your edge devices.
+You cannot add the RHEM agent after provisioning, like you would do with package mode.
+
+The bootc image container image used for initial provisioning of a managed device does not need to be the intended, final system image.
+It could be a minimal image you use only for onboarding and enrollment, and later RHEM switches the device to a different system image.
+But all system images set by RHEM must also contain the RHEM agent.
+
+== Early binding versus late binding
+
+To start the onboarding process, a device needs some data:
+
+* A configuration file with information to locate a RHEM server.
+
+* A TLS certificate to authenticate to the RHEM API.
+
+* An optional public CA certificate to validate the server certificate of the RHEM API endpoint, if the server certificate was not signed by a corporate CA preconfigured as a trusted CA in the system image.
+
+NOTE: Remember that all communication between RHEM agents and the RHEM API is secured by mTLS, so both sites must present a TLS certificate and validate the certificate from the other side.
+
+That data could be embedded into the system image, which we call _early binding_.
+Early binding produces a system image which is hardcoded to enroll with a fixed RHEM server.
+
+Alternatively, that data could be provided at device provisioning time, using RHEL kickstart, cloud-init, Red Hat Ansible Automation Platform, or any other means, which we call _late binding_.
+Late binding produces a generic system image which could be used with different RHEM servers.
+
+image::early-vs-late-binding.svg[title="Early binding vs late binding with a RHEM server"]
+
+Late binding is especially useful for organizations which run multiple RHEM servers in edge locations themselves or in regional data centers.
+
+== Approving device enrollment requests
+
+Once a device starts its RHEM agent, it sends an enrollment requests to the configured RHEM server.
+Devices keep polling the state of their enrollment requests periodically, waiting for approval.
+
+Those requests become `enrollmentrequest` resources in the RHEM API, which you visualize using either the RHEM CLI or its web UI and verify some device data, such as its MAC address, if you must distinguish between multiple requests, from different devices.
+
+Only after a RHEM administrator approves the enrollment request that a device becomes a managed device, with a corresponding `device` API resource.
+At that time, the RHEM administrator can optionally set device labels, which make the device join a fleet.
+
+The RHEM web UI lists both `enrollmentrequest` and `device` resources on its menu:Devices[] page. 
+There is an slider button which switches between displaying each type of resource.
+
+RHEM users without administrator rights can view and list enrollment requests, but they cannot approve them.
+
+== Device unique IDs and managed device authentication
+
+The enrollment credentials (a TLS certificate) can be shared between multiple devices because it is used only for enrollment.
+
+When a RHEM agent starts for the first time, it generates a unique identity for the device, as an UUID, which it sends to its RHEM server as part of its enrollment request.
+
+If the enrollment request is approved, the RHEM server generates a new TLS certificate for the device.
+The device gets this TLS certificate as a response to its enrollment request response, and uses that certificate for any subsequent communication with its RHEM server.
+
+RHEM uses the same UUID as the name of both an `enrollmentrequest` and its corresponding `device` resource, if the enrollment request is approved.
+That way, it seems that approval turns an enrollment request resource into a managed device resource.
+
+== Syntax of the RHEM CLI
+
+The RHEM CLI is a thin wrapper over the RHEM API.
+Because the RHEM API is inspired by the Kubernetes API, you may find that the `flightctl` command is similar to the `kubectl` command from Kubernetes: you can use verbs such as `get`, `edit`, and `apply` with different resource types.
+
+For example, you can list all enrollment requests using the command:
+
+[source,subs="verbatim,quotes"]
+--
+$ *flightctl get enrollmentrequest*
+--
+
+If a resource type can contain labels (most of then do), you can filter the list based on resource labels keys and their values, for example:
+
+[source,subs="verbatim,quotes"]
+--
+$ *flightctl get device -l type=pos*
+--
+
+You identify individual resources by their names, for example:
+
+[source,subs="verbatim,quotes,attributes"]
+--
+$ *flightctl get device {edge-1-uuid-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}*
+--
+
+The RHEM CLI provides online help the expected way, for example to get a list of its verbs or commands:
+
+[source,subs="verbatim,quotes"]
+--
+$ *flightctl --help*
+--
+
+And to view the online help for a given command:
+
+[source,subs="verbatim,quotes,attributes"]
+--
+$ *flightctl approve --help*
+--
+
+This course does not intent to provide a complete reference to the RHEM CLI or its web UI.
+Please check the RHEM product documentation or the upstream Flight Control documentation for that level of detail.
+
+== What's Next
+
+The next activity creates some VMs, to act as edge devices, and onboards them in RHEM using late binding.
