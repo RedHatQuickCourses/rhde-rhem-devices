@@ -191,21 +191,9 @@
 <dl>
 <dt class="hdlist1">Objective</dt>
 <dd>
-<p>Prepare the environment for deploying RHEM by verifying that you have access to all its artifacts.</p>
+<p>Prepare the environment for deploying Edge Manager by verifying that you have access to all its artifacts.</p>
 </dd>
 </dl>
-</div>
-<div class="admonitionblock warning">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-warning" title="Warning"></i>
-</td>
-<td class="content">
-Work in progress
-</td>
-</tr>
-</table>
 </div>
 </div>
 </div>
@@ -223,7 +211,7 @@ It could be a <a href="https://developers.redhat.com/products/rhel/download">Red
 <i class="fa icon-warning" title="Warning"></i>
 </td>
 <td class="content">
-Be aware that, as time passes, there might be significant differences between the upstream releases and the Red Hat product releases.
+Be aware that, as time passes, there might be significant differences between newer upstream releases and the supported Red Hat product releases.
 </td>
 </tr>
 </table>
@@ -235,7 +223,7 @@ Be aware that, as time passes, there might be significant differences between th
 <i class="fa icon-important" title="Important"></i>
 </td>
 <td class="content">
-The GA release of RHEM requires a Red Hat Device Edge (RHDE) subscription and it is NOT included of the developer program individual subscription.
+The GA release of Edge Manager requires either a Red Hat Device Edge or RHEL with Edge Manager subscription and it is NOT included with the developer program individual subscription.
 </td>
 </tr>
 </table>
@@ -261,12 +249,12 @@ Alternatively, you can open a shell or a console directly on the <code>servera</
 <h2 id="_instructions"><a class="anchor" href="#_instructions"></a>Instructions</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>You can adapt the instructions in this course to any environment where you can install RPM packages, run Podman containers, and create virtual machines using libvirt.
+<p>You can adapt the instructions in this course to any environment where you can install RPM packages, run Podman containers, and create VMs using libvirt.
 With a bit more effort, you could run everything on a Windows or MacOS workstation, using a single large VM running RHEL and nested virtualization, or a few smaller VMs, but this course does <strong>NOT</strong> provide instructions for doing so.</p>
 </div>
 <div class="paragraph">
 <p>This course was tested using a Red Hat Learning Environment (ROL) classroom which was originally created for another quick course series.
-There was no customization for the specific needs of RHEM, and there was no attempt at providing all requirements to install RHEM in disconnected mode.</p>
+There was no customization for the specific needs of Edge Manager, and there was no attempt at providing all requirements to install Edge Manager in disconnected mode.</p>
 </div>
 <div class="admonitionblock important">
 <table>
@@ -275,17 +263,17 @@ There was no customization for the specific needs of RHEM, and there was no atte
 <i class="fa icon-important" title="Important"></i>
 </td>
 <td class="content">
-Some of the requirements of RHEM can be satisfied by the existing RPM package and container image mirrors in the ROL classroom, but some of them require internet access, a valid Red Hat login, and Red Hat subscription entitlements.
+Some of the requirements of Edge Manager can be satisfied by the existing RPM package and container image mirrors in the ROL classroom, but some of them require internet access, a valid Red Hat login, and Red Hat subscription entitlements.
 </td>
 </tr>
 </table>
 </div>
 <div class="paragraph">
 <p>This activity does NOT provide you with step-by-step instructions for operating the ROL environment.
-It starts with a check list of tasks you need to know how to perform on ROL for this course, and then describes the customizations you require to be able to perform this course activities using the recommended HOL019 ROL clasroom.</p>
+It starts with a checklist of tasks you need to know how to perform on ROL for this course, and then describes the customizations you require to be able to perform these course activities using the recommended HOL019 ROL classroom.</p>
 </div>
 <div class="paragraph">
-<p>Please check the on-line documentation available on ROL itself if it is your first time using a ROL classroom.</p>
+<p>Please check the online documentation available on ROL itself if it is your first time using a ROL classroom.</p>
 </div>
 <div class="olist arabic">
 <ol class="arabic">
@@ -294,14 +282,15 @@ It starts with a check list of tasks you need to know how to perform on ROL for 
 <div class="olist loweralpha">
 <ol class="loweralpha" type="a">
 <li>
-<p>Ensure you can open the virtual console console of the <code>workstation</code> VM, which should be already logged in.
+<p>Ensure you can open the virtual console of the <code>workstation</code> VM, which should be already logged in.
 If you need to log in again, use the <code>student</code> user with the <code>student</code> password.</p>
 </li>
 <li>
 <p>Ensure you can open a Firefox web browser on the <code>workstation</code> VM.</p>
 </li>
 <li>
-<p>If you wish, you can open the termimal application and perform as tasks which require a Linux shell on the graphical console of the <code>workstation</code> VM, but most learners find that the classroom web application is more confortable, especially if you want to cut-and-paste commands and file names from the course contents to the shell.</p>
+<p>If you wish, you can open the terminal application and perform those tasks which require a Linux shell on the graphical console of the <code>workstation</code> VM.
+Most learners find that the classroom web application is more comfortable, especially if they want to cut-and-paste commands and file names from the course contents to the shell.</p>
 </li>
 </ol>
 </div>
@@ -332,7 +321,7 @@ There is no need to specify the user because the <code>servera</code> VM is prec
 <p>Alternatively, you can open the virtual console of the <code>servera</code> VM, and then log in as the <code>student</code> user, with the <code>student</code> password.</p>
 </li>
 <li>
-<p>As another alternative, the classroom web application can provide a shell on the <code>servera</code> VM, which is actually a SSH session from the <code>worstation</code> VM.</p>
+<p>As another alternative, the classroom web application can provide a shell on the <code>servera</code> VM, which is actually a SSH session from the <code>workstation</code> VM.</p>
 </li>
 </ol>
 </div>
@@ -342,10 +331,10 @@ There is no need to specify the user because the <code>servera</code> VM is prec
 <div class="olist loweralpha">
 <ol class="loweralpha" type="a">
 <li>
-<p>A <code>workstation</code> VM console, to use a web browser and access the RHEM web interface.</p>
+<p>A <code>workstation</code> VM console, to use a web browser and access the Edge Manager web interface.</p>
 </li>
 <li>
-<p>A <code>workstation</code> VM shell, to use the RHEM CLI and RHEL administrator commands.</p>
+<p>A <code>workstation</code> VM shell, to use the Edge Manager CLI and RHEL administrator commands.</p>
 </li>
 <li>
 <p>A <code>servera</code> VM shell, to use RHEL administrator commands.</p>
@@ -370,8 +359,8 @@ All labs start from there, but they will use different work directories, so this
 <p>Clone the course samples repository.</p>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>git clone https://github.com/RedHatQuickCourses/rhde-rhem-samples.git</strong>
-Cloning into 'rhde-rhem-samples'...
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>git clone https://github.com/RedHatQuickCourses/rhde-Edge Manager-samples.git</strong>
+Cloning into 'rhde-Edge Manager-samples'...
 ...</code></pre>
 </div>
 </div>
@@ -381,7 +370,7 @@ Cloning into 'rhde-rhem-samples'...
 All changes will be made to copies which you will create on temporary work directories.</p>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>ls rhde-rhem-samples</strong>
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>ls rhde-Edge Manager-samples</strong>
 LICENSE  README.md  antora.yml  config  enroll  modules  webapp</code></pre>
 </div>
 </div>
@@ -390,12 +379,12 @@ LICENSE  README.md  antora.yml  config  enroll  modules  webapp</code></pre>
 </div>
 </li>
 <li>
-<p>Install tools for managing containers and virtual machines on your <em>development machine</em>.</p>
+<p>Install tools for managing containers and VMs on your <em>development machine</em>.</p>
 <div class="olist loweralpha">
 <ol class="loweralpha" type="a">
 <li>
 <p>Install the <code>container-tools</code> meta-package.
-Tough the <code>workstation</code> VM has Podman preinstalled, you will need the full suite of container tools in this course.</p>
+Altough the <code>workstation</code> VM has Podman preinstalled, you will need the full suite of container tools in this course.</p>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>sudo dnf install skopeo buildah</strong>
@@ -432,7 +421,7 @@ CPU model:           x86_64
 </div>
 </li>
 <li>
-<p>Configure your <em>development machine</em> to access to RPM packages and container images from Red Hat, over the internet.</p>
+<p>Configure your <em>development machine</em> to access RPM packages and container images from Red Hat, over the internet.</p>
 <div class="olist loweralpha">
 <ol class="loweralpha" type="a">
 <li>
@@ -447,7 +436,7 @@ CPU model:           x86_64
 <i class="fa icon-note" title="Note"></i>
 </td>
 <td class="content">
-The <code>workstation</code> VM is preconfigured with access a private mirror containing RHEL 10 packages, but it will need RHEL 9 packages to build bootc container images for edge devices that will be managed by RHEM.
+The <code>workstation</code> VM is preconfigured with access to a private mirror containing RHEL 10 packages, but it will need RHEL 9 packages to build bootc container images for edge devices that will be managed by Edge Manager.
 </td>
 </tr>
 </table>
@@ -506,7 +495,7 @@ a93aa271855242ac292133fb261c2132dd88859abb7edc29fb5681d30db422f2</code></pre>
 </ol>
 </div>
 <div class="paragraph">
-<p>Now your <em>development machine</em> ready to build bootc container images with RHEL 9 for edge devices, run local VMs as virtual edge devices, and access a Red Hat Edge Manager server which you will configure in this course and will manage those virtual edge devices.</p>
+<p>Now your <em>development machine</em> is ready to build bootc container images with RHEL 9 for edge devices, run local VMs as virtual edge devices, and access a Red Hat Edge Manager server, which you will configure in this course and will manage those virtual edge devices.</p>
 </div>
 </div>
 </div>
@@ -514,7 +503,7 @@ a93aa271855242ac292133fb261c2132dd88859abb7edc29fb5681d30db422f2</code></pre>
 <h2 id="_whats_next"><a class="anchor" href="#_whats_next"></a>What&#8217;s next</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>In the next lab, you will install and configure a RHEM server on your <em>server machine</em> and configure administrator and non-administrator users on the RHEM server.</p>
+<p>In the next lab, you will install and configure a Edge Manager server on your <em>server machine</em> and configure administrator and non-administrator users on the Edge Manager server.</p>
 </div>
 </div>
 </div>
