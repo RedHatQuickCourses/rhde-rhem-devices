@@ -1,14 +1,12 @@
 :time_estimate: 5
 
-= Lab: Install Red Hat Edge Manager Standalone
+= Lab: Install Red Hat Edge Manager on RHEL
 
 _Estimated reading time: *{time_estimate} minutes*._
 
 Objective::
 
-Deploy RHEM on RHEL with minimal requirements.
-
-WARNING: Work in progress
+Deploy Edge Manager on RHEL with minimal requirements.
 
 == Before you begin
 
@@ -26,25 +24,9 @@ Alternatively, you can open a shell or a console directly on the `servera` VM.
 
 == Instructions
 
-////
+You will install and configure Edge Manager on your _server machine_, configure a couple users with different roles, and then you will use your _development machine_ to run the web UI and the CLI of Edge Manager and verify that your new Edge Manager instance is healthy.
 
-* Verify availability of all required packages and container images.
-
-* Install RHEM using dnf
-
-* Configure DNF to use sssd (if not default) and hostname for the UI.
-
-* Generate and use a TLS certificate using the virtual classroom CA, or add the self-signed certificate to the trust store of the development machine. Avoid disabling TLS validation for CLI and web access.
-
-* Check the health of all RHEM systemd services/quadlets/containers.
-
-* Connect to RHEM using CLI and Web interface to assess it is healthy and running.
-
-////
-
-You will install and configure RHEM on your _server machine_, configure a couple users with different permissions, and then you will use your _development machine_ to run the web UI and the CLI of RHEM and verify that your new RHEM instance is healthy.
-
-NOTE: The instructions here use the community artifacts from the flightctl projects, but are expected to work with the product artifacts from RHEM, when they become available, by just switching from the community repository to the RHEM product repository and using the Red Hat subscription manager to register your _server machine_.
+NOTE: The instructions here use the community artifacts from the Flight Control project, but are expected to work with the product artifacts from Edge Manager, when they become available, by just switching from the community repository to the Edge Manager product repository and using the Red Hat subscription manager to register your _server machine_.
 
 ////
 servera wants to use the DLE Satellite. How can I clean it to use the internet?
@@ -66,8 +48,7 @@ I do have access to the container images if I podman login registry.redhat.io us
 
 $ sudo dnf install RHEM-1.0.0/*
 
-Cannot use the current RHEM artifacts, their containers fail signature check. Have to keep using Fight Control upstream artifacts.
-
+Cannot use the current RHEM artifacts with RHEL 10, their containers fail signature check. Have to keep using Fight Control upstream artifacts or create a classroom with RHEL 9.6 servers (which I also need for MicroShift)
 ////
 
 1. Verify that you have the outcomes of previous labs.
@@ -95,7 +76,7 @@ Overall Status: Registered
 
 .. Other preparation tasks performed during the xref:ch1-intro:s3-classroom-lab.adoc[first lab] of this course are not required yet, because most of this lab happens on the _server machine_, but they will be necessary for the remaining labs.
 
-2. Install the RHEM services on your _server machine_.
+2. Install the Edge Manager services on your _server machine_.
 
 .. Make sure your current shell is on the right machine.
 +
@@ -105,7 +86,7 @@ $ *hostname*
 servera
 --
 
-.. Install the container tools on your _server machine_ because the RHEM packages just configure Systemd to run the RHEM services as quadlets, that is, as Podman containers.
+.. Install the container tools on your _server machine_ because the Edge Manager packages just configure Systemd to run the Edge Manager services as quadlets, that is, as Podman containers.
 +
 [source,subs="verbatim,quotes"]
 --
@@ -132,7 +113,7 @@ NOTE: The product package channel was not available yet, at the time this was wr
 
 .. Log in to the Red Hat registry using your customer portal account.
 [only for product artifacts]
-You need this because the RHEM RPM packages need to download their container images.
+You need this because the Edge Manager RPM packages need to download their container images.
 +
 [source,subs="verbatim,quotes"]
 --
@@ -152,7 +133,7 @@ Adding repo from: https://rpm.flightctl.io/flightctl-epel.repo
 +
 NOTE: There is no need to register `servera` because the Flight Control services package contains no dependencies other than a container engine (Podman) and the classroom environment contains a mirror of the RHEL 10 packages, which the `sererva` machine is preconfigured to use.
 
-.. Install the RHEM services.
+.. Install the Edge Manager services.
 +
 [source,subs="verbatim,quotes"]
 --
@@ -161,11 +142,11 @@ $ *sudo dnf install -y flightctl-services-1.0.0*
 Complete!
 --
 +
-NOTE: If you want to try the current lastest release from the upstream project, remove the version component `-1.0.0` from the package `flightctl-services` in the command above.
+NOTE: If you want to try the current latest release from the upstream project, remove the version component `-1.0.0` from the package `flightctl-services` in the command above.
 +
 ////
 
-.. Edit the RHEM configuration in `/etc/flightctl/service-config.yaml` to use the fully qualified domain (FQDN) of your _server machine_.
+.. Edit the Edge Manager configuration in `/etc/flightctl/service-config.yaml` to use the fully qualified domain (FQDN) of your _server machine_.
 +
 This step shouldn't be needed, so I'm trying skipping it.
 +
@@ -201,7 +182,7 @@ global:
 --
 ////
 
-.. Start the RHEM services.
+.. Start the Edge Manager services.
 +
 [source,subs="verbatim,quotes"]
 --
@@ -209,9 +190,9 @@ $ *sudo systemctl enable --now flightctl.target*
 Created symlink '/etc/systemd/system/multi-user.target.wants/flightctl.target' → '/usr/lib/systemd/system/flightctl.target'.
 --
 
-.. Verify that the RHEM services are up and running.
+.. Verify that the Edge Manager services are up and running.
 +
-Be patient, it may take a while until all container images required by RHEM are downloaded from the internet and it initializes its database and cache services.
+Be patient, it may take a while until all container images required by Edge Manager are downloaded from the internet and it initializes its database and cache services.
 When it is all done, it is expected that some services will display `exited` as their substatus.
 +
 [source,subs="verbatim,quotes"]
@@ -362,7 +343,7 @@ Attempting a complete "dnf update" (more than 700 packages), I hope I don't get 
 It survived, but after a new podman login got the same signature errors.
 So recreating the classroom to try the upstream 1.0.0
 
-Tested on a RHEL 9.7 VM (installed as 9.6 then updated to 9.7) and RHEM packages just work. Too bad it's not an environment I can easily add virtual edge devices. And even worse it's not something I can easily replicate on ROLE: I'd have to build a new custom classroom (a new HOLxxx) which adds days/weeks to my schedule. :-(
+Tested on a RHEL 9.7 VM (installed as 9.6 then updated to 9.7) and Edge Manager packages just work. Too bad it's not an environment I can easily add virtual edge devices. And even worse it's not something I can easily replicate on ROLE: I'd have to build a new custom classroom (a new HOLxxx) which adds days/weeks to my schedule. :-(
 ////
 
 .. If some of services do not start, you can check their status and log messages, for example:
@@ -380,7 +361,7 @@ Dec 15 13:45:26 servera flightctl-api[2032]: Trying to pull quay.io/flightctl/fl
 ..
 --
 
-.. Verify that the RHEM containers are up and running.
+.. Verify that the Edge Manager containers are up and running.
 +
 [source,subs="verbatim,quotes"]
 --
@@ -415,7 +396,7 @@ aac92db2a9a6  quay.io/flightctl/flightctl-cli-artifacts:1.0.0-rc2               
 --
 ////
 
-.. You can also get logs directly from the containers, or enter then with `podman exec` for deeper troubleshooting.
+.. You can also get logs directly from the containers, or enter them with `podman exec` for deeper troubleshooting.
 +
 [source,subs="verbatim,quotes"]
 --
@@ -424,7 +405,7 @@ time="2025-12-15T13:45:34Z" level=info msg="Starting API service" func=main.main
 ..
 --
 
-3. For simplicity, configure local users for the RHEM services, on the PAM issuer container.
+3. For simplicity, configure local users for the Edge Manager services, on the PAM issuer container.
 
 .. Create groups which correspond to the `admin`, `operator`, and `viewer` roles.
 +
@@ -453,7 +434,7 @@ $ *sudo podman exec -i flightctl-pam-issuer sh -c 'echo "admin:redhat" | chpassw
 $ *sudo podman exec -i flightctl-pam-issuer usermod -aG flightctl-admin admin*
 --
 
-.. Verify you have the requires users and groups on the PAM issuer container.
+.. Verify you have the required users and groups on the PAM issuer container.
 +
 [source,subs="verbatim,quotes"]
 --
@@ -463,7 +444,7 @@ $ *sudo podman exec -i flightctl-pam-issuer groups admin*
 admin : admin flightctl-admin
 --
 
-.. If you would rather be more throughout verifying users and groups on the PAM issue container.
+.. If you would rather be more thorough verifying users and groups on the PAM issue container, use the following commands.
 +
 [source,subs="verbatim,quotes"]
 --
@@ -477,7 +458,7 @@ $ *sudo podman exec -i flightctl-pam-issuer getent group flightctl-operator*
 flightctl-operator:x:1001:student
 --
 
-4. Install the RHEM CLI on your _development machine_
+4. Install the Edge Manager CLI on your _development machine_
 
 .. Make sure your current shell is on the right machine.
 +
@@ -507,7 +488,7 @@ Server Version: Could not read server version
 You must log in to view the server version. Please use the 'login' command to authenticate before proceeding
 --
 
-.. Copy the self-signed certificate of the RHEM server and add it to the system's trusted CA set.
+.. Copy the self-signed certificate of the Edge Manager server and add it to the system's trusted CA set.
 +
 [source,subs="verbatim,quotes"]
 --
@@ -517,7 +498,7 @@ $ *sudo cp ca-bundle.crt /etc/pki/ca-trust/source/anchors/*
 $ *sudo update-ca-trust extract*
 --
 
-.. Log in on the RHEM server.
+.. Log in on the Edge Manager server.
 +
 [source,subs="verbatim,quotes"]
 --
@@ -537,20 +518,20 @@ $ *flightctl get device*
 NAME    ALIAS   OWNER   SYSTEM  UPDATED APPLICATIONS
 --
 
-5. Access the RHEM web UI.
+5. Access the Edge Manager web UI.
 
 .. Open a web browser and visit `\https://servera.lab.example.com`.
 You should get a login screen without any web browser warnings about certificate issues.
 
-.. Log in as the `student` user, with password `student`. 
+.. Log in as the `student` user, with the password `student`. 
 +
-If you wait too long iddle on the login page, you may get a "CSRF error".
+NOTE: If you are iddle for too long on the login page, you may get a "CSRF error".
 If it happens, just try again.
 
-.. You should get the RHEM Overview page, with three gray circles because there are no managed devices to report a status summary.
+.. You should get the Edge Manager menu:Overview[] page, with three gray circles because there are no managed devices on which to report a status summary.
 
-.. On the left panel, click on *Devices* to verify that there are indeed no managed devices.
+.. On the left panel, click menu:Devices[] to verify that there are indeed no managed devices.
 
 == What's next
 
-In the next activity, you will create a bootc container image containing the RHEM client and use it to provision and enroll a test VM which stands in for a managed edge device.
+In the next activity, you will create a bootc container image containing the Edge Manager client and use it to provision and enroll a test VM which stands in for a managed edge device.

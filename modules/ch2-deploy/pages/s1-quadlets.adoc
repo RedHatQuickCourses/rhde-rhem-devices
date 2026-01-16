@@ -8,149 +8,136 @@ Objective::
 
 Describe the main services that comprise Red Hat Edge Manager and how to deploy them as quadlets in RHEL servers, without dependencies on external services such as ACM, AAP, or Keycloack.
 
-WARNING: Work in progress
+As mentioned in the previous chapter, Red Hat Edge Manager is based on the Flight Control open source project and is composed of two main pieces: an Edge Manager server, which runs a collection of microservices, fronted by an API server, and a Edge Manager agent, which runs on individual managed devices.
 
-////
+image::ch1-intro:agent-vs-server.svg[title="Edge Manager agent (on managed devices) and Edge Manager server"]
 
-* Architectural components (slide #13) and services of RHEM: microservices/API, inventory, web UI (on server) and agent (on managed devices) https://docs.google.com/presentation/d/17cWSUdQnS5mSHaiLQieJO24tiPp3VzAu9dIsKc-fyAw/edit?slide=id.g33d0db3e9fb_0_2408#slide=id.g33d0db3e9fb_0_2408
+You manage edge devices by making changes to the state of devices and fleets, using the Edge Manager API.
+The Edge Manager agent observes the state stored on the server and the state of the device itself, reconciling any differences.
 
-* Mention supported configuration and authentication providers, and their purpose, how they enable seamless integration with ACM or AAP, but focus on the ones to be used in the course: inline, Git, and sssd.
+There are many ways of deploying the Edge Manager microservices, and this course focuses on installing Edge Manager directly on RHEL servers.
+In this kind of deployment, Edge Manager microservices run as Podman containers, managed by the System Daemon (Systemd) using quadlets.
 
-* Overview of the process of deploying containerized RHEM (quadlets) from RPM Packages.
+Before describing how to install Edge Manager services and quadlets on a RHEL server, let's take a closer look at the Edge Manager architecture and its microservices.
 
-* If there are issues configuring the sssd authentitcaion provider, or if it does not support RBAC, it may become necessary to include Keycloack.
+== Edge Manager API, command-line, web interface, and agents.
 
-////
+Though you could interact directly with the Edge Manager API, and there is even an https://galaxy.ansible.com/ui/repo/published/flightctl/core/docs/[Ansible content collection^] that does it, you would usually interact with Edge Manager by using either its command-line interface (CLI), provided by the `flightctl` command, or its web user interface (UI).
 
-As we already say in the previous chapter, Red Hat Edge Manager (RHEM) is based on the Flight Control open source project and is composed of two main pieces: an RHEM server, which runs a collection of microservices, fronted by an API server, and a RHEM agent, which runs on individual managed devices.
-
-image::ch1-intro:agent-vs-server.svg[tilte="RHEM agent (on managed devices) and RHEM server"]
-
-You manage edge devices by making changes to the state of devices and fleets, using the RHEM API.
-The RHEM agent observes the state stored on the server and the state of the device itself, reconcilling any differences.
-
-There are many ways of deploying the RHEM microservices, and this course focuses on installing RHEM direclty on RHEL servers.
-In this kind of deployment, RHEM microservices run as Podman containers, managed by the System Daemon (Systemd) using quadlets.
-
-Before describing how to install RHEM services and quadlets on a RHEL server, let's take a closer look at the RHEM architecture and its microservices.
-
-== API, command-line, web interfaces, and agents.
-
-Though you could interact directly with the RHEM API, and there is even an https://galaxy.ansible.com/ui/repo/published/flightctl/core/docs/[Ansible content collection^] that does it, you would usually interact with RHEM by using either its command-line interface (CLI), provided by the `flightctl` command, or its web user interface (UI).
-
-image::RHEM-arch.svg[title="High-level architecture of RHEM"]
+image::RHEM-arch.svg[title="High-level architecture of Edge Manager"]
 
 The CLI has native ports for all major operating system, and the majority of tasks can be performed using either the CLI or the web UI.
 As expected, the web UI offers ease of use, while the CLI offers scriptability.
 
-If you install RHEM on RHEL, the web UI runs in the same server host as the RHEM API, but if you install RHEM on OpenShift, them the UI and microservices could run in different cluster nodes, as with any other application deployed on Kubernetes.
+If you install Edge Manager on RHEL, the web UI runs in the same server host as the Edge Manager API, but if you install Edge Manager on OpenShift, then the UI and microservices could run in different cluster nodes, as with any other application deployed on Kubernetes.
 
-The RHEM microservices use a PostgreSQL relational database for persisting device state and its API resources.
+The Edge Manager microservices use a PostgreSQL relational database for persisting device state and its API resources.
 They can also be configured with a number of different authentication, authorization, certificate, and configuration providers. 
 
-Configuration of the RHEM microservices is not usually done using its API, but by editing configuration files (if RHEM is deployed on RHEL) or Kubernetes resources (if RHEM is deployed on OpenShift).
+Configuration of the Edge Manager microservices is not usually done using its API, but by editing configuration files (if Edge Manager is deployed on RHEL) or Kubernetes resources (if Edge Manager is deployed on OpenShift).
 
-NOTE: This course does not teach how to configure different providers and other aspects of RHEM microservices.
+NOTE: This course does not cover how to configure different providers and other aspects of Edge Manager microservices.
 It sticks to the installation defaults, which use Linux PAM for authentication and authorization, and a self-signed certificate.
-This course focuses on using the RHEM API to manage devices.
+This course focuses on using the Edge Manager API to manage devices.
 
-Depending on the authentication provider, it may not be possible to authenticate to RHEM using the CLI. In that case, the CLI can invoke a web browser to perform authentication and them use the returned token.
+Depending on the authentication provider, it may not be possible to authenticate to Edge Manager using the CLI. In that case, the CLI can invoke a web browser to perform authentication and then use the returned token.
 
-RHEM agents running on managed devices also invoke the RHEM API, but using a different entrypoint than the CLI and web UI do, and authenticate using a certificate generated at device enrollment time.
-All communication between a RHEM agent and the RHEM API is secured using mTLS.
+Edge Manager agents running on managed devices also invoke the Edge Manager API, but use a different entrypoint than the CLI and web UI do, and authenticate using a certificate generated at device enrollment time.
+All communication between a Edge Manager agent and the Edge Manager API is secured using mTLS.
 
-RHEM agents start network connections to the RHEM API, in a pull approach.
-A RHEM server does not start network connections to aggents, which would be a push approach.
+Edge Manager agents start network connections to the Edge Manager API, in a pull approach.
+A Edge Manager server does not start network connections to agents, which would be a push approach.
 The pull approach enables deploying managed devices at edge sites which use private IP address ranges and rely on network address transation (NAT) to access external network resources and the internet.
-It even enables edge sites using cheap broadband network connections, similar to redidencial broadband internet.
+It even enables edge sites using cheap broadband network connections, similar to residential broadband internet.
 
-== RHEM microservices
+== Edge Manager microservices
 
-RHEM runs a number of microservices, each on its own container, including a few optional observability microservices.
+Edge Manager runs a number of microservices, each on its own container, including a few optional observability microservices.
 
-image::RHEM-components.svg[title="RHEM microservices"]
+image::RHEM-components.svg[title="Edge Manager microservices"]
 
-If you deploy RHEM on RHEL, each microservice becomes a System Daemon (Systemd) service unit, as well as their supporting services.
+If you deploy Edge Manager on RHEL, each microservice becomes a System Daemon (Systemd) service unit, as well as their supporting services.
 The PostgreSQL database corresponds to the `flightctl-db` service and container, and the Redis cache corresponds to the `flightctl-kv` service and container.
 
-There may be a few service units and containers not included in the previous diagram, for example a service that provides downloads of the RHEM CLI. Tasks such as initializing the RHEM database, migrating its schema during RHEM version updates, or generating TLS certificates for acessing RHEM API access, are also performed by containers running from one-shot Systemd units.
+There may be a few service units and containers not included in the previous diagram, for example a service that provides downloads of the Edge Manager CLI.
+Tasks such as initializing the Edge Manager database, migrating its schema during Edge Manager version updates, or generating TLS certificates for accessing Edge Manager API access, are also performed by containers running from one-shot Systemd units.
 
-== PAM authentication with RHEM
+== PAM authentication with Edge Manager
 
-In the simplest deployment of standalone RHEM on RHEM, a special microservice called `flightctl-pam-issuer` runs an OpenID Connect (ODIC) provider based on Linux PAM.
+In the simplest deployment of standalone Edge Manager on Edge Manager, a special microservice called `flightctl-pam-issuer` runs an OpenID Connect (ODIC) provider based on Linux PAM.
 
-Using its default configuation, the PAM issuer service uses UNIX passwd, shadow, and group files to manage authentication and authorization for the RHEM API.
+Using its default configuration, the PAM issuer service uses UNIX passwd, shadow, and group files to manage authentication and authorization for the Edge Manager API.
 
 The PAM issuer does not use the user and group files from its host RHEL server, but contains its own copy of these files.
-You must manage these files inside the container, by using standard Linux tools such as the `useradd` command in the container namespaces, for example with `podman exec`.
-The default configuration makes the Linux users of the PAM issuer container independent of the Linux users of its host, so that a RHEM user does not get unintended console or SSH access to a RHEM server host.
+You must manage these files inside the container, by using standard Linux tools such as the `useradd` command in the container namespaces, for example, with `podman exec`.
+The default configuration makes the Linux users of the PAM issuer container independent of the Linux users of its host, so that a Edge Manager user does not get unintended console or SSH access to a Edge Manager server host.
 
 ////
-Future releases of RHEM may expand the PAM issuer to support authentication and authorization using Red Hat Identity Manager (IdM), Microsoft Active Directory (MSAD), and other enterprise authentication systems based on the Kerberos and LDAP protocols by using the Secure System Services Daemon (sssd).
+Future releases of Edge Manager may expand the PAM issuer to support authentication and authorization using Red Hat Identity Manager (IdM), Microsoft Active Directory (MSAD), and other enterprise authentication systems based on the Kerberos and LDAP protocols by using the Secure System Services Daemon (sssd).
 ////
 
-IMPORTANT: The recommended approach for a production-grade deployment of RHEM is configuring an ODIC provider which connects to an OAuth-based enterprise or cloud identity management system, such as Red Hat build of Keycloack, Microsoft EntraID, Auth0 by Okta, or Google Cloud Authentication.
+IMPORTANT: The recommended approach for a production-grade deployment of Edge Manager is configuring an ODIC provider which connects to an OAuth-based enterprise or cloud identity management system, such as Red Hat build of Keycloak, Microsoft EntraID, Auth0 by Okta, or Google Cloud Authentication.
 
-== Installing RHEM on RHEL
+== Installing Edge Manager on RHEL
 
-To install RHEM on RHEM, you must follow these general steps:
+To install Edge Manager on Edge Manager, you must follow these general steps:
 
-. Register your host and entitle it to RHEM.
+. Register your host and entitle it to Edge Manager.
 
 . Give your host access to the Red Hat registry.
 
-. Enable the RHEM package repository and install the RHEM packages.
+. Enable the Edge Manager package repository and install the Edge Manager packages.
 
 . Perform any configurations you need to adhere to your organization's production policies, such as configuring an OIDC provider, generating TLS certificates, and opening ports on firewalls.
-Some of these affect the RHEM configuation files on `/etc/flightctl`, others affect different RHEL system services.
+Some of these affect the Edge Manager configuation files on `/etc/flightctl`, others affect different RHEL system services.
 
-. Start RHEM.
+. Start Edge Manager.
 
-. Configure users with administrator access to RHEM.
+. Configure users with administrator access to Edge Manager.
 
-. Use the web UI or the CLI to validate your RHEM server is healthy and available.
+. Use the web UI or the CLI to validate that your Edge Manager server is healthy and available.
 
-You install RHEM on RHEL by installing its RPM packages, which configure System Daemon (Systemd) units and quadlets.
-RHEM can be run without further configuration, most of the times, but there's a number of settings you may wish to change for production-grade deployments before starting its services.
+You install Edge Manager on RHEL by installing its RPM packages, which configure System Daemon (Systemd) units and quadlets.
+Edge Manager can be run without further configuration, most of the time, but there are a number of settings you may wish to change for production-grade deployments before starting its services.
 
-Before you attempt to install RHEM on RHEL, you must log in to the Red Hat registry (`registry.redhat.io`) using a valid Red Hat customer portal account, as the root user, or by using a https://access.redhat.com/articles/RegistryAuthentication#creating-registry-service-accounts-6[Red Hat registry service account].
-This step is necessary because RHEM quadlets pull RHEM container images, on their first run, and would fail if there is no registry access token in the container environment of the root user.
+Before you attempt to install Edge Manager on RHEL, you must log in to the Red Hat registry (`registry.redhat.io`) using a valid Red Hat customer portal account, as the root user, or by using a https://access.redhat.com/articles/RegistryAuthentication#creating-registry-service-accounts-6[Red Hat registry service account].
+This step is necessary because Edge Manager quadlets pull Edge Manager container images, on their first run, and would fail if there is no registry access token in the container environment of the root user.
 
-IMPORTANT: For production deployments, it is recommended that you authenticate to the Red Hat registry using service accounts, so you RHEM servers do not store the username and password of a human customer portal user on the local disk.
+IMPORTANT: For production deployments, it is recommended that you authenticate to the Red Hat registry using service accounts, so your Edge Manager servers do not store the username and password of a human customer portal user on the local disk.
 
-To install RHEM on RHEL, you must have access to a Red Hat subscription with entitles RHEM and enable, using subcription manager, the package repository channel named `edge-manager-1.0-for-rhel-9-x86_64-rpms`.
+To install Edge Manager on RHEL, you must have access to a Red Hat subscription with entitlements for Edge Manager and enable, using subscription manager, the package repository channel named `edge-manager-1.0-for-rhel-9-x86_64-rpms`.
 
-NOTE: Free Red Hat Developer subscription for individuals and Red Hat Developer subscriptions for teams do not provide entitlements for RHEM.
+NOTE: Free Red Hat Developer subscription for individuals and Red Hat Developer subscriptions for teams do not provide entitlements for Edge Manager.
 
-Alternatively, you could enable the https://github.com/flightctl/flightctl-rpm[upstream RPM repository^] from the Flight Control project, which works for learning purposes, especially given that early releases of RHEM are likely to be functionally equivalent to the RHEM product and have the same version numbers.
+Alternatively, you could enable the https://github.com/flightctl/flightctl-rpm[upstream RPM repository^] from the Flight Control project, which works for learning purposes, especially given that early releases of Edge Manager are likely to be functionally equivalent to the Edge Manager product and have the same version numbers.
 In that case, you do not need to log in to the Red Hat registry.
 
-Then you install the `flightctl-services` package, which configures Systemd units for all necessary RHEM microservices.
+Then you install the `flightctl-services` package, which configures Systemd units for all necessary Edge Manager microservices.
 The same package installs Systemd units to perform one-time initialization of the services which require it.
 Finally, you enable and start the `flightctl` target on Systemd.
 
-Additional `flightctl-*` packages provide optional capabilities, such as the observability microservices, and the CLI, which you can install afterwards or before starting RHEM.
+Additional `flightctl-*` packages provide optional capabilities, such as the observability microservices, and the CLI, which you can install afterwards or before starting Edge Manager.
 
-If your RHEM server host has firewall services enabled, you should check the product or upstream documentation for the list of TCP ports to open.
+If your Edge Manager server host has firewall services enabled, you should check the product or upstream documentation for the list of TCP ports to open.
 You must expose not only the API and web UI ports, but also a few other services, for external network connections.
 
-You should expect it, but, anyway, we say it out loud: do not disable SELinux.
-RHEM includes a SELinux policy for the targeted mode, as you would expect from any production-grade software.
+You should know this, but in case you don't: do *not* disable SELinux.
+Edge Manager includes a SELinux policy for the targeted mode, as you would expect from any production-grade software.
 
-After RHEM services are up and running, you need to create users and groups on the `flightctl-pam-issuer` container, if you are not using an enterprise OIDC provider, before you can log in on RHEM using either its CLI or web UI.
+After Edge Manager services are up and running, you need to create users and groups on the `flightctl-pam-issuer` container, if you are not using an enterprise OIDC provider, before you can log in on Edge Manager using either its CLI or web UI.
 
-== Where is RHEM data stored?
+== Where is Edge Manager data stored?
 
-After you start a RHEM server, you will not find a `/var/lib/pgsql/data/` directory for PostgreSQL data on your RHEM server host.
+After you start a Edge Manager server, you will not find a `/var/lib/pgsql/data/` directory for PostgreSQL data on your Edge Manager server host.
 That directory exists only inside the `flightctl-db` container, and it is a Podman volume.
 
-Similarly, you will not find Redis data directories or API access and audit logs on your RHEM server host.
+Similarly, you will not find Redis data directories or API access and audit logs on your Edge Manager server host.
 
-If you must perform RHEM database backups and other database management operations,
-you must manage Podman volumes or enter the container namespaces of RHEM containers.
+If you must perform Edge Manager database backups and other database management operations,
+you must manage Podman volumes or enter the container namespaces of Edge Manager containers.
 
-Future releases of RHEM will support external databases, so that organization having strict requirements on data management and availability can store RHEM data and managed device state in a database properly configured for their requirements.
+Future releases of Edge Manager will support external databases, so that organization that have strict requirements concerning database management and availability can store Edge Manager data and managed device state in a database properly configured for their needs.
 
 == What's Next
 
-The next activity shows how to install and configure a RHEM server, and the next chapter shows how to provision and enroll managed devices on RHEM.
+The next activity shows how to install and configure a Edge Manager server on RHEL, and the next chapter shows how to provision and enroll managed devices on Edge Manager.
