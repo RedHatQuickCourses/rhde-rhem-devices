@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Decommission and Delete Edge Devices with RHEM :: Deploying Red Hat Edge Manager and Managing Edge Devices</title>
+    <title>Decommission and Delete Edge Devices with Edge Manager :: Deploying Red Hat Edge Manager and Managing Edge Devices</title>
     <link rel="prev" href="index.html">
     <link rel="next" href="s2-delete-lab.html">
     <meta name="generator" content="Antora 3.1.3">
@@ -125,7 +125,7 @@
     <a class="nav-link" href="index.html">Remove Edge Devices from Red Hat Edge Manager</a>
 <ul class="nav-list">
   <li class="nav-item is-current-page" data-depth="2">
-    <a class="nav-link" href="s1-delete.html">Decommission and Delete Edge Devices with RHEM</a>
+    <a class="nav-link" href="s1-delete.html">Decommission and Delete Edge Devices with Edge Manager</a>
   </li>
   <li class="nav-item" data-depth="2">
     <a class="nav-link" href="s2-delete-lab.html">Lab: Decommission and Delete Edge Devices</a>
@@ -172,7 +172,7 @@
   <ul>
     <li><a href="../index.html">Deploying Red Hat Edge Manager and Managing Edge Devices</a></li>
     <li><a href="index.html">Remove Edge Devices from Red Hat Edge Manager</a></li>
-    <li><a href="s1-delete.html">Decommission and Delete Edge Devices with RHEM</a></li>
+    <li><a href="s1-delete.html">Decommission and Delete Edge Devices with Edge Manager</a></li>
   </ul>
 </nav>
 </div>
@@ -181,7 +181,7 @@
   <div class="toc-menu"></div>
 </aside>
 <article class="doc">
-<h1 class="page">Decommission and Delete Edge Devices with RHEM</h1>
+<h1 class="page">Decommission and Delete Edge Devices with Edge Manager</h1>
 <div id="preamble">
 <div class="sectionbody">
 <div class="paragraph">
@@ -191,21 +191,9 @@
 <dl>
 <dt class="hdlist1">Objective</dt>
 <dd>
-<p>Make a device not managed by RHEM anymore and, optionally, delete the device resource.</p>
+<p>Remove a device from Edge Manager management and, optionally, delete the device resource.</p>
 </dd>
 </dl>
-</div>
-<div class="admonitionblock warning">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-warning" title="Warning"></i>
-</td>
-<td class="content">
-Work in progress
-</td>
-</tr>
-</table>
 </div>
 </div>
 </div>
@@ -213,17 +201,17 @@ Work in progress
 <h2 id="_decommission_versus_delete_operations"><a class="anchor" href="#_decommission_versus_delete_operations"></a>Decommission versus delete operations</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>At some moment, you will have to remove your devices from RHEM management.
-Maybe a device is being sent to another location, for a different use.
+<p>At some point, you will have to remove your devices from Edge Manager management.
+Perhaps a device is being sent to another location, for a different use.
 Maybe a device is just broken beyond repair, or lost.</p>
 </div>
 <div class="paragraph">
-<p>RHEM provides a decommission operation, which requires the administrator role, and removes all labels of a device, thus removing it from any fleet.
-The device status is set to decomissioned, so it is hidden from regular device listings in the web UI.</p>
+<p>Edge Manager provides a decommission operation, which requires the administrator role, and removes all labels of a device, thus removing it from any fleet.
+The device status is set to decommissioned, so it is hidden from regular device listings in the web UI.</p>
 </div>
 <div class="paragraph">
-<p>The API resource of a decomissioned device is still stored, so you have a track record of device information.
-RHEM does not perform any scrubbing of the device: if there is sensitive data which must be securely deleted, you need a specialized tool for it.</p>
+<p>The API resource of a deco,missioned device is still stored, so you have a track record of device information.
+Edge Manager does not perform any scrubbing of the device: if there is sensitive data which must be securely deleted, you need a specialized tool for it.</p>
 </div>
 <div class="admonitionblock note">
 <table>
@@ -232,21 +220,21 @@ RHEM does not perform any scrubbing of the device: if there is sensitive data wh
 <i class="fa icon-note" title="Note"></i>
 </td>
 <td class="content">
-You could have a fleet configured just for running a scrubbing tool, and move devices there before decomissioning them.
+You could have a fleet configured just for running a scrubbing tool, and move devices there before decommissioning them.
 </td>
 </tr>
 </table>
 </div>
 <div class="paragraph">
-<p>Decomissioned devices are not cleaned in any way: they retain the last system image, configurations, and applications that RHEM put there.
-Managed devices allways keep operating despite having access ro RHEM, including aftger being decomissioned.</p>
+<p>Decommissioned devices are not cleaned in any way: they retain the last system image, configurations, and applications that Edge Manager put there.
+Managed devices allways keep operating despite having access to Edge Manager, including after being decommissioned.</p>
 </div>
 <div class="paragraph">
-<p>At some moment, you will want to remove records of decomissioned devices, to keep your RHEM database nimble.
+<p>At some point, you will want to remove records of decommissioned devices, to keep your Edge Manager database nimble.
 The delete operation also requires the administrator role and it is unrecoverable.</p>
 </div>
 <div class="paragraph">
-<p>After a device is deleted, it still contains a RHEM agent and an enrollment certificate, which could be used to re-enroll the device.</p>
+<p>After a device is deleted, it still contains a Edge Manager agent and an enrollment certificate, which could be used to re-enroll the device.</p>
 </div>
 </div>
 </div>

@@ -124,7 +124,7 @@
     <a class="nav-link" href="index.html">Remove Edge Devices from Red Hat Edge Manager</a>
 <ul class="nav-list">
   <li class="nav-item" data-depth="2">
-    <a class="nav-link" href="s1-delete.html">Decommission and Delete Edge Devices with RHEM</a>
+    <a class="nav-link" href="s1-delete.html">Decommission and Delete Edge Devices with Edge Manager</a>
   </li>
   <li class="nav-item is-current-page" data-depth="2">
     <a class="nav-link" href="s2-delete-lab.html">Lab: Decommission and Delete Edge Devices</a>
@@ -190,21 +190,9 @@
 <dl>
 <dt class="hdlist1">Objective</dt>
 <dd>
-<p>Make managed devices unmanaged and delete their device resources in RHEM.</p>
+<p>Make managed devices unmanaged and delete their device resources in Edge Manager.</p>
 </dd>
 </dl>
-</div>
-<div class="admonitionblock warning">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-warning" title="Warning"></i>
-</td>
-<td class="content">
-Work in progress
-</td>
-</tr>
-</table>
 </div>
 </div>
 </div>
@@ -216,10 +204,10 @@ Work in progress
 It could be a <a href="https://developers.redhat.com/products/rhel/download">Red Hat Developer program</a> free subscription.</p>
 </div>
 <div class="paragraph">
-<p>You need a <em>development machine</em> running RHEL, which contains two test VMs already enrolled into your RHEM server by a <a href="../ch3-enroll/s2-enroll-lab.html" class="xref page">previous lab</a>.</p>
+<p>You need a <em>development machine</em> running RHEL, which contains two test VMs already enrolled into your Edge Manager server by a <a href="../ch3-enroll/s2-enroll-lab.html" class="xref page">previous lab</a>.</p>
 </div>
 <div class="paragraph">
-<p>You also need a <em>server machine</em> running RHEL, to which you also have unrestricted sudo access, which was already configured with RHEM.</p>
+<p>You also need a <em>server machine</em> running RHEL, to which you also have unrestricted sudo access, which was already configured with Edge Manager.</p>
 </div>
 <div class="paragraph">
 <p>If you are using the course classroom, your <em>development machine</em> is the <code>workstation</code> VM.
@@ -231,7 +219,7 @@ Log in as the user <code>student</code> with password <code>student</code>.</p>
 <h2 id="_instructions"><a class="anchor" href="#_instructions"></a>Instructions</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>You will decommission and delete both managed devices you enrolled and configured in previous labs, and you will verify that the configurations set by RHEM remain on the devices after they are not managed anymore.</p>
+<p>You will decommission and delete both managed devices you enrolled and configured in previous labs, and you will verify that the configurations set by Edge Manager remain on the devices after they cease to be managed devices.</p>
 </div>
 <div class="olist arabic">
 <ol class="arabic">
@@ -245,7 +233,7 @@ If you do not, go back and complete them, because you need their outcomes to pro
 <i class="fa icon-note" title="Note"></i>
 </td>
 <td class="content">
-While this activity does not depend on outcomes from <em>all</em> of the previous labs, it works better if you already perform some configuration of managed devices, after enrolling them.
+While this activity does not depend on outcomes from <em>all</em> of the previous labs, it works better if you have already performed some configuration of managed devices; after enrolling them.
 </td>
 </tr>
 </table>
@@ -275,7 +263,7 @@ LICENSE  README.md  antora.yml  enroll  modules  webapp</code></pre>
 </div>
 </li>
 <li>
-<p>If your test VMs are not started, because you stopped your classroom environment since completing the previous lab, start them now.</p>
+<p>If your test VMs are not running, because you stopped your classroom environment since completing the previous lab, start them now.</p>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>virsh start edge-1</strong>
@@ -296,7 +284,7 @@ Containerfile  bib-iso.sh  config.toml  config.yaml  edge-key  edge-key.pub  out
 </div>
 </li>
 <li>
-<p>Log in on RHEM, as an administrator, and verify that there are two managed devices, which correspond to the two test VMs.</p>
+<p>Log in to Edge Manager as an administrator and verify that there are two managed devices, which correspond to the two test VMs.</p>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>flightctl login -u admin -p redhat https://servera.lab.example.com:3443</strong>
@@ -325,30 +313,18 @@ g7ombcqk46tqq458j9uju454441mf1lgt9qqqva8ti0fnvosm57g    edge-2  &lt;none&gt;  Un
 <li>
 <p>Log in as the <code>student</code> user with the <code>student</code> password.
 On the left pane, select the <b class="menuref">Devices</b> page, and click the three vertical dots icon, to open the actions menu for any of the managed devices.</p>
-<div class="paragraph">
-<p>GRAB SCREENSHOT</p>
-</div>
 </li>
 <li>
-<p>Notice that there is no action do either decomission or delete a device, but only to edit device configurations and view device details.</p>
+<p>Notice that there is no action to either decommission or delete a device, but only to edit device configurations and view device details.</p>
 <div class="paragraph">
-<p>Also notice, to the top of page, bellow the device filters, a slider button to display decommissioned devices.</p>
-</div>
-<div class="paragraph">
-<p>GRAB SCREENSHOT</p>
+<p>Also notice, at the top of page, below the device filters, there is a slider button to display decommissioned devices.</p>
 </div>
 </li>
 <li>
 <p>Click the <b class="menuref">Show decommissioned devices</b> button, and the page should show that there are no devices being decommissioned or already decommissioned.</p>
-<div class="paragraph">
-<p>GRAB SCREENSHOT</p>
-</div>
 </li>
 <li>
 <p>Click on the <code>student</code> user name, to the top right, to open the user menu and select <b class="menuref">Logout</b>.</p>
-<div class="paragraph">
-<p>GRAB SCREENSHOT</p>
-</div>
 </li>
 </ol>
 </div>
@@ -360,31 +336,19 @@ On the left pane, select the <b class="menuref">Devices</b> page, and click the 
 <li>
 <p>Log in as the <code>admin</code> user with the <code>redhat</code> password.
 On the left pane, select the <b class="menuref">Devices</b> page, and click the three vertical dots icon, to open the actions menu for the <code>edge-2</code> managed device.</p>
-<div class="paragraph">
-<p>GRAB SCREENSHOT</p>
-</div>
 </li>
 <li>
 <p>Click <b class="menuref">Decommision device</b>.
 Confirm that you really want to decommission the managed device by clicking on the red <b class="menuref">Decommision device</b> button.</p>
-<div class="paragraph">
-<p>GRAB SCREENSHOT</p>
-</div>
 </li>
 <li>
 <p>The <b class="menuref">Devices</b> page automatically switches to list decomissioned devices, and shows a status of <code>Decomissioning</code> for the device which has the UUID that used to belong to the <code>edge-2</code> managed device.
-Notice that, when you decomission a managed device, it loses all its labels but it does NOT lose the configurations managed by RHEM.</p>
-<div class="paragraph">
-<p>GRAB SCREENSHOT</p>
-</div>
+Notice that, when you decomission a managed device, it loses all its labels but it does NOT lose the configurations managed by Edge Manager.</p>
 </li>
 <li>
 <p>Click the UUID of the only device being decomissioned, which used to be the <code>edge-2</code> managed device, and see that it still display the configurations which were set for the device.</p>
 <div class="paragraph">
 <p>The device stays in that state on the assumption that some clean up procedure would be executed on it.</p>
-</div>
-<div class="paragraph">
-<p>GRAB SCREENSHOT</p>
 </div>
 </li>
 </ol>
@@ -395,21 +359,15 @@ Notice that, when you decomission a managed device, it loses all its labels but 
 <div class="olist loweralpha">
 <ol class="loweralpha" type="a">
 <li>
-<p>You could keep the device as being decomissioned for as long as you wish, but after a time you probably want to remove its records from the RHEM database.</p>
+<p>You could keep the device as being decommissioned for as long as you wish, but after a time, you will probably want to remove its records from the Edge Manager database.</p>
 <div class="paragraph">
 <p>To remove the record for the device you just decomissioned, return to the <b class="menuref">Devices</b> page and click again <b class="menuref">Show decommissioned devices</b>.
 Then click the actions menu button for the only device listed and select <b class="menuref">Delete device</b>.</p>
 </div>
-<div class="paragraph">
-<p>GRAB SCREENSHOT</p>
-</div>
 </li>
 <li>
 <p>Confirm that you actually want to delete the device resource by clicking the red <b class="menuref">Delete device</b> button.
-Now your <b class="menuref">Devices</b> page should list no more decommissioned devices.</p>
-<div class="paragraph">
-<p>GRAB SCREENSHOT</p>
-</div>
+Now your <b class="menuref">Devices</b> page should list no decommissioned devices.</p>
 </li>
 </ol>
 </div>
@@ -421,7 +379,7 @@ Now your <b class="menuref">Devices</b> page should list no more decommissioned 
 <li>
 <p>Switch to a terminal and enter the <code>temp-enroll</code> directory, which contains the SSH keys for acessing your test VMs.</p>
 <div class="paragraph">
-<p>Notice that it still contains the message of the day that you configured by using RHEM.</p>
+<p>Notice that it still contains the message of the day that you configured by using Edge Manager.</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -434,7 +392,7 @@ Last login: Thu Dec 19 14:05:12 2025 from 172.25.250.254
 </div>
 </li>
 <li>
-<p>Verify that the test VM is still running the latest operating system image set by RHEM.</p>
+<p>Verify that the test VM is still running the latest operating system image set by Edge Manager.</p>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>sudo bootc status</strong>
@@ -460,11 +418,11 @@ Last login: Thu Dec 19 14:05:12 2025 from 172.25.250.254
 </div>
 </li>
 <li>
-<p>Decomission another device, but now using the CLI.</p>
+<p>Decommission another device, but now use the CLI.</p>
 <div class="olist loweralpha">
 <ol class="loweralpha" type="a">
 <li>
-<p>Log in as the <code>student</code> user, just so you can see the error message you would get for insufficient permissions to perform the decommission operation.</p>
+<p>Log in as the <code>student</code> user, so you can see the error message you would get for insufficient permissions to perform the decommission operation.</p>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>flightctl login -u student -p student https://servera.lab.example.com:3443</strong>
@@ -479,7 +437,7 @@ Error: unsuccessful decommissioning device request 1u63hvsgtua9tjjbmla9bgh5h2s77
 </div>
 </li>
 <li>
-<p>Login as the <code>admin</code> user and decommission the <code>edge-1</code> managed device, which corresponds to your first test VM.</p>
+<p>Log in as the <code>admin</code> user and decommission the <code>edge-1</code> managed device, which corresponds to your first test VM.</p>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>flightctl login -u admin -p redhat https://servera.lab.example.com:3443</strong>
@@ -494,7 +452,7 @@ Device scheduled for decommissioning: 200 OK: 1u63hvsgtua9tjjbmla9bgh5h2s77cb8es
 </div>
 </li>
 <li>
-<p>Verify that the device still appears in the device list, though it is not managed anymore by RHEM.</p>
+<p>Verify that the device still appears in the device list, though it is not managed by Edge Manager anymore.</p>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>flightctl get device -o wide</strong>
@@ -521,7 +479,7 @@ Decommissioning</code></pre>
 <div class="olist loweralpha">
 <ol class="loweralpha" type="a">
 <li>
-<p>Use the <code>UUID</code> shell variable that you set int the previous step to delete the device resource from RHEM.</p>
+<p>Use the <code>UUID</code> shell variable that you set in the previous step to delete the device resource from Edge Manager.</p>
 <div class="paragraph">
 <p>Notice that, when using the CLI, there is no confirmation for either decommissioning or deleting a managed device.</p>
 </div>
@@ -545,11 +503,11 @@ NAME    ALIAS   OWNER   SYSTEM  UPDATED APPLICATIONS    LABELS</code></pre>
 </div>
 </li>
 <li>
-<p>Verify that your test devices cannot communicate with their RHEM server anymore.</p>
+<p>Verify that your test devices cannot communicate with their Edge Manager server.</p>
 <div class="olist loweralpha">
 <ol class="loweralpha" type="a">
 <li>
-<p>Open a SSH session to one of your test VMs and shutdown it.</p>
+<p>Open a SSH session to one of your test VMs and shut it down.</p>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>ssh -i edge-2-key -p 8222 core@127.0.0.1</strong>
@@ -562,7 +520,7 @@ Under new management!
 <li>
 <p>Give it time to reboot and reconnect using SSH.</p>
 <div class="paragraph">
-<p>Verify that the device believes it is already enrolled with RHEM, but it cannot update its status on the RHEM server.</p>
+<p>Verify that the device believes it is already enrolled with Edge Manager, but it cannot update its status on the Edge Manager server.</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -594,7 +552,7 @@ This would be the HTML and JavaScript code of a single-page web application.</co
 </ol>
 </div>
 <div class="paragraph">
-<p>You demonstrated that decommissioning and deleting managed devices on RHEM does not scrubs the devices.
+<p>You demonstrated that decommissioning and deleting managed devices on Edge Manager does not scrub the devices.
 If they contained sentitive data, such as secrets to access corporate systems, that is still there, and you must implement a process for cleaning those devices of such data.</p>
 </div>
 </div>
@@ -609,7 +567,7 @@ In the next course, you will configure device fleets, manage devices as members 
 </div>
 </div>
 <nav class="pagination">
-  <span class="prev"><a href="s1-delete.html">Decommission and Delete Edge Devices with RHEM</a></span>
+  <span class="prev"><a href="s1-delete.html">Decommission and Delete Edge Devices with Edge Manager</a></span>
 </nav>
 </article>
   </div>
