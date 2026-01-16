@@ -1,7 +1,12 @@
 = Manage Edge Devices with Red Hat Edge Manager
 
 Goal::
+Configure, update, and repurpose managed devices.
 
-Onboard, update, and repurpose managed devices.
+This chapter starts with a discussion of common settings and tools to perform day-0, day-1, and day-2 configurations on devices, and classifies Edge Manager as a tool for day-2 configuration.
+It also describes how Edge Manager can be part of a more sophisticated device onboarding workflow, possibly complemented by other, specialized tools.
 
-WARNING: Work in progress
+Then, the chapter switches to the Edge Manager drift detection and reconciliation of managed device configuations, and presents the most common configuration provider types in a device template.
+It proceeds with a discussion on operating system updates (patching) vs. Edge Manager updates (which also include configurations and applications).
+
+Finally, it shows how to get shell access of managed devices through Edge Manager and the differences between administrator roles, which you require to enroll managed devices, and operator roles, which are allowed to manage edge devices.

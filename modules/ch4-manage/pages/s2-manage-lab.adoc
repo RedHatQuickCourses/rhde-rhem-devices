@@ -8,53 +8,27 @@ Objective::
 
 Configure managed devices by using inline configuration in their device specifications.
 
-WARNING: Work in progress
-
 == Before you begin
 
 You need a customer portal account with access to a Red Hat Enterprise Linux (RHEL) subscription.
 It could be a https://developers.redhat.com/products/rhel/download[Red Hat Developer program] free subscription.
 
-You need a _development machine_ running RHEL, which contains two test VMs already enrolled into your RHEM server by a xref:ch3-enroll:s2-enroll-lab.adoc[previous lab].
+You need a _development machine_ running RHEL, which contains two test VMs already enrolled into your Edge Manager server by a xref:ch3-enroll:s2-enroll-lab.adoc[previous lab].
 
-You also need a _server machine_ running RHEL, to which you also have unrestricted sudo access, which was already configured with RHEM.
+You also need a _server machine_ running RHEL, to which you also have unrestricted sudo access, which was already configured with Edge Manager.
 
 If you are using the course classroom, your _development machine_ is the `workstation` VM.
 Log in as the user `student` with password `student`.
 
 == Instructions
 
-////
-
-Configure devices so they can access a private OCI container registry, and switch the OS image to one which includes an embedded application.
-
-* Build a new bootc container image which contains an application, such as a web server, and minimal required settings, such as enabling it in systemd and firewalld.
-
-* No need to build an update or installation media, because the update will be performed by RHEM directly from a container registry.
-
-* The previous lab, provisioning devices from ISO (a disconnected workflow), or from QCOW2, left devices without secrets to access the private container registry.
-
-* Try to switch those devices to a different image and notice it fails.
-
-* Add the registry TLS certificate and credentials as inline device configurations, and now they successfully update to the new image.
-
-* The previous bullet requires an afterupdate hook to run the update-ca-trust command
-
-* Access the device and verify the application works as intended.
-
-* Prove other devices were left untouched.
-
-* Change a file which is managed by RHEM and verify that RHEM reverts the change, to demonstrate it works as a “kubernetes-style” reconciliation loop and prevents configuration drift
-
-* Update another different device (to the same image and settings) to demonstrate it done from both the CLI and web UI?
-
-////
-
 At the end of the previous lab, you had two managed devices which were provisioned from the same installation disk.
-Right now, they have identical settings, among them a well-known SSH key, which is considered insecure because it's available to any field personel with possess an installation media.
+
+Right now, they have identical settings, among them a well-known SSH key, which is considered insecure because it's available to any field personnel whom possess an installation media.
+
 You will remediate this by configuring your managed devices with different SSH keys, provided as inline configurations in each device manifest.
 
-Then you will exercise RHEM's ability to detect and correct configuration drift, by making manual changes to configuration files, and observing that RHEM restores the configurations set for each device.
+Then you will exercise Edge Manager's ability to detect and correct configuration drift, by making manual changes to configuration files, and observing that Edge Manager restores the configurations set for each device.
 
 1. Verify that you have the outcomes of previous labs.
 If you do not, go back and complete them, because you need their outcomes to proceed with this lab.
@@ -83,7 +57,7 @@ $ *virsh list --all*
  -    edge-2   shut off
 --
 
-.. If your test VMs are not started, because you stopped your classroom environment since completing the previous lab, start them now.
+.. If your test VMs are not running, because you stopped your classroom environment since completing the previous lab, start them now.
 +
 [source,subs="verbatim,quotes"]
 --
@@ -104,7 +78,7 @@ Containerfile  bib-iso.sh  config.toml  config.yaml  edge-key  edge-key.pub  out
 +
 // Do I really need this step here, or should I defer it to later?
 
-.. Log in on RHEM, as a non-administrator, and verify that there are two managed devices, which correspond to the two test VMs.
+.. Log in on Edge Manager, as a non-administrator, and verify that there are two managed devices, which correspond to the two test VMs.
 +
 [source,subs="verbatim,quotes,attributes"]
 --
@@ -118,7 +92,7 @@ NAME                                                    ALIAS   OWNER   SYSTEM  
 --
 +
 ////
-It seems my test VMs are consitently offline, and don't connecto to RHEM, when I continue the next day.
+It seems my test VMs are consitently offline, and don't connecto to Edge Manager, when I continue the next day.
 I found that my VMs had their system time on the previous day, maybe because I didn't shut then down?
 Using virsh start --force-boot may solve the issue.
 ////
@@ -127,50 +101,42 @@ Using virsh start --force-boot may solve the issue.
 +
 [IMPORTANT]
 ====
-If it seems that your test VMs are staying for too long in the `Unknow` state, access them using SSH and verify if their clocks are accurate by using the `date -u` command and comparing the output with the same command on your _development machine_.
+If it seems that your test VMs are staying for too long in the `Unknown` state, access them using SSH and verify if their clocks are accurate by using the `date -u` command and comparing the output with the same command on your _development machine_.
 
 It has been observed that, when you power off your test VMs without shutting them down, libvirt saves their in-memory state to disk and restores it on the next restart, which causes them to not resynchronize their system clocks.
-The clock skrew prevents them from synching with RHEM.
+The skewed clocks prevent the VMs from synching with Edge Manager.
 
 Simply rebooting those VMs, using the `shutdown -r now` command, seems to resolve that issue.
 
 Alternatively, you could use the `--force-boot` option with the `virsh start` command every time you restart your test VMs.
 ====
 
-2. Configure the second test VM using the RHEM web UI.
+2. Configure the second test VM using the Edge Manager web UI.
 
 .. Open a web browser and visit `\https://servera.lab.example.com`
 
 .. Log in as the `student` user with the `student` password.
-Notice we are NOT using the `admin` user, because you do NOT require full administrator privileges on RHEM to manage devices.
-+
-GRAB SCREENSHOT
+Notice we are NOT using the `admin` user anymore, because you do NOT require full administrator privileges on Edge Manager to manage devices.
 
-.. On the left panel, click *Devices* and click the icon with three vertical icons in the row of the `edge-2` device. 
-Then click *Edit device configurations*.
+.. On the left panel, click menu:Devices[] and click the icon with three vertical icons in the row of the `edge-2` device. 
+Then click menu:Edit device configurations[].
 +
-NOTE: The same option is available from the *Actions* button in the device details page.
-+
-GRAB SCREENSHOT
+NOTE: The same option is available from the menu:Actions[] button in the device details page.
 
-.. On the *General info* tab of the *Edit device* page, click *Next*.
-+
-GRAB SCREENSHOT
+.. On the menu:General info[] tab of the menu:Edit device[] page, click menu:Next[].
 
-.. On the *Device template* tab, click *Add configuration* and fill the form as follows:
+.. On the menu:Device template[] tab, click menu:Add configuration[] and complete the form as follows:
 +
 --
 ...  *Source name*: `ssh-key`
 
 ... *Source type*: `Inline configuration`
 --
-+
-GRAB SCREENSHOT
 
-.. When you select the source type, the page expands to show the *File 1* heading with a couple additional fields.
-Leave the form as it is, do not click anywhere else, because we have to generate the content for the ssk-key file.
+.. When you select the source type, the page expands to show the menu:File 1[] heading with a couple additional fields.
+Leave the form as it is, do not click anywhere else, because you have to generate the content for the SSH key file.
 
-.. Now switch from the web browser to a terminal, but do NOT close your web browser, and run the following command to create a new SSH key pair which is exclusive to the second device.
+.. Now switch from the web browser to a terminal, but do NOT close your web browser, and run the following command to create a new SSH key pair, which is exclusive to the second device.
 +
 [source,subs="verbatim,quotes"]
 --
@@ -188,8 +154,8 @@ $ *cat edge-2-key.pub*
 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILy6lU52yOY7IZ2BFpQhCQaQNBvyo1ydbsd5uyzPZBNq key for the edge-2 managed device
 --
 
-.. When you select the source type, the page expands to show the *File 1* heading with a couple additional fields.
-Fill them as follows:
+.. When you select the source type, the page expands to show a new menu:File 1[] heading with a couple additional fields.
+Fill in as follows:
 +
 --
 ...  *File path on the device*: `/home/core/.ssh/authorized_keys`
@@ -197,55 +163,44 @@ Fill them as follows:
 ... *Content*: <paste here the contents of your SSH key public file>
 --
 +
-NOTE: Instead of doing cut-and-paste from the terminal to the web browser, you could use the *Browse* button to select the `~/temp/enroll/edge-2-key.pub` file in the *Content* field.
-+
-GRAB SCREENSHOT
+NOTE: Instead of doing cut-and-paste from the terminal to the web browser, you could use the menu:Browse[] button to select the `~/temp/enroll/edge-2-key.pub` file in the *Content* field.
 
-.. Scroll down, not changing any of the other fields from *File 1*, and click *Add configuration* again.
+.. Scroll down, not changing any of the other fields from menu:File 1[], and click menu:Add configuration[] again.
 +
 You could add multiple files to the same configuration, but when the files are not directly related to each other, it improves readability and maintainability of the configuration having files as distinct inline configuration items.
 
-.. fill the fields inside *Configuration 2* as follows:
+.. Fill in the fields inside menu:Configuration 2[] as follows:
 +
 --
-...  *Source name*: `motd`
+... *Source name*: `motd`
 
 ... *Source type*: `Inline configuration`
 --
-+
-GRAB SCREENSHOT
 
-
-.. And fill the fields from the new *File 1* panel as follows:
+.. And fill in the fields from the new menu:File 1[] panel as follows:
 +
 --
-...  *File path on the device*: `/etc/motd`
+... *File path on the device*: `/etc/motd`
 
 ... *Content*: `Under new management!`
 --
-+
-GRAB SCREENSHOT
 
-.. Do not make any change to applications nor services, and click *Next*
+.. Do not make any changes to applications or services, and click menu:Next[]
 
-.. On the *Updates* tab, leave *Use basic configurations* checked, and click *Next*
+.. On the menu:Updates[] tab, leave menu:Use basic configurations[] checked, and click menu:Next[]
 
-.. On the *Review and save* tab, verify that two configurations are listed, named `hostname` and `motd`, and click *Save*.
+.. On the menu:Review and save[] tab, verify that two configurations are listed, named `hostname` and `motd`, and click menu:Save[].
 
-3. Verify that the managed device synchronizes with RHEM and receives the new configurations.
+3. Verify that the managed device synchronizes with Edge Manager and receives the new configurations.
 
-.. After clicking *Save*, you are in the details page for the `edge-2` device.
-Its *System status* panel should display an *Update status* of `Out-of-date`.
-+
-GRAB SCREENSHOT
+.. After clicking menu:Save[], you are in the details page for the `edge-2` device.
+Its menu:System status[] panel should display an *Update status* of `Out-of-date`.
 
 .. Wait until the *Update status* changes to `Up-to-date` and switch to a terminal window.
-+
-GRAB SCREENSHOT
 
 .. Open a SSH session to the `edge-2` test VM using the new key.
 +
-Notice that, if you reuse a previous `ssh` command from your history, you would use the old key and it would ask for the password for the `core` user.
+Notice that, if you reuse a previous `ssh` command from your history, you would use the old key and it would ask for the password of the `core` user.
 Also notice the message from `/etc/motd`.
 +
 [source,subs="verbatim,quotes"]
@@ -256,7 +211,7 @@ Last login: Thu Dec 18 20:03:46 2025 from 172.25.250.254
 [core@enroll ~]$ 
 --
 
-.. Logs from the RHEM agent would indicate there was a reconciliation of the device configuration.
+.. Logs from the Edge Manager agent would indicate there was a reconciliation of the device configuration.
 +
 [source,subs="verbatim,quotes"]
 --
@@ -265,9 +220,9 @@ Dec 18 20:02:52 enroll flightctl-agent[820]: time="2025-12-18T20:02:52.191095Z" 
 Dec 18 20:03:22 enroll flightctl-agent[820]: time="2025-12-18T20:03:22.434238Z" level=info msg="Spec reconciliation complete: current version 14"
 --
 
-4. Change a configuration file and verify that RHEM will undo your edits.
+4. Change a managed configuration file and verify that Edge Manager will undo your edits.
 
-.. If you didn't notice on your lastest SSH log in, there is "a message of day".
+.. If you didn't notice on your latest SSH log in, there is "a message of day".
 +
 [source,subs="verbatim,quotes"]
 --
@@ -295,7 +250,7 @@ $ timedatectl show -p Timezone
 Timezone=Europe/Rome
 --
 
-.. Wait a few moments and verify that the message reverts to the one set by RHEM.
+.. Wait a few moments and verify that the message reverts to the one set by Edge Manager.
 +
 [source,subs="verbatim,quotes"]
 --
@@ -303,7 +258,7 @@ $ *cat /etc/motd*
 Under new management!
 --
 
-.. Notice that the time zone change will NOT revert, because RHEM is not managing the file `/etc/localtime`, so you must revert that change manually.
+.. Notice that the time zone change will NOT revert, because Edge Manager is not managing the file `/etc/localtime`, so you must revert that change manually.
 +
 [source,subs="verbatim,quotes"]
 --
@@ -319,12 +274,12 @@ $ *sudo timedatectl set-timezone UTC*
 $ *exit*
 --
 
-5. Apply similar configurations to the `edge-1` managed device, but this time using the CLI.
+5. Apply similar configurations to the `edge-1` managed device, but this time use the CLI.
 
 .. Copy and inspect the template manifest from the course samples repository.
 +
-If you compare it with the complete YAML manifest form devices, which you already saw in the previous lab, you will notice the absense of some metadata fields and of all status fields.
-Manifests which you apply should focus on the device specification, and provide just the device UUID and labels on its metadata.
+If you compare it with the complete YAML manifest form devices, which you already saw in the previous lab, you will notice the absence of some metadata fields and of all status fields.
+Manifests that you apply should focus on the device specification, and provide just the device UUID and labels on its metadata.
 +
 [source,subs="verbatim,quotes"]
 --
@@ -360,9 +315,9 @@ $ *SSH_PUB_KEY=$( cat edge-1-key.pub )*
 $ *sed -i "s|REPLACE_WITH_SSH_KEY|$SSH_PUB_KEY|" edge-1.yaml*
 --
 
-.. Review the `edge-1.yaml` manifest file and verify that it contains no more `REPLACE_WITH` markers.
+.. Review the `edge-1.yaml` manifest file and verify that it contains no `REPLACE_WITH` markers.
 
-.. Apply the manigest on RHEM.
+.. Apply the manifest on Edge Manager.
 +
 [source,subs="verbatim,quotes,attributes"]
 --
@@ -370,7 +325,7 @@ $ *flightctl apply -f edge-1.yaml*
 edge-1.yaml: applying device/{edge-1-uuid-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}: 200 OK
 --
 
-.. Wait until the device synchonizes with RHEM.
+.. Wait until the device synchronizes with Edge Manager.
 +
 [source,subs="verbatim,quotes,attributes"]
 --
@@ -397,7 +352,7 @@ anaconda-ks.cfg  buildinfo  device.txt  original-ks.cfg
 --
 
 //77. If, by any reason, an agent fails to apply a configuration update, it will NOT retry. 
-//You must apply another configuration change to the RHEM server so the agent fetches a new rendered config to apply.
+//You must apply another configuration change to the Edge Manager server so the agent fetches a new rendered config to apply.
 
 ////
 
@@ -407,7 +362,7 @@ The fix is expected to be in 1.1.0 so I could use it for fleets in the next cour
 
 I could workaround with 'setenforce 0' and wait for an update... but maybe I should have a "plan B" to not depend on it.
 
-Create feature requests in the RHEM project (EDM?) -- recover the conversation, I tried it long ago and it failed because of improper configuration in JIRA. Anyway, I'd have other requests, such as:
+Create feature requests in the Edge Manager project (EDM?) -- recover the conversation, I tried it long ago and it failed because of improper configuration in JIRA. Anyway, I'd have other requests, such as:
 
 - explain command
 - whoamI command (to get a token)

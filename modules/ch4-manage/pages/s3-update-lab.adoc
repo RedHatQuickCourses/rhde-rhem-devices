@@ -8,16 +8,14 @@ Objective::
 
 Update the operating system image on managed devices.
 
-WARNING: Work in progress
-
 == Before you begin
 
 You need a customer portal account with access to a Red Hat Enterprise Linux (RHEL) subscription.
 It could be a https://developers.redhat.com/products/rhel/download[Red Hat Developer program] free subscription.
 
-You need a _development machine_ running RHEL, which contains two test VMs already enrolled into your RHEM server by a xref:ch3-enroll:s2-enroll-lab.adoc[previous lab].
+You need a _development machine_ running RHEL, which contains two test VMs already enrolled into your Edge Manager server by a xref:ch3-enroll:s2-enroll-lab.adoc[previous lab].
 
-You also need a _server machine_ running RHEL, to which you also have unrestricted sudo access, which was already configured with RHEM.
+You also need a _server machine_ running RHEL, to which you also have unrestricted sudo access, which was already configured with Edge Manager.
 
 Finally, you need a _private registry_ to store bootc container images for your managed edge devices.
 
@@ -28,36 +26,8 @@ Log in as the user `student` with password `student`.
 
 == Instructions
 
-////
-
-Split from a single lab which was configure AND update.
-
-Configure devices so they can access a private OCI container registry, and switch the OS image to one which includes an embedded application.
-
-* Build a new bootc container image which contains an application, such as a web server, and minimal required settings, such as enabling it in systemd and firewalld.
-
-* No need to build an update or installation media, because the update will be performed by RHEM directly from a container registry.
-
-* The previous lab, provisioning devices from ISO (a disconnected workflow), or from QCOW2, left devices without secrets to access the private container registry.
-
-* Try to switch those devices to a different image and notice it fails.
-
-* Add the registry TLS certificate and credentials as inline device configurations, and now they successfully update to the new image.
-
-* The previous bullet requires an afterupdate hook to run the update-ca-trust command
-
-* Access the device and verify the application works as intended.
-
-* Prove other devices were left untouched.
-
-* (tentative) Change a file which is managed by RHEM and verify that RHEM reverts the change, to demonstrate it works as a “kubernetes-style” reconciliation loop and prevents configuration drift
-
-* Update another different device (to the same image and settings) to demonstrate it done from both the CLI and web UI?
-
-////
-
 You will configure your managed devices with secrets required to access a private OCI container registry, so they can fetch bootc container images, and update them to use a different image than the one used during enrollment.
-The new bootc container image and contains an embedded web application, which you will access to verify that the update completed sucessfully.
+The new bootc container image contains an embedded web application, which you will access to verify that the update completed successfully.
 
 1. Verify that you have the outcomes of previous labs.
 If you do not, go back and complete them, because you need their outcomes to proceed with this lab.
@@ -82,7 +52,7 @@ $ *virsh list --all*
  -    edge-2   shut off
 --
 
-.. If your test VMs are not started, because you stopped your classroom environment since completing the previous lab, start them now.
+.. If your test VMs are not running, because you stopped your classroom environment since completing the previous lab, start them now.
 +
 [source,subs="verbatim,quotes"]
 --
@@ -128,7 +98,7 @@ registry.lab.example.com:5000/ubi9/ubi
 +
 NOTE: Later in this lab, you will login again on both the Red Hat registry and your private registry as the root user, because different Linux users do not share container registry authentication tokens.
 
-.. Log in on RHEM, as a non-administrator, and verify that there are two managed devices, which correspond to the two test VMs.
+.. Log in to Edge Manager, as an operator, and verify that there are two managed devices, which correspond to the two test VMs.
 +
 [source,subs="verbatim,quotes,attributes"]
 --
@@ -143,7 +113,7 @@ NAME                                                    ALIAS   OWNER   SYSTEM  
 
 .. Wait a few moments and repeat the latest command until both managed devices return as `OnLine` and `UpToDate`.
 
-2. Build and publish a bootc container image which contains a web application.
+2. Build and publish a bootc container image, which contains a web application.
 
 .. Copy the Containerfile and related files for the web application image to a work directory.
 Then make the work directory your current directory.
@@ -154,7 +124,7 @@ $ *cp -r rhde-rhem-samples/webapp temp-webapp*
 $ *cd temp-webapp*
 --
 
-.. Review the Containerfile that builds a bootc image whith contains an embedded web applicaion.
+.. Review the Containerfile for an embedded web application.
 +
 It is similar to the enrollment image, from a previous lab, adding the Apache HTTP Server and firewall services.
 +
@@ -164,10 +134,10 @@ $ *less Containerfile*
 include::1@samples:webapp:example$Containerfile[]
 --
 +
-NOTE: If you want to try with the current lastest release of the upstream project, edit your Containerfile to remove the version component `-1.0.0` from the package `flightctl-agent`.
+NOTE: If you want to try this with the current latest release of the upstream project, edit your Containerfile to remove the version component `-1.0.0` from the package `flightctl-agent`.
 +
 IMPORTANT: The previous Containerfile relies on a custom configuration for the Systemd tempfiles service, which ensures the Apache HTTP Server finds work directories it needs in the `/var` and `/run` directories.
-These directories are setup by its RPM packages, and such setup only works at first provisioning, failing at `bootc update` and `bootc switch`.
+These directories are set up by its RPM packages, and such a setup only works at first provisioning, failing at `bootc update` and `bootc switch`.
 Using the Systemd tempfiles services is a common workaround for such scenarios.
 
 .. Copy the public certificate of the private container registry.
@@ -215,50 +185,36 @@ Open shell on utility, sudo -i
 / # exit
 ////
 
-.. There is no need to create an installation disk from that image, because RHEM will handle switching managed devices to it.
+.. There is no need to create an installation disk from that image, because Edge Manager will handle switching managed devices to it.
 
 3. Update your second test VM to use the new image, by using the web interface.
 +
-IMPORTANT: The first attempt at updating your test VM is expected to fail, but we will troubleshoot for the root cause of the issue and fix it.
+IMPORTANT: The first attempt at updating your test VM is expected to fail, but you will troubleshoot for the root cause of the issue and fix it.
 
 .. Open a web browser and visit `\https://servera.lab.example.com`
 
 .. Log in as the `student` user with the `student` password.
-+
-GRAB SCREENSHOT
 
 .. On the left pane, select the menu:Devices[] page, and click the link corresponding to the `edge-2` managed device, to enter its details page.
-+
-GRAB SCREENSHOT
 
 .. On the top right, select menu:Actions[Edit device configurations] to enter the *Edit device* page.
-+
-GRAB SCREENSHOT
 
 .. Click menu:Next[] or select the menu:Device Template[] tab and type `registry.lab.example.com:5000/rhem-webapp:v1.0` on the *System image* field.
-+
-GRAB SCREENSHOT
 
 .. Click menu:Next[] until you reach the menu:Review and save[] tab, and click menu:Save[].
 
 .. The managed device details page should show an *Update status* of `Out-of-date` in the *System status* panel, and if you click the warning icon next to *System image (running)*, it will indicate there's a mismatch.
-+
-GRAB SCREENSHOT
 
-.. After a few moments, the *Update status* will change to `Updating`, meaning it is attempting to download and switch to the new booc container image.
+.. After a few moments, the *Update status* will change to `Updating`, meaning it is attempting to download and switch to the new bootc container image.
 +
 You can click the `Updating` status to see a longer message describing what updates are pending, in this case, pending download of the bootc container image.
-+
-GRAB SCREENSHOT
 
-.. After a few more momentos, the *Update status* will change back to `Out-of-date` and, if you click the status, you will see an error message which indicates a failure to download the bootc container image.
-+
-GRAB SCREENSHOT
+.. After a few moments, the *Update status* will change back to `Out-of-date` and, if you click the status, you will see an error message that indicates a failure to download the bootc container image.
 
 .. The private registry requires authentication credentails, but these were not provided by its bootc image nor by kickstart during provisioning.
-We will solve the issue by providing those credentials using RHEM.
+You will solve the issue by providing those credentials using Edge Manager.
 +
-//.. ALSO NEED THE CA CERTIFICATE. TOO MUCH TO DO USING THE GUI??? No, because of SELinux issues.
+//.. ALSO NEED THE CA CERTIFICATE. TOO MUCH TO DO USING THE GUI??? No, because of SELinux issues, it must be in the bootc image.
 
 4. Configure the managed device with credentials to download bootc container images from the private registry.
 
@@ -285,9 +241,9 @@ $ *cat auth.json*
 +
 //sudo cp /run/containers/0/auth.json /etc/ostree/auth.json
 +
-//NOTE: In a production setup, both the private registry and RHEM would be configured with a TLS certificate signed by a corporate CA and you would need only to add that CA to all your servers and workstations, including your edge devices.
+//NOTE: In a production setup, both the private registry and Edge Manager would be configured with a TLS certificate signed by a corporate CA and you would need only to add that CA to all your servers and workstations, including your edge devices.
 
-.. Back to your web browser, enter the manged device details page for the `edge-2` device end edit its device configurations.
+.. Back to your web browser, enter the managed device details page for the `edge-2` device and edit its device configurations.
 
 .. Scroll down until you see the link menu:Add configuration[] and click it.
 Fill in the fields as follows:
@@ -305,13 +261,11 @@ Fill in the fields as follows:
 .. Click menu:Next[] until you reach the menu:Review and save[] tab and click menu:Save[].
 
 .. Right after you save device configuration changes, the device displays an `Out-of-date` with the error message from before the latest changes.
-After a few moments, the device status changes to `Updating` and it startings downloading the new bootc container image.
+After a few moments, the device status changes to `Updating` and it start downloading the new bootc container image.
 +
-If you click again on the `Updating` status you may see the pop-up message changing to indicate that the device is applying the new configuration, which is a sign that the device finished downloading its new bootc container image.
+If you click the `Updating` status again, you may see the pop-up message changing to indicate that the device is applying the new configuration, which is a sign that the device finished downloading its new bootc container image.
 +
-If everything is fine, after a few more moments the device update status will change to `Up-to-date`.
-+
-GRAB SCREENSHOTs ???
+If everything is fine, after a few moments, the device update status will change to `Up-to-date`.
 +
 NOTE: You can also monitor the update status of the device from the *Devices* page, if you prefer.
 
@@ -321,9 +275,7 @@ NOTE: You can also monitor the update status of the device from the *Devices* pa
 +
 Run the `bootc status` command, to show that the webapp bootc container is the currently booted system image, and the enrollment bootc container is now the rollback image.
 +
-You can also verify that the `httpd` service is active and use the `curl` command do see its default web page.
-+
-GRAB SCREENSHOT
+You can also verify that the `httpd` service is active and use the `curl` command to see its default web page.
 +
 ////
 [core@enroll ~]$ sudo journalctl -u httpd | tail
@@ -404,7 +356,7 @@ $ *sed -i "s|REPLACE_WITH_AUTH_JSON|$REGISTRY_AUTH|" edge-1-webapp.yaml*
 
 .. Review the `edge-1-webapp.yaml` manifest file and verify that it contains no more `REPLACE_WITH` markers.
 
-.. Apply the manigest on RHEM.
+.. Apply the manifest on Edge Manager.
 +
 [source,subs="verbatim,quotes,attributes"]
 --
@@ -412,7 +364,7 @@ $ *flightctl apply -f edge-1-webapp.yaml*
 edge-1-webapp.yaml: applying device/{edge-1-uuid-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}: 200 OK
 --
 
-.. Wait until the device synchonizes with RHEM.
+.. Wait until the device synchronizes with Edge Manager.
 +
 If you wish, you can request the YAML output of the `flightctl get device`, by appending `-o yaml`, to see detailed status information as the device is updated.
 +
@@ -451,7 +403,7 @@ $ *flightctl console device $UUID -- systemctl is-active httpd*
 active
 --
 
-.. Use the port redirection that you configured at VM creation time to verify that it is serving the mock of the web application.
+.. Use the port redirection that you configured at VM creation time to verify that it is serving the mock web application.
 +
 [source,subs="verbatim,quotes"]
 --
@@ -459,9 +411,9 @@ $ *curl 127.0.0.1:8108*
 This would be the HTML and JavaScript code of a single-page web application.
 --
 
-In this lab, you performed operating system updates on two managed devices, by using the RHEM web interface and its CLI. 
-You also demonstrated that the fact that a device can be provisioned from a bootc container image does not ensures that it is configured to fetch bootc container updates from private registries, and that RHEM is able to provide such configurations at the same time it updates the system image of managed devices.
+In this lab, you performed operating system updates on two managed devices, by using the Edge Manager web interface and its CLI. 
+You also demonstrated that the fact that a device can be provisioned from a bootc container image does not ensure that it is configured to fetch bootc container updates from private registries. Finally you showed that Edge Manager is able to provide such configurations at the same time it updates the system image of managed devices.
 
 == What's next
 
-In the next activity, you will decomission devices so they are not managed by RHEM anymore.
+In the next activity, you will decommission devices so they are not managed by Edge Manager anymore.
