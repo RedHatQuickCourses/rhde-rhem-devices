@@ -191,24 +191,12 @@
 <dl>
 <dt class="hdlist1">Objective</dt>
 <dd>
-<p>Configure and update managed devices using RHEM.</p>
+<p>Configure and update managed devices using Edge Manager.</p>
 </dd>
 </dl>
 </div>
-<div class="admonitionblock warning">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-warning" title="Warning"></i>
-</td>
-<td class="content">
-Work in progress
-</td>
-</tr>
-</table>
-</div>
 <div class="paragraph">
-<p>As we already learned, Red Hat Edge Manager (RHEM) manages three aspects of a device configuration:</p>
+<p>As we already learned, Red Hat Edge Manager manages three aspects of a device configuration:</p>
 </div>
 <div class="ulist">
 <ul>
@@ -224,10 +212,10 @@ Work in progress
 </ul>
 </div>
 <div class="paragraph">
-<p>In this course, we focus on the first two, and we teach about managing workloads or applications with RHEM in the next course.</p>
+<p>In this course, we focus on the first two, and we cover managing workloads or applications with Edge Manager in the next course.</p>
 </div>
 <div class="paragraph">
-<p>Before presenting RHEM device templates, let&#8217;s discuss about when it is appropriate to use RHEM to configure a device.</p>
+<p>Before presenting Edge Manager device templates, let&#8217;s go over when it is appropriate to use Edge Manager to configure a device.</p>
 </div>
 </div>
 </div>
@@ -235,21 +223,21 @@ Work in progress
 <h2 id="_system_configuration_at_day_0_with_image_mode"><a class="anchor" href="#_system_configuration_at_day_0_with_image_mode"></a>System configuration at day-0 with image mode</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>With image mode for RHEL, it is expected that most configurations configurations are set by a bootc container image, which would be configurations set at day-0, before provisioning a system, during image build time.
+<p>With image mode for RHEL, it is expected that most configurations are set by a bootc container image, which would be configurations set at day-0, before provisioning a system, during image build time.
 These configurations will be the same for all devices using the image.</p>
 </div>
 <div class="paragraph">
-<p>Having configurations hardcoded in a system image, so they are applied when installing the operating system, instead of after installing the operating system, ensures devices have a know initial state and reduces the ammount of configurations to watch for drift.</p>
+<p>Having configurations hardcoded in a system image, so they are applied when installing the operating system, instead of after installing the operating system, ensures devices have a known initial state and reduces the amount of configurations to watch for drift.</p>
 </div>
 <div class="paragraph">
-<p>While it is possible to override configurations set by a bootc container image, because the <code>/etc</code> and <code>/var</code> directories are read-write, these changes should be kept to a minimum and done only on purpose.
+<p>While it is possible to override configurations set by a bootc container image, because the <code>/etc</code> and <code>/var</code> directories are read-write, these changes should be kept to a minimum and done only intentionally.
 Modern Linux applications and services are expected to take their primary configurations from the <code>/usr/lib</code> directory, which is read-only on image mode systems, and use drop directories such as <code>/etc/something.d</code> for configuration snippets that add to or override their primary configurations.</p>
 </div>
 <div class="paragraph">
-<p>There is always some configuration settings that must vary between different devices, or between different edge sites, and writable configuation files in the <code>/etc</code> directory would be reserved such exceptions.</p>
+<p>There are always some configuration settings that must vary between different devices, or between different edge sites, and writable configuation files in the <code>/etc</code> directory would be reserved for such exceptions.</p>
 </div>
 <div class="paragraph">
-<p>There is also the matter of secrets management: it is considered a very bad security to embed authentication credentials such as passwords, tokens, and certificates in system images.
+<p>There is also the matter of secrets management. It is considered a bad security practice to embed authentication credentials such as passwords, tokens, and certificates in system images.
 For example, there should not exist any predefined user, with a well-known password, that could be used to access production systems.
 This applies to edge devices as well as to data center servers.</p>
 </div>
@@ -259,20 +247,20 @@ This applies to edge devices as well as to data center servers.</p>
 <h2 id="_system_configuration_at_day_1_with_kickstart_and_cloud_init"><a class="anchor" href="#_system_configuration_at_day_1_with_kickstart_and_cloud_init"></a>System configuration at day-1 with kickstart and cloud-init</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Per-device and per-site configurations, and also secrets, can be applied to devices at day-1, that is, at device provisioning time (installation time), or at day-2, that is, as a regular day-to-day management operation.</p>
+<p>Per-device and per-site configurations, as well as also secrets, can be applied to devices at day-1; (that is, at device provisioning time, also known as installation time), or at day-2; (that is, as a regular day-to-day management operation).</p>
 </div>
 <div class="paragraph">
-<p>Most operating system installation and provisioning methods which offer some way of adding configuration files and running configuration scripts.
-The RHEL installer, called Anaconda, provides the <strong>kickstart</strong> feature, which can set all settings the installer would otherwize prompt for during an interactive installation, and also run arbitrary pre-installation and post-installation scripts.
+<p>Most operating system installation and provisioning methods offer some way of adding configuration files and running configuration scripts.
+The RHEL installer, called Anaconda, provides the <strong>kickstart</strong> feature, which can set all settings the installer would otherwise prompt for during an interactive installation, and also run arbitrary pre-installation and post-installation scripts.
 It is a common practice to embed kickstart files in custom RHEL installation media, or in network boot servers, for both package and image modes.</p>
 </div>
 <div class="paragraph">
-<p>Most hypervisors and cloud provides nowadays support the <strong>cloud-init</strong> configuration mechanism, which has similar capacities to kickstart, but with its own syntax.</p>
+<p>Most hypervisors and cloud providers nowadays support the <strong>cloud-init</strong> configuration mechanism, which has similar capacities to kickstart, but with its own syntax.</p>
 </div>
 <div class="paragraph">
 <p>By using kickstart or cloud-init scripts, you can perform bootstrapping configurations such as setting a SSH key to access the newly provisioned machines.
 Having initial users and access credentials set this way makes them easier and safer to change at day-2, because they are not set by read-only files in the system image, and avoids the risk of accidentally reverting to whatever was set by the system image.
-But it also can be considered a risk of leak, when they are stored in installation media.</p>
+But it also can be considered a risk for leak, when they are stored in installation media.</p>
 </div>
 <div class="paragraph">
 <p>Per-device and per-site configurations, if they are expected to be set only once, at provisioning time, and never (or rarely) changed on day-2, are good candidates for kickstart and cloud-init.</p>
@@ -280,69 +268,69 @@ But it also can be considered a risk of leak, when they are stored in installati
 </div>
 </div>
 <div class="sect1">
-<h2 id="_system_configuration_at_day_2_with_rhem"><a class="anchor" href="#_system_configuration_at_day_2_with_rhem"></a>System configuration at day-2 with RHEM</h2>
+<h2 id="_system_configuration_at_day_2_with_edge_manager"><a class="anchor" href="#_system_configuration_at_day_2_with_edge_manager"></a>System configuration at day-2 with Edge Manager</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Anything that you are expected to change regularly, after provisioning a device, is a good candidate for traditional operating system management tools, such as Red Hat Ansible Automation Platform, and also for edge management tools, such as RHEM.</p>
+<p>Anything that you are expected to change regularly, after provisioning a device, is a good candidate for traditional operating system management tools, such as Red Hat Ansible Automation Platform, and edge management tools, such as Edge Manager.</p>
 </div>
 <div class="paragraph">
 <p>Some organizations prefer to use day-2 tools to perform first-time configuration of new devices, that is, to perform day-1 configuration on those devices.
-Such organizations could provision devices using a very generic image, use day-1 just to set credentials for a management tool, and them let the management tool perform the remaining day-1 configurations.</p>
+Such organizations could provision devices using a very generic image, that is, to use day-1 only to set credentials for a management tool, and then let the management tool perform the remaining day-1 configurations.</p>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_oboarding_devices"><a class="anchor" href="#_oboarding_devices"></a>Oboarding devices</h2>
+<h2 id="_onboarding_devices"><a class="anchor" href="#_onboarding_devices"></a>Onboarding devices</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>By the previous discussion, you know that RHEM adds to and potentially overrides configurations already set by a bootc container image and by a provisioning mechanism, such as kickstart, and also add new configurations on day-2.</p>
+<p>From the previous discussion, you know that Edge Manager adds to and potentially overrides configurations already set by a bootc container image and by a provisioning mechanism, such as kickstart, and also adds new configurations on day-2.</p>
 </div>
 <div class="paragraph">
-<p>It may not he intuitive that RHEM is not supposed to take over and control all configurations of a device.
-RHEM does not have to the the only management tool configuring its managed devices:
-You can still perform ad-hoc, manual configuration of configurations that are not managed by RHEM.
+<p>It may not be intuitive that Edge Manager is not required to take over and control all configurations of a device.
+Edge Manager does not have to be the <em>only</em> management tool you use to configure managed devices:
+You can still perform adhoc, manual configuration of settrings that are not managed by Edge Manager.
 And you can configure some of those settings using a different day-2 configuration tool, such as Ansible.</p>
 </div>
 <div class="paragraph">
-<p>Of course, having a device configured by multiple tools can be a challenge to manage, but you may find scenarios where it is easier, or more secure, doing it with a combinations of tools, and using RHEM in a larger workflow.</p>
+<p>Of course, having a device configured by multiple tools can be a challenge to manage, but you may find scenarios where it is easier, or more secure, to do so with a combination of tools, and use Edge Manager in a larger workflow.</p>
 </div>
 <div class="paragraph">
-<p>For example, by onboarding an edge device most organizations mean more than just performing its first-time (day-1) configuration.
-If your devices run applications which require access to other devices, cloud resources, or corporate systems, they need access credentials to all that.
+<p>For example, by onboarding an edge device most organizations expect to more than just performing its first-time (day-1) configuration.
+If your devices run applications that require access to other devices, cloud resources, or corporate systems, they need access credentials to all that.
 Providing the required credentials securely is not a trivial task and there are specialized tools for secrets management, for example Hashicorp Vault.
-You could configure everything except secrets using RHEM, and let Vault configure secrets for the device.</p>
+You could configure everything except secrets using Edge Manager, and let Vault configure secrets for the device.</p>
 </div>
 <div class="paragraph">
-<p>As another example, if your organization sets network access from devices using layer 2, you may need to configure networking gear as part of its device onboarding process, to set their MAC addresses, IP addresses, and VLANs.</p>
+<p>As another example, if your organization sets network access from devices using layer 2, you may need to configure networking gear as part of the device onboarding process, to set MAC addresses, IP addresses, and VLANs.</p>
 </div>
 <div class="paragraph">
-<p>If you must implement a more sophisticated onboarding workflow, you may need a tool capable of orchestrating RHEM together with other management tools.
+<p>If you must implement a more sophisticated onboarding workflow, you may need a tool capable of orchestrating Edge Manager together with other management tools.
 Red Hat Ansible Automation Platform is great for such tasks.</p>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_drift_detection_and_reconcilliation"><a class="anchor" href="#_drift_detection_and_reconcilliation"></a>Drift detection and reconcilliation</h2>
+<h2 id="_drift_detection_and_reconciliation"><a class="anchor" href="#_drift_detection_and_reconciliation"></a>Drift detection and reconciliation</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>So RHEM can manage operating and application configuration files, but does not need to manage all of them in any given device.
-If a file is not set by RHEM configurations in a device or fleet template, they can be set by any other means.</p>
+<p>Edge Manager can manage operating and application configuration files, but it does not need to manage all of them in any given device.
+If a file is not set by Edge Manager configurations in a device or fleet template, it can be set by any other means.</p>
 </div>
 <div class="paragraph">
-<p>You cannot use RHEM to forcibly lock down all configuration files in a device and prevent users or tools to perform unintended changes to those files.
-But, if a file is managed by RHEM, RHEM will detect changes to it (configuration drift) and revert the file to whatever contents are expected by RHEM.</p>
+<p>You cannot use Edge Manager to forcibly lock down all configuration files in a device and prevent users or tools from performing unintended changes to those files.
+But, if a file is managed by Edge Manager, Edge Manager will detect changes to it (configuration drift) and revert the file to whatever contents are expected by Edge Manager.</p>
 </div>
 <div class="paragraph">
-<p>While it is not practical to add all possible configuration files to a device template, because such configurations would be huge and impractical to maintain (just check how many files exist in the <code>/etc</code> directory of any Linux system!), RHEM provides you with a reliable recovery path from unintended changes outside of its set of managed files: reinstall the device, as if it were a newly provisioned device, and let RHEM apply the expected configurations to it.
+<p>While it is not practical to add all possible configuration files to a device template, because such configurations would be huge and impractical to maintain (just check how many files exist in the <code>/etc</code> directory of any Linux system!), Edge Manager provides you with a reliable recovery path from unintended changes outside of its set of managed files: reinstall the device, as if it were a newly provisioned device, and let Edge Manager apply the expected configurations to it.
 This way, you can restore any device to a known good configuration state, considering all of day-0, day-1, and day-2.</p>
 </div>
 <div class="paragraph">
-<p>Now that you have some ideas about what to configure and when to configure something in a device using RHEM, let&#8217;s focus on the mechanics of RHEM device configurations.</p>
+<p>Now that you have some idea about what to configure and when to configure something in a device using Edge Manager, let&#8217;s focus on the mechanics of Edge Manager device configurations.</p>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_rhem_device_configuration_types"><a class="anchor" href="#_rhem_device_configuration_types"></a>RHEM device configuration types</h2>
+<h2 id="_edge_manager_device_configuration_types"><a class="anchor" href="#_edge_manager_device_configuration_types"></a>Edge Manager device configuration types</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>If a managed device is not a member of a fleet, its device API resource may contain a list of configuration items, a list of applications, and a reference to an operating system image.</p>
@@ -351,7 +339,7 @@ This way, you can restore any device to a known good configuration state, consid
 <p>Each configuration item has a name, which is supposedly a descriptive name, and a type, which specifies the configuration provider responsible for retrieving the contents of the files in that configuration.</p>
 </div>
 <div class="paragraph">
-<p>With RHEM on RHEL, you would normally use these three configuration providers:</p>
+<p>With Edge Manager on RHEL, you would normally use the following configuration providers:</p>
 </div>
 <div class="dlist">
 <dl>
@@ -363,13 +351,13 @@ If these configuration files are text files, they are just YAML multiline string
 <dt class="hdlist1">HTTP</dt>
 <dd>
 <p>Configuration files are retrieved from a web server or anything that can respond to HTTP requests, like an S3-compatible object storage or a REST API endpoint.
-This provider is commonly used to simplify integration between management tools, for example when RHEM runs integrated with Red Hat Advanced Cluster Manager, so the other management tool provides configuration files for devices managed by RHEM.</p>
+This provider is commonly used to simplify integration between management tools, for example when Edge Manager runs integrated with Red Hat Advanced Cluster Manager, so the other management tool provides configuration files for devices managed by Edge Manager.</p>
 </dd>
 <dt class="hdlist1">Git</dt>
 <dd>
 <p>Configuration files are retrieved from a git repository.
-This enables RHEM to work as GitOps for the operating system.
-It also enables easy testing and troubleshooting of configuration files, because you do not need to extract and embed these files in a RHEM API resource: the configuration files are just regular files in a Git tree.</p>
+This enables Edge Manager to work as GitOps for the operating system.
+It also enables easy testing and troubleshooting of configuration files, because you do not need to extract and embed these files in a Edge Manager API resource: the configuration files are just regular files in a Git tree.</p>
 </dd>
 </dl>
 </div>
@@ -379,12 +367,12 @@ And each configuration item can contain multiple configuration files.
 This enables logical grouping of configuration files by purpose, and enables a degree of separation of concerns.</p>
 </div>
 <div class="paragraph">
-<p>For example, a RHEM administrator may opt for configuring some files as inline configurations, and keep control over them, while configuring other files from a Git repository, and delegate those files to non-RHEM administrators with access to that repository.</p>
+<p>For example, a Edge Manager administrator may opt for configuring some files as inline configurations, and keep control over them, while configuring other files from a Git repository, and delegate those files to non-Edge Manager administrators with access to that repository.</p>
 </div>
 <div class="paragraph">
 <p>Managed devices never connect directly to external configuration providers.
 For example, managed devices do not connect directly to Git servers, so they do not require access credentials to a Git repository.
-The RHEM server connects to configuration provides and grab all required files, and a RHEM agent downloads all of them from its RHEM server.</p>
+The Edge Manager server connects to configuration providers and grabs all required files, and a Edge Manager agent downloads all of them from its Edge Manager server.</p>
 </div>
 <div class="admonitionblock note">
 <table>
@@ -393,8 +381,8 @@ The RHEM server connects to configuration provides and grab all required files, 
 <i class="fa icon-note" title="Note"></i>
 </td>
 <td class="content">
-In this course, we focus on the inline configuration provider, so we can learn the basics of RHEM.
-In the next course we focus on the Git configuration provider, and use fleets to demonstrate an effective GitOps workflow.
+In this course, we focus on the inline configuration provider, so we can learn the basics of Edge Manager.
+In the next course, we focus on the Git configuration provider; and use fleets to demonstrate an effective GitOps workflow.
 </td>
 </tr>
 </table>
@@ -405,20 +393,20 @@ In the next course we focus on the Git configuration provider, and use fleets to
 <h2 id="_operating_system_image_changes"><a class="anchor" href="#_operating_system_image_changes"></a>Operating system image changes</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>There is not a lot to say about managing operating system images with RHEM: a device API resource contains the name of a bootc container image.
-If that field changes, the RHEM agent performs a <code>bootc switch</code> operation and reboots the device.</p>
+<p>There is not a lot to say about managing operating system images with Edge Manager: a device API resource contains the name of a bootc container image.
+If that field changes, the Edge Manager agent performs a <code>bootc switch</code> operation and reboots the device.</p>
 </div>
 <div class="paragraph">
 <p>The new system image does not need to be related, in any way, to the previous system image.
 It could provide a different RHEL release, a different set of system services, and come from a different container registry.
-RHEM and bootc do not care: it&#8217;s just another system image.</p>
+It does not matter. To Edge Manager and boot, it&#8217;s just another system image.</p>
 </div>
 <div class="paragraph">
-<p>That enables you to implement effective repurposing workflows, switching a device to a diferent system image, with different configurations, and running different applications.</p>
+<p>That enables you to implement effective repurposing workflows, switching a device to a different system image, with different configurations, and running different applications.</p>
 </div>
 <div class="paragraph">
-<p>During initial device enrollment, the operating system image field is left empty: RHEM does not record the image which the device was booted (or provisioned) with.
-The system image is considered not managed by RHEM, and changeable manually by using the <code>bootc</code> command on the device, until a RHEM user explicit sets the value of the operating system image in the device template.</p>
+<p>During initial device enrollment, the operating system image field is left empty: Edge Manager does not record the image which the device was booted (or provisioned) with.
+The system image is considered not managed by Edge Manager, and changeable manually by using the <code>bootc</code> command on the device, until a Edge Manager user explicit sets the value of the operating system image in the device template.</p>
 </div>
 </div>
 </div>
@@ -426,36 +414,36 @@ The system image is considered not managed by RHEM, and changeable manually by u
 <h2 id="_updating_managed_devices"><a class="anchor" href="#_updating_managed_devices"></a>Updating managed devices</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Updating a device with RHEM may not mean what you think an update is.
+<p>Updating a device with Edge Manager may not align what you think of as an update.
 Most IT professionals intuitively think about device updates as operating system updates, or patching.</p>
 </div>
 <div class="paragraph">
-<p>To RHEM, any change to a device template&#8201;&#8212;&#8201;including a change of configurations or applications&#8201;&#8212;&#8201;is an update.
-It does not need to be an update of the operating system, that is, it does not meed to make a manage device switch to an updated operating system image.</p>
+<p>To Edge Manager, any change to a device template&#8201;&#8212;&#8201;including a change of configurations or applications&#8201;&#8212;&#8201;is an update.
+It does not need to be an update of the operating system, that is, it does not need to make a manage device switch to an updated operating system image.</p>
 </div>
 <div class="paragraph">
-<p>RHEM treats all of the device template as a unit, during a device reconcilliation, so if you change all three aspects of a device template, at the same time, RHEM applies all changes to configurations, system image, and applications, at one.
-If any of them fails, for whatever reason, the entire update operation, or reconcilliation, failed and the device status is set to <code>Out-of-Date</code>.</p>
+<p>Edge Manager treats all of the device template as a unit, during a device reconciliation, so if you change all three aspects of a device template, at the same time, Edge Manager applies all changes to configurations, system image, and applications, at one.
+If any one of them fails, for whatever reason, the entire update operation, or reconciliation, failed and the device status is set to <code>Out-of-Date</code>.</p>
 </div>
 <div class="paragraph">
-<p>If you check the device status details, for example by getting the fill device resource in YAML format, you can get information about what the device failed to update, and why.
+<p>If you check the device status details, for example, by getting the full device resource in YAML format, you can get information about what the device failed to update, and why.
 For example, a device may fail to download a bootc container image because it lacks credentials to access a container image registry.</p>
 </div>
 <div class="paragraph">
-<p>RHEM has no concept of retrying an update.
-If there&#8217;s a failure during device reconcilliation, you must change the device template, thus forcing another update operation.
-RHEM assumes that updates should work all the times, else there is an issue with the device template itself, which must be fixed.</p>
+<p>Edge Manager has no concept of retrying an update.
+If there&#8217;s a failure during device reconciliation, you must change the device template, thus forcing another update operation.
+Edge Manager assumes that updates should work all the time, otherwise there is an issue with the device template itself, which must be fixed.</p>
 </div>
 <div class="paragraph">
-<p>But how RHEM prevents intermitent errors?
-The RHEL agent first downloads all artifacts it needs: bootc container images, configuration files, and application containers.
-Only after all of them are completely downloaded and verified, it starts applying them to the device itself.</p>
+<p>But how dowes Edge Manager prevent intermitent errors?
+The Edge Manager agent first downloads all artifacts it needs: bootc container images, configuration files, and application containers.
+Only after all of them are completely downloaded and verified, it starts applying them to the device.</p>
 </div>
 <div class="paragraph">
-<p>The agent may take time to download all artifacts, especially under intermitent connections, and the device status in RHEM states what the agent is still downloading artifacts.</p>
+<p>The agent may take time to download all artifacts, especially unreliable network connections, and the device status in Edge Manager states that the agent is still downloading artifacts.</p>
 </div>
 <div class="paragraph">
-<p>If an update fails because of a condition internal to the device, for example low disk space, this is still considered a device template issue: it should not force into devices more files than they fit.</p>
+<p>If an update fails because of a condition internal to the device, for example low disk space, this is also considered a device template issue: it should not force into devices more files than they can store.</p>
 </div>
 </div>
 </div>
@@ -463,14 +451,14 @@ Only after all of them are completely downloaded and verified, it starts applyin
 <h2 id="_shell_sessions_on_managed_devices"><a class="anchor" href="#_shell_sessions_on_managed_devices"></a>Shell sessions on managed devices</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>RHEM enables its users to get a shell on a managed devices and run commands as the root user.
-It uses the network connection the agent estabilishes with the RHEM server, so a device does not need to have an addressable IP address, like you would need for SSH connections.</p>
+<p>Edge Manager enables its users to get a shell on a managed device and run commands as the root user.
+It uses the network connection the agent establishes with the Edge Manager server, so a device does not need to have an addressable IP address, like you would need for SSH connections.</p>
 </div>
 <div class="paragraph">
-<p>You even could opt to not run an SSH daemon at all on managed devices and do all remote access using RHEM.</p>
+<p>You even could opt to not run an SSH daemon at all on managed devices and do all remote access using Edge Manager.</p>
 </div>
 <div class="paragraph">
-<p>The <code>flightctl console</code> command or the <b class="menuref">Terminal</b> tab in the <b class="menuref">Device details</b> page of the web UI provide with RHEM shell sessions.</p>
+<p>The <code>flightctl console</code> command, and the <b class="menuref">Terminal</b> tab in the <b class="menuref">Device details</b> page of the web UI, are two ways of starting Edge Manager shell sessions.</p>
 </div>
 </div>
 </div>
@@ -478,10 +466,10 @@ It uses the network connection the agent estabilishes with the RHEM server, so a
 <h2 id="_permissions_and_roles"><a class="anchor" href="#_permissions_and_roles"></a>Permissions and roles</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>We already learned that you must be a RHEM administrator to approve device enrollment requests, but you do not need such privileges to manage devices.</p>
+<p>You have already learned that you must be a Edge Manager administrator to approve device enrollment requests, but you do not need such privileges to manage devices.</p>
 </div>
 <div class="paragraph">
-<p>RHEM recognizes three access roles: administrator, operator, and viewer.
+<p>Edge Manager recognizes three access roles: administrator, operator, and viewer.
 Users with either the administrator or the operator role can manage devices, that is, change their device templates and start shell sessions.
 Users with the viewer role, as expected, cannot make such changes.</p>
 </div>
@@ -492,8 +480,8 @@ Users with the viewer role, as expected, cannot make such changes.</p>
 <i class="fa icon-note" title="Note"></i>
 </td>
 <td class="content">
-In this course we do not teach the use of organizations, which enable multi-tenancy withing a RHEL server.
-RHEM users might be assigned different roles in different organizations, and this is set by group membership using the PAM issuer.
+This course does not covers the use of organizations, which enable multi-tenancy within a RHEL server.
+Edge Manager users might be assigned different roles in different organizations, and this is set by group membership using the PAM issuer.
 </td>
 </tr>
 </table>
@@ -504,7 +492,7 @@ RHEM users might be assigned different roles in different organizations, and thi
 <h2 id="_whats_next"><a class="anchor" href="#_whats_next"></a>What&#8217;s next</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>The next two activities exercise device configuration and operating system updates with RHEM, and the next chapter teaches how to exclude a device from RHEM management.</p>
+<p>The next two activities focus first on device configuration and later on operating system updates with Edge Manager, and the following chapter teaches how to exclude a device from Edge Manager management.</p>
 </div>
 </div>
 </div>

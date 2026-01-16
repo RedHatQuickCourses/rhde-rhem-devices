@@ -195,18 +195,6 @@
 </dd>
 </dl>
 </div>
-<div class="admonitionblock warning">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-warning" title="Warning"></i>
-</td>
-<td class="content">
-Work in progress
-</td>
-</tr>
-</table>
-</div>
 </div>
 </div>
 <div class="sect1">
@@ -217,10 +205,10 @@ Work in progress
 It could be a <a href="https://developers.redhat.com/products/rhel/download">Red Hat Developer program</a> free subscription.</p>
 </div>
 <div class="paragraph">
-<p>You need a <em>development machine</em> running RHEL, which contains two test VMs already enrolled into your RHEM server by a <a href="../ch3-enroll/s2-enroll-lab.html" class="xref page">previous lab</a>.</p>
+<p>You need a <em>development machine</em> running RHEL, which contains two test VMs already enrolled into your Edge Manager server by a <a href="../ch3-enroll/s2-enroll-lab.html" class="xref page">previous lab</a>.</p>
 </div>
 <div class="paragraph">
-<p>You also need a <em>server machine</em> running RHEL, to which you also have unrestricted sudo access, which was already configured with RHEM.</p>
+<p>You also need a <em>server machine</em> running RHEL, to which you also have unrestricted sudo access, which was already configured with Edge Manager.</p>
 </div>
 <div class="paragraph">
 <p>If you are using the course classroom, your <em>development machine</em> is the <code>workstation</code> VM.
@@ -232,12 +220,16 @@ Log in as the user <code>student</code> with password <code>student</code>.</p>
 <h2 id="_instructions"><a class="anchor" href="#_instructions"></a>Instructions</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>At the end of the previous lab, you had two managed devices which were provisioned from the same installation disk.
-Right now, they have identical settings, among them a well-known SSH key, which is considered insecure because it&#8217;s available to any field personel with possess an installation media.
-You will remediate this by configuring your managed devices with different SSH keys, provided as inline configurations in each device manifest.</p>
+<p>At the end of the previous lab, you had two managed devices which were provisioned from the same installation disk.</p>
 </div>
 <div class="paragraph">
-<p>Then you will exercise RHEM&#8217;s ability to detect and correct configuration drift, by making manual changes to configuration files, and observing that RHEM restores the configurations set for each device.</p>
+<p>Right now, they have identical settings, among them a well-known SSH key, which is considered insecure because it&#8217;s available to any field personnel whom possess an installation media.</p>
+</div>
+<div class="paragraph">
+<p>You will remediate this by configuring your managed devices with different SSH keys, provided as inline configurations in each device manifest.</p>
+</div>
+<div class="paragraph">
+<p>Then you will exercise Edge Manager&#8217;s ability to detect and correct configuration drift, by making manual changes to configuration files, and observing that Edge Manager restores the configurations set for each device.</p>
 </div>
 <div class="olist arabic">
 <ol class="arabic">
@@ -269,7 +261,7 @@ LICENSE  README.md  antora.yml  enroll  modules  webapp</code></pre>
 </div>
 </li>
 <li>
-<p>If your test VMs are not started, because you stopped your classroom environment since completing the previous lab, start them now.</p>
+<p>If your test VMs are not running, because you stopped your classroom environment since completing the previous lab, start them now.</p>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>virsh start edge-1</strong>
@@ -290,7 +282,7 @@ Containerfile  bib-iso.sh  config.toml  config.yaml  edge-key  edge-key.pub  out
 </div>
 </li>
 <li>
-<p>Log in on RHEM, as a non-administrator, and verify that there are two managed devices, which correspond to the two test VMs.</p>
+<p>Log in on Edge Manager, as a non-administrator, and verify that there are two managed devices, which correspond to the two test VMs.</p>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>flightctl login -u student -p student https://servera.lab.example.com:3443</strong>
@@ -313,11 +305,11 @@ g7ombcqk46tqq458j9uju454441mf1lgt9qqqva8ti0fnvosm57g    edge-2  &lt;none&gt;  Un
 </td>
 <td class="content">
 <div class="paragraph">
-<p>If it seems that your test VMs are staying for too long in the <code>Unknow</code> state, access them using SSH and verify if their clocks are accurate by using the <code>date -u</code> command and comparing the output with the same command on your <em>development machine</em>.</p>
+<p>If it seems that your test VMs are staying for too long in the <code>Unknown</code> state, access them using SSH and verify if their clocks are accurate by using the <code>date -u</code> command and comparing the output with the same command on your <em>development machine</em>.</p>
 </div>
 <div class="paragraph">
 <p>It has been observed that, when you power off your test VMs without shutting them down, libvirt saves their in-memory state to disk and restores it on the next restart, which causes them to not resynchronize their system clocks.
-The clock skrew prevents them from synching with RHEM.</p>
+The skewed clocks prevent the VMs from synching with Edge Manager.</p>
 </div>
 <div class="paragraph">
 <p>Simply rebooting those VMs, using the <code>shutdown -r now</code> command, seems to resolve that issue.</p>
@@ -334,7 +326,7 @@ The clock skrew prevents them from synching with RHEM.</p>
 </div>
 </li>
 <li>
-<p>Configure the second test VM using the RHEM web UI.</p>
+<p>Configure the second test VM using the Edge Manager web UI.</p>
 <div class="olist loweralpha">
 <ol class="loweralpha" type="a">
 <li>
@@ -342,14 +334,11 @@ The clock skrew prevents them from synching with RHEM.</p>
 </li>
 <li>
 <p>Log in as the <code>student</code> user with the <code>student</code> password.
-Notice we are NOT using the <code>admin</code> user, because you do NOT require full administrator privileges on RHEM to manage devices.</p>
-<div class="paragraph">
-<p>GRAB SCREENSHOT</p>
-</div>
+Notice we are NOT using the <code>admin</code> user anymore, because you do NOT require full administrator privileges on Edge Manager to manage devices.</p>
 </li>
 <li>
-<p>On the left panel, click <strong>Devices</strong> and click the icon with three vertical icons in the row of the <code>edge-2</code> device.
-Then click <strong>Edit device configurations</strong>.</p>
+<p>On the left panel, click <b class="menuref">Devices</b> and click the icon with three vertical icons in the row of the <code>edge-2</code> device.
+Then click <b class="menuref">Edit device configurations</b>.</p>
 <div class="admonitionblock note">
 <table>
 <tr>
@@ -357,23 +346,17 @@ Then click <strong>Edit device configurations</strong>.</p>
 <i class="fa icon-note" title="Note"></i>
 </td>
 <td class="content">
-The same option is available from the <strong>Actions</strong> button in the device details page.
+The same option is available from the <b class="menuref">Actions</b> button in the device details page.
 </td>
 </tr>
 </table>
 </div>
-<div class="paragraph">
-<p>GRAB SCREENSHOT</p>
-</div>
 </li>
 <li>
-<p>On the <strong>General info</strong> tab of the <strong>Edit device</strong> page, click <strong>Next</strong>.</p>
-<div class="paragraph">
-<p>GRAB SCREENSHOT</p>
-</div>
+<p>On the <b class="menuref">General info</b> tab of the <b class="menuref">Edit device</b> page, click <b class="menuref">Next</b>.</p>
 </li>
 <li>
-<p>On the <strong>Device template</strong> tab, click <strong>Add configuration</strong> and fill the form as follows:</p>
+<p>On the <b class="menuref">Device template</b> tab, click <b class="menuref">Add configuration</b> and complete the form as follows:</p>
 <div class="openblock">
 <div class="content">
 <div class="olist lowerroman">
@@ -388,16 +371,13 @@ The same option is available from the <strong>Actions</strong> button in the dev
 </div>
 </div>
 </div>
-<div class="paragraph">
-<p>GRAB SCREENSHOT</p>
-</div>
 </li>
 <li>
-<p>When you select the source type, the page expands to show the <strong>File 1</strong> heading with a couple additional fields.
-Leave the form as it is, do not click anywhere else, because we have to generate the content for the ssk-key file.</p>
+<p>When you select the source type, the page expands to show the <b class="menuref">File 1</b> heading with a couple additional fields.
+Leave the form as it is, do not click anywhere else, because you have to generate the content for the SSH key file.</p>
 </li>
 <li>
-<p>Now switch from the web browser to a terminal, but do NOT close your web browser, and run the following command to create a new SSH key pair which is exclusive to the second device.</p>
+<p>Now switch from the web browser to a terminal, but do NOT close your web browser, and run the following command to create a new SSH key pair, which is exclusive to the second device.</p>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>ssh-keygen -N '' -f edge-2-key -C 'key for the edge-2 managed device'</strong>
@@ -417,8 +397,8 @@ ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILy6lU52yOY7IZ2BFpQhCQaQNBvyo1ydbsd5uyzPZBNq
 </div>
 </li>
 <li>
-<p>When you select the source type, the page expands to show the <strong>File 1</strong> heading with a couple additional fields.
-Fill them as follows:</p>
+<p>When you select the source type, the page expands to show a new <b class="menuref">File 1</b> heading with a couple additional fields.
+Fill in as follows:</p>
 <div class="openblock">
 <div class="content">
 <div class="olist lowerroman">
@@ -440,23 +420,20 @@ Fill them as follows:</p>
 <i class="fa icon-note" title="Note"></i>
 </td>
 <td class="content">
-Instead of doing cut-and-paste from the terminal to the web browser, you could use the <strong>Browse</strong> button to select the <code>~/temp/enroll/edge-2-key.pub</code> file in the <strong>Content</strong> field.
+Instead of doing cut-and-paste from the terminal to the web browser, you could use the <b class="menuref">Browse</b> button to select the <code>~/temp/enroll/edge-2-key.pub</code> file in the <strong>Content</strong> field.
 </td>
 </tr>
 </table>
 </div>
-<div class="paragraph">
-<p>GRAB SCREENSHOT</p>
-</div>
 </li>
 <li>
-<p>Scroll down, not changing any of the other fields from <strong>File 1</strong>, and click <strong>Add configuration</strong> again.</p>
+<p>Scroll down, not changing any of the other fields from <b class="menuref">File 1</b>, and click <b class="menuref">Add configuration</b> again.</p>
 <div class="paragraph">
 <p>You could add multiple files to the same configuration, but when the files are not directly related to each other, it improves readability and maintainability of the configuration having files as distinct inline configuration items.</p>
 </div>
 </li>
 <li>
-<p>fill the fields inside <strong>Configuration 2</strong> as follows:</p>
+<p>Fill in the fields inside <b class="menuref">Configuration 2</b> as follows:</p>
 <div class="openblock">
 <div class="content">
 <div class="olist lowerroman">
@@ -471,12 +448,9 @@ Instead of doing cut-and-paste from the terminal to the web browser, you could u
 </div>
 </div>
 </div>
-<div class="paragraph">
-<p>GRAB SCREENSHOT</p>
-</div>
 </li>
 <li>
-<p>And fill the fields from the new <strong>File 1</strong> panel as follows:</p>
+<p>And fill in the fields from the new <b class="menuref">File 1</b> panel as follows:</p>
 <div class="openblock">
 <div class="content">
 <div class="olist lowerroman">
@@ -491,43 +465,34 @@ Instead of doing cut-and-paste from the terminal to the web browser, you could u
 </div>
 </div>
 </div>
-<div class="paragraph">
-<p>GRAB SCREENSHOT</p>
-</div>
 </li>
 <li>
-<p>Do not make any change to applications nor services, and click <strong>Next</strong></p>
+<p>Do not make any changes to applications or services, and click <b class="menuref">Next</b></p>
 </li>
 <li>
-<p>On the <strong>Updates</strong> tab, leave <strong>Use basic configurations</strong> checked, and click <strong>Next</strong></p>
+<p>On the <b class="menuref">Updates</b> tab, leave <b class="menuref">Use basic configurations</b> checked, and click <b class="menuref">Next</b></p>
 </li>
 <li>
-<p>On the <strong>Review and save</strong> tab, verify that two configurations are listed, named <code>hostname</code> and <code>motd</code>, and click <strong>Save</strong>.</p>
+<p>On the <b class="menuref">Review and save</b> tab, verify that two configurations are listed, named <code>hostname</code> and <code>motd</code>, and click <b class="menuref">Save</b>.</p>
 </li>
 </ol>
 </div>
 </li>
 <li>
-<p>Verify that the managed device synchronizes with RHEM and receives the new configurations.</p>
+<p>Verify that the managed device synchronizes with Edge Manager and receives the new configurations.</p>
 <div class="olist loweralpha">
 <ol class="loweralpha" type="a">
 <li>
-<p>After clicking <strong>Save</strong>, you are in the details page for the <code>edge-2</code> device.
-Its <strong>System status</strong> panel should display an <strong>Update status</strong> of <code>Out-of-date</code>.</p>
-<div class="paragraph">
-<p>GRAB SCREENSHOT</p>
-</div>
+<p>After clicking <b class="menuref">Save</b>, you are in the details page for the <code>edge-2</code> device.
+Its <b class="menuref">System status</b> panel should display an <strong>Update status</strong> of <code>Out-of-date</code>.</p>
 </li>
 <li>
 <p>Wait until the <strong>Update status</strong> changes to <code>Up-to-date</code> and switch to a terminal window.</p>
-<div class="paragraph">
-<p>GRAB SCREENSHOT</p>
-</div>
 </li>
 <li>
 <p>Open a SSH session to the <code>edge-2</code> test VM using the new key.</p>
 <div class="paragraph">
-<p>Notice that, if you reuse a previous <code>ssh</code> command from your history, you would use the old key and it would ask for the password for the <code>core</code> user.
+<p>Notice that, if you reuse a previous <code>ssh</code> command from your history, you would use the old key and it would ask for the password of the <code>core</code> user.
 Also notice the message from <code>/etc/motd</code>.</p>
 </div>
 <div class="listingblock">
@@ -540,7 +505,7 @@ Last login: Thu Dec 18 20:03:46 2025 from 172.25.250.254
 </div>
 </li>
 <li>
-<p>Logs from the RHEM agent would indicate there was a reconciliation of the device configuration.</p>
+<p>Logs from the Edge Manager agent would indicate there was a reconciliation of the device configuration.</p>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>sudo journalctl -u flightctl-agent | tail -n 2</strong>
@@ -553,11 +518,11 @@ Dec 18 20:03:22 enroll flightctl-agent[820]: time="2025-12-18T20:03:22.434238Z" 
 </div>
 </li>
 <li>
-<p>Change a configuration file and verify that RHEM will undo your edits.</p>
+<p>Change a managed configuration file and verify that Edge Manager will undo your edits.</p>
 <div class="olist loweralpha">
 <ol class="loweralpha" type="a">
 <li>
-<p>If you didn&#8217;t notice on your lastest SSH log in, there is "a message of day".</p>
+<p>If you didn&#8217;t notice on your latest SSH log in, there is "a message of day".</p>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>cat /etc/motd</strong>
@@ -588,7 +553,7 @@ Timezone=Europe/Rome</code></pre>
 </div>
 </li>
 <li>
-<p>Wait a few moments and verify that the message reverts to the one set by RHEM.</p>
+<p>Wait a few moments and verify that the message reverts to the one set by Edge Manager.</p>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>cat /etc/motd</strong>
@@ -597,7 +562,7 @@ Under new management!</code></pre>
 </div>
 </li>
 <li>
-<p>Notice that the time zone change will NOT revert, because RHEM is not managing the file <code>/etc/localtime</code>, so you must revert that change manually.</p>
+<p>Notice that the time zone change will NOT revert, because Edge Manager is not managing the file <code>/etc/localtime</code>, so you must revert that change manually.</p>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-none hljs">$ timedatectl show -p Timezone
@@ -618,14 +583,14 @@ $ <strong>sudo timedatectl set-timezone UTC</strong></code></pre>
 </div>
 </li>
 <li>
-<p>Apply similar configurations to the <code>edge-1</code> managed device, but this time using the CLI.</p>
+<p>Apply similar configurations to the <code>edge-1</code> managed device, but this time use the CLI.</p>
 <div class="olist loweralpha">
 <ol class="loweralpha" type="a">
 <li>
 <p>Copy and inspect the template manifest from the course samples repository.</p>
 <div class="paragraph">
-<p>If you compare it with the complete YAML manifest form devices, which you already saw in the previous lab, you will notice the absense of some metadata fields and of all status fields.
-Manifests which you apply should focus on the device specification, and provide just the device UUID and labels on its metadata.</p>
+<p>If you compare it with the complete YAML manifest form devices, which you already saw in the previous lab, you will notice the absence of some metadata fields and of all status fields.
+Manifests that you apply should focus on the device specification, and provide just the device UUID and labels on its metadata.</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -685,10 +650,10 @@ $ <strong>sed -i "s|REPLACE_WITH_SSH_KEY|$SSH_PUB_KEY|" edge-1.yaml</strong></co
 </div>
 </li>
 <li>
-<p>Review the <code>edge-1.yaml</code> manifest file and verify that it contains no more <code>REPLACE_WITH</code> markers.</p>
+<p>Review the <code>edge-1.yaml</code> manifest file and verify that it contains no <code>REPLACE_WITH</code> markers.</p>
 </li>
 <li>
-<p>Apply the manigest on RHEM.</p>
+<p>Apply the manifest on Edge Manager.</p>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>flightctl apply -f edge-1.yaml</strong>
@@ -697,7 +662,7 @@ edge-1.yaml: applying device/1u63hvsgtua9tjjbmla9bgh5h2s77cb8esepphnf68m3ocf8qfn
 </div>
 </li>
 <li>
-<p>Wait until the device synchonizes with RHEM.</p>
+<p>Wait until the device synchronizes with Edge Manager.</p>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>flightctl get device $UUID -o wide</strong>
