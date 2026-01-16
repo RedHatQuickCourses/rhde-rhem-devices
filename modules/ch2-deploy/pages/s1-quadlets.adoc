@@ -6,7 +6,7 @@ _Estimated reading time: *{time_estimate} minutes*._
 
 Objective::
 
-Describe the main services that comprise Red Hat Edge Manager and how to deploy them as quadlets in RHEL servers, without dependencies on external services such as ACM, AAP, or Keycloack.
+Describe the main services that comprise Red Hat Edge Manager and how to deploy them as quadlets in RHEL servers, without dependencies on external services such as Red Hat Advanced Cluster Management, Red Hat Ansible Automation Platform, or Red Hat build of Keycloack.
 
 As mentioned in the previous chapter, Red Hat Edge Manager is based on the Flight Control open source project and is composed of two main pieces: an Edge Manager server, which runs a collection of microservices, fronted by an API server, and a Edge Manager agent, which runs on individual managed devices.
 
