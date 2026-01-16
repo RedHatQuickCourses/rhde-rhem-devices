@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Enroll Edge Devices in RHEM :: Deploying Red Hat Edge Manager and Managing Edge Devices</title>
+    <title>Enroll Edge Devices in Edge Manager :: Deploying Red Hat Edge Manager and Managing Edge Devices</title>
     <link rel="prev" href="index.html">
     <link rel="next" href="s2-enroll-lab.html">
     <meta name="generator" content="Antora 3.1.3">
@@ -90,7 +90,7 @@
     <a class="nav-link" href="index.html">Add Edge Devices to Red Hat Edge Manager</a>
 <ul class="nav-list">
   <li class="nav-item is-current-page" data-depth="2">
-    <a class="nav-link" href="s1-enroll.html">Enroll Edge Devices in RHEM</a>
+    <a class="nav-link" href="s1-enroll.html">Enroll Edge Devices in Edge Manager</a>
   </li>
   <li class="nav-item" data-depth="2">
     <a class="nav-link" href="s2-enroll-lab.html">Lab: Enroll Edge Devices Using Late Binding</a>
@@ -172,7 +172,7 @@
   <ul>
     <li><a href="../index.html">Deploying Red Hat Edge Manager and Managing Edge Devices</a></li>
     <li><a href="index.html">Add Edge Devices to Red Hat Edge Manager</a></li>
-    <li><a href="s1-enroll.html">Enroll Edge Devices in RHEM</a></li>
+    <li><a href="s1-enroll.html">Enroll Edge Devices in Edge Manager</a></li>
   </ul>
 </nav>
 </div>
@@ -181,51 +181,39 @@
   <div class="toc-menu"></div>
 </aside>
 <article class="doc">
-<h1 class="page">Enroll Edge Devices in RHEM</h1>
+<h1 class="page">Enroll Edge Devices in Edge Manager</h1>
 <div id="preamble">
 <div class="sectionbody">
 <div class="paragraph">
-<p><em>Estimated reading time: <strong>5 minutes</strong>.</em></p>
+<p><em>Estimated reading time: <strong>6 minutes</strong>.</em></p>
 </div>
 <div class="dlist">
 <dl>
 <dt class="hdlist1">Objective</dt>
 <dd>
-<p>Install the RHEM agent in managed devices, as part of their system images, and enroll managed devices in a RHEM server.</p>
+<p>Install the Edge Manager agent in managed devices, as part of their system images, and enroll managed devices in a Edge Manager server.</p>
 </dd>
 </dl>
 </div>
-<div class="admonitionblock warning">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-warning" title="Warning"></i>
-</td>
-<td class="content">
-Work in progress
-</td>
-</tr>
-</table>
-</div>
 <div class="paragraph">
-<p>Now that you have a running RHEM server, the next step is onboarding devices to RHEM management, so they become known to RHEM and start reconcilling their state with a device or fleet template stored on RHEM.</p>
+<p>Now that you have a running Edge Manager server, the next step is onboarding devices to Edge Manager management, so they become known to Edge Manager and start reconciling their state with a device or fleet template stored on Edge Manager.</p>
 </div>
-<div class="imageblock">
+<div class="imageblock text-center">
 <div class="content">
-<img src="_images/Device-oboarding.svg" alt="Device oboarding" width="80%">
+<img src="_images/Device-onboarding.svg" alt="Device onboarding" width="80%">
 </div>
 <div class="title">Figure 1. Simplified device onboarding flow</div>
 </div>
 <div class="paragraph">
-<p>Because all communication between managed devices and RHEM starts from devices, devices must begin their own enrollment process to become managed devices.</p>
+<p>Because all communication between managed devices and Edge Manager starts from devices, devices must begin their own enrollment process to become managed devices.</p>
 </div>
 <div class="paragraph">
-<p>The oboarding process usually consistis of two steps:</p>
+<p>The onboarding process usually consistis of two steps:</p>
 </div>
 <div class="ulist">
 <ul>
 <li>
-<p>Enroll a device in RHEM.</p>
+<p>Enroll a device in Edge Manager.</p>
 </li>
 <li>
 <p>Make the device a member of a fleet.</p>
@@ -233,26 +221,26 @@ Work in progress
 </ul>
 </div>
 <div class="paragraph">
-<p>Once a device is enrolled, it&#8217;s state is set to <code>OutOfDate</code>, and it starts its own reconcilliation process.
-If a device is not joined to a fleet, there would be no state to reconcille, but you could change the individual device template afterwards to give it a new system image, operating system configurations, and applications.</p>
+<p>Once a device is enrolled, it&#8217;s state is set to <code>OutOfDate</code>, and it starts its own reconciliation process.
+If a device is not joined to a fleet, there would be no state to reconcile, but you could change the individual device template afterwards to give it a new system image, operating system configurations, and applications.</p>
 </div>
 <div class="paragraph">
-<p>Insted of managing an individual device, you could change the new managed device labels so it becomes a member of a fleet, and them it gets all configurations from the fleet template.
-In fact, you can set managed device labels at enrollment time, and make it a member of a fleet from start, performing the two onboarding steps at once.</p>
+<p>Instead of managing an individual device, you could change the new managed device labels so it becomes a member of a fleet, and then it gets all its configurations from the fleet template.
+In fact, you can set managed device labels at enrollment time, and make it a member of a fleet from the start, performing the two onboarding steps at once.</p>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_adding_the_rhem_agent_to_a_system_image"><a class="anchor" href="#_adding_the_rhem_agent_to_a_system_image"></a>Adding the RHEM agent to a system image</h2>
+<h2 id="_adding_the_edge_manager_agent_to_a_system_image"><a class="anchor" href="#_adding_the_edge_manager_agent_to_a_system_image"></a>Adding the Edge Manager agent to a system image</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Because RHEM assumes its managed devices run image mode for RHEL, you must include the RHEM agent, that is, the <code>flightctl-agent</code> RPM package, in all bootc container iamges that you intent to use with your edge devices.
-You cannot add the RHEM agent after provisioning, like you would do with package mode.</p>
+<p>Because Edge Manager assumes its managed devices run image mode for RHEL, you must include the Edge Manager agent, that is, the <code>flightctl-agent</code> RPM package, in all bootc container images that you intend to use with your edge devices.
+You cannot add the Edge Manager agent after provisioning, as you would do with package mode.</p>
 </div>
 <div class="paragraph">
 <p>The bootc image container image used for initial provisioning of a managed device does not need to be the intended, final system image.
-It could be a minimal image you use only for onboarding and enrollment, and later RHEM switches the device to a different system image.
-But all system images set by RHEM must also contain the RHEM agent.</p>
+It could be a minimal image you use only for onboarding and enrollment, and later Edge Manager switches the device to a different system image.
+But all system images set by Edge Manager must also contain the Edge Manager agent.</p>
 </div>
 </div>
 </div>
@@ -265,13 +253,13 @@ But all system images set by RHEM must also contain the RHEM agent.</p>
 <div class="ulist">
 <ul>
 <li>
-<p>A configuration file with information to locate a RHEM server.</p>
+<p>A configuration file with information to locate a Edge Manager server.</p>
 </li>
 <li>
-<p>A TLS certificate to authenticate to the RHEM API.</p>
+<p>A TLS certificate to authenticate to the Edge Manager API.</p>
 </li>
 <li>
-<p>An optional public CA certificate to validate the server certificate of the RHEM API endpoint, if the server certificate was not signed by a corporate CA preconfigured as a trusted CA in the system image.</p>
+<p>An optional public CA certificate to validate the server certificate of the Edge Manager API endpoint, if the server certificate was not signed by a corporate CA preconfigured as a trusted CA in the system image.</p>
 </li>
 </ul>
 </div>
@@ -282,27 +270,27 @@ But all system images set by RHEM must also contain the RHEM agent.</p>
 <i class="fa icon-note" title="Note"></i>
 </td>
 <td class="content">
-Remember that all communication between RHEM agents and the RHEM API is secured by mTLS, so both sites must present a TLS certificate and validate the certificate from the other side.
+Remember that all communication between Edge Manager agents and the Edge Manager API is secured by mTLS, so both sites must present a TLS certificate and validate the certificate from the other side.
 </td>
 </tr>
 </table>
 </div>
 <div class="paragraph">
 <p>That data could be embedded into the system image, which we call <em>early binding</em>.
-Early binding produces a system image which is hardcoded to enroll with a fixed RHEM server.</p>
+Early binding produces a system image that is hardcoded to enroll with a fixed Edge Manager server.</p>
 </div>
 <div class="paragraph">
-<p>Alternatively, that data could be provided at device provisioning time, using RHEL kickstart, cloud-init, Red Hat Ansible Automation Platform, or any other means, which we call <em>late binding</em>.
-Late binding produces a generic system image which could be used with different RHEM servers.</p>
+<p>Alternatively, that data could be provided at device provisioning time, using RHEL kickstart, cloud-init, Red Hat Ansible Automation Platform, or other means, which we call <em>late binding</em>.
+Late binding produces a generic system image that could be used with different Edge Manager servers.</p>
 </div>
 <div class="imageblock">
 <div class="content">
 <img src="_images/early-vs-late-binding.svg" alt="early vs late binding">
 </div>
-<div class="title">Figure 2. Early binding vs late binding with a RHEM server</div>
+<div class="title">Figure 2. Early binding vs. late binding with a Edge Manager server</div>
 </div>
 <div class="paragraph">
-<p>Late binding is especially useful for organizations which run multiple RHEM servers in edge locations themselves or in regional data centers.</p>
+<p>Late binding is especially useful for organizations that run multiple Edge Manager servers in edge locations themselves or in regional data centers.</p>
 </div>
 </div>
 </div>
@@ -310,22 +298,22 @@ Late binding produces a generic system image which could be used with different 
 <h2 id="_approving_device_enrollment_requests"><a class="anchor" href="#_approving_device_enrollment_requests"></a>Approving device enrollment requests</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Once a device starts its RHEM agent, it sends an enrollment requests to the configured RHEM server.
+<p>Once a device starts its Edge Manager agent, it sends an enrollment request to the configured Edge Manager server.
 Devices keep polling the state of their enrollment requests periodically, waiting for approval.</p>
 </div>
 <div class="paragraph">
-<p>Those requests become <code>enrollmentrequest</code> resources in the RHEM API, which you visualize using either the RHEM CLI or its web UI and verify some device data, such as its MAC address, if you must distinguish between multiple requests, from different devices.</p>
+<p>Those requests become <code>enrollmentrequest</code> resources in the Edge Manager API, which you visualize using either the Edge Manager CLI or its web UI and verify some device data, such as its MAC address, if you must distinguish between multiple requests, from different devices.</p>
 </div>
 <div class="paragraph">
-<p>Only after a RHEM administrator approves the enrollment request that a device becomes a managed device, with a corresponding <code>device</code> API resource.
-At that time, the RHEM administrator can optionally set device labels, which make the device join a fleet.</p>
+<p>Only after a Edge Manager administrator approves the enrollment request that a device becomes a managed device, with a corresponding <code>device</code> API resource.
+At that time, the Edge Manager administrator can optionally set device labels, which make the device join a fleet.</p>
 </div>
 <div class="paragraph">
-<p>The RHEM web UI lists both <code>enrollmentrequest</code> and <code>device</code> resources on its <b class="menuref">Devices</b> page.
-There is an slider button which switches between displaying each type of resource.</p>
+<p>The Edge Manager web UI lists both <code>enrollmentrequest</code> and <code>device</code> resources on its <b class="menuref">Devices</b> page.
+There is a slider button that switches between displaying each type of resource.</p>
 </div>
 <div class="paragraph">
-<p>RHEM users without administrator rights can view and list enrollment requests, but they cannot approve them.</p>
+<p>Edge Manager users without administrator rights can view and list enrollment requests, but they cannot approve them.</p>
 </div>
 </div>
 </div>
@@ -336,24 +324,29 @@ There is an slider button which switches between displaying each type of resourc
 <p>The enrollment credentials (a TLS certificate) can be shared between multiple devices because it is used only for enrollment.</p>
 </div>
 <div class="paragraph">
-<p>When a RHEM agent starts for the first time, it generates a unique identity for the device, as an UUID, which it sends to its RHEM server as part of its enrollment request.</p>
+<p>When a Edge Manager agent starts for the first time, it generates a unique identity for the device, as an UUID, which it sends to its Edge Manager server as part of its enrollment request.</p>
 </div>
 <div class="paragraph">
-<p>If the enrollment request is approved, the RHEM server generates a new TLS certificate for the device.
-The device gets this TLS certificate as a response to its enrollment request response, and uses that certificate for any subsequent communication with its RHEM server.</p>
+<p>If the enrollment request is approved, the Edge Manager server generates a new TLS certificate for the device.
+The device gets this TLS certificate as a response to its enrollment request response, and uses that certificate for any subsequent communication with its Edge Manager server.</p>
 </div>
 <div class="paragraph">
-<p>RHEM uses the same UUID as the name of both an <code>enrollmentrequest</code> and its corresponding <code>device</code> resource, if the enrollment request is approved.
+<p>Edge Manager uses the same UUID as the name of both an <code>enrollmentrequest</code> and its corresponding <code>device</code> resource, if the enrollment request is approved.
 That way, it seems that approval turns an enrollment request resource into a managed device resource.</p>
+</div>
+<div class="paragraph">
+<p>Because an UUID is not user-friendly, the Edge Manager web UI uses the value of the <code>alias</code> label as a display name for a device.
+But this label is not an actual name.
+Multiple devices, including devices on the same fleet and organization, could have the same value for their <code>alias</code> labels.</p>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_syntax_of_the_rhem_cli"><a class="anchor" href="#_syntax_of_the_rhem_cli"></a>Syntax of the RHEM CLI</h2>
+<h2 id="_syntax_of_the_edge_manager_cli"><a class="anchor" href="#_syntax_of_the_edge_manager_cli"></a>Syntax of the Edge Manager CLI</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>The RHEM CLI is a thin wrapper over the RHEM API.
-Because the RHEM API is inspired by the Kubernetes API, you may find that the <code>flightctl</code> command is similar to the <code>kubectl</code> command from Kubernetes: you can use verbs such as <code>get</code>, <code>edit</code>, and <code>apply</code> with different resource types.</p>
+<p>The Edge Manager CLI is a thin wrapper over the Edge Manager API.
+Because the Edge Manager API is inspired by the Kubernetes API, you may find that the <code>flightctl</code> command is similar to the <code>kubectl</code> command from Kubernetes: you can use verbs such as <code>get</code>, <code>edit</code>, and <code>apply</code> with different resource types.</p>
 </div>
 <div class="paragraph">
 <p>For example, you can list all enrollment requests using the command:</p>
@@ -364,7 +357,7 @@ Because the RHEM API is inspired by the Kubernetes API, you may find that the <c
 </div>
 </div>
 <div class="paragraph">
-<p>If a resource type can contain labels (most of then do), you can filter the list based on resource labels keys and their values, for example:</p>
+<p>If a resource type can contain labels (most of them do), you can filter the list based on resource labels keys and their values, for example:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -380,7 +373,7 @@ Because the RHEM API is inspired by the Kubernetes API, you may find that the <c
 </div>
 </div>
 <div class="paragraph">
-<p>The RHEM CLI provides online help the expected way, for example to get a list of its verbs or commands:</p>
+<p>The Edge Manager CLI provides online help the expected way, for example to get a list of its verbs or commands:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -396,8 +389,8 @@ Because the RHEM API is inspired by the Kubernetes API, you may find that the <c
 </div>
 </div>
 <div class="paragraph">
-<p>This course does not intent to provide a complete reference to the RHEM CLI or its web UI.
-Please check the RHEM product documentation or the upstream Flight Control documentation for that level of detail.</p>
+<p>This course does not intend to provide a complete reference to the Edge Manager CLI or its web UI.
+Please check the Edge Manager product documentation or the upstream Flight Control documentation for that level of detail.</p>
 </div>
 </div>
 </div>
@@ -405,7 +398,7 @@ Please check the RHEM product documentation or the upstream Flight Control docum
 <h2 id="_whats_next"><a class="anchor" href="#_whats_next"></a>What&#8217;s Next</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>The next activity creates some VMs, to act as edge devices, and onboards them in RHEM using late binding.</p>
+<p>The next activity creates some VMs, to act as edge devices, and onboards them in Edge Manager using late binding.</p>
 </div>
 </div>
 </div>
