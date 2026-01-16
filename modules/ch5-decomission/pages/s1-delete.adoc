@@ -1,48 +1,33 @@
 :time_estimate: 2
 
-= Decommission and Delete Edge Devices with RHEM
+= Decommission and Delete Edge Devices with Edge Manager
 
 _Estimated reading time: *{time_estimate} minutes*._
 
 Objective::
-
-Make a device not managed by RHEM anymore and, optionally, delete the device resource.
-
-WARNING: Work in progress
-
-////
-
-How to “unmanage” a device and clean it of sensitive or application/customer data.
-
-* The decommission workflow in RHEM: it just deletes the per-device enrollment certificate.
-
-* How to scrub data in a device? Is there a feature to support that, or would be “update” the device to a special image which deletes all data and settings on it? [NOT SUPPORTED]
-
-* Because there is no guarantee that a device was decommissioned before it was lost (or stolen) there should be other mechanisms, external to RHEM, to invalidate whatever secrets were in the device, and careful consideration to the data stored in the device itself. And/or use of other data security mechanisms, for example encrypted system disks.
-
-////
+Remove a device from Edge Manager management and, optionally, delete the device resource.
 
 == Decommission versus delete operations
 
-At some moment, you will have to remove your devices from RHEM management.
-Maybe a device is being sent to another location, for a different use.
+At some point, you will have to remove your devices from Edge Manager management.
+Perhaps a device is being sent to another location, for a different use.
 Maybe a device is just broken beyond repair, or lost.
 
-RHEM provides a decommission operation, which requires the administrator role, and removes all labels of a device, thus removing it from any fleet.
-The device status is set to decomissioned, so it is hidden from regular device listings in the web UI.
+Edge Manager provides a decommission operation, which requires the administrator role, and removes all labels of a device, thus removing it from any fleet.
+The device status is set to decommissioned, so it is hidden from regular device listings in the web UI.
 
-The API resource of a decomissioned device is still stored, so you have a track record of device information.
-RHEM does not perform any scrubbing of the device: if there is sensitive data which must be securely deleted, you need a specialized tool for it.
+The API resource of a deco,missioned device is still stored, so you have a track record of device information.
+Edge Manager does not perform any scrubbing of the device: if there is sensitive data which must be securely deleted, you need a specialized tool for it.
 
-NOTE: You could have a fleet configured just for running a scrubbing tool, and move devices there before decomissioning them.
+NOTE: You could have a fleet configured just for running a scrubbing tool, and move devices there before decommissioning them.
 
-Decomissioned devices are not cleaned in any way: they retain the last system image, configurations, and applications that RHEM put there.
-Managed devices allways keep operating despite having access ro RHEM, including aftger being decomissioned.
+Decommissioned devices are not cleaned in any way: they retain the last system image, configurations, and applications that Edge Manager put there.
+Managed devices allways keep operating despite having access to Edge Manager, including after being decommissioned.
 
-At some moment, you will want to remove records of decomissioned devices, to keep your RHEM database nimble.
+At some point, you will want to remove records of decommissioned devices, to keep your Edge Manager database nimble.
 The delete operation also requires the administrator role and it is unrecoverable.
 
-After a device is deleted, it still contains a RHEM agent and an enrollment certificate, which could be used to re-enroll the device.
+After a device is deleted, it still contains a Edge Manager agent and an enrollment certificate, which could be used to re-enroll the device.
 
 == What's next
 

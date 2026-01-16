@@ -6,46 +6,28 @@ _Estimated reading time: *{time_estimate} minutes*._
 
 Objective::
 
-Make managed devices unmanaged and delete their device resources in RHEM.
-
-WARNING: Work in progress
+Make managed devices unmanaged and delete their device resources in Edge Manager.
 
 == Before you begin
 
 You need a customer portal account with access to a Red Hat Enterprise Linux (RHEL) subscription.
 It could be a https://developers.redhat.com/products/rhel/download[Red Hat Developer program] free subscription.
 
-You need a _development machine_ running RHEL, which contains two test VMs already enrolled into your RHEM server by a xref:ch3-enroll:s2-enroll-lab.adoc[previous lab].
+You need a _development machine_ running RHEL, which contains two test VMs already enrolled into your Edge Manager server by a xref:ch3-enroll:s2-enroll-lab.adoc[previous lab].
 
-You also need a _server machine_ running RHEL, to which you also have unrestricted sudo access, which was already configured with RHEM.
+You also need a _server machine_ running RHEL, to which you also have unrestricted sudo access, which was already configured with Edge Manager.
 
 If you are using the course classroom, your _development machine_ is the `workstation` VM.
 Log in as the user `student` with password `student`.
 
 == Instructions
 
-////
-
-Decommissioning devices in RHEM.
-
-* There’s no delete operation for devices. There’s only the decommission operation.
-
-* Pick a device to decommission, leave the remaining available to be reused in the next course, enabling “speedier” back-to-back course delivery.
-
-* Should it “brick” the device and require reimaging/reprovisioning? [NOT SUPPORTED]
-
-* Decommission another device, to show it done from both the CLI and the web UI?
-
-* Re-enroll a decommissioned device (if possible)
-
-////
-
-You will decommission and delete both managed devices you enrolled and configured in previous labs, and you will verify that the configurations set by RHEM remain on the devices after they are not managed anymore.
+You will decommission and delete both managed devices you enrolled and configured in previous labs, and you will verify that the configurations set by Edge Manager remain on the devices after they cease to be managed devices.
 
 1. Verify that you have the outcomes of previous labs.
 If you do not, go back and complete them, because you need their outcomes to proceed with this lab.
 +
-NOTE: While this activity does not depend on outcomes from _all_ of the previous labs, it works better if you already perform some configuration of managed devices, after enrolling them.
+NOTE: While this activity does not depend on outcomes from _all_ of the previous labs, it works better if you have already performed some configuration of managed devices; after enrolling them.
 
 .. There is a clone of the course samples repository on your home directory.
 +
@@ -71,7 +53,7 @@ $ *virsh list --all*
  -    edge-2   shut off
 --
 
-.. If your test VMs are not started, because you stopped your classroom environment since completing the previous lab, start them now.
+.. If your test VMs are not running, because you stopped your classroom environment since completing the previous lab, start them now.
 +
 [source,subs="verbatim,quotes"]
 --
@@ -90,7 +72,7 @@ $ *ls*
 Containerfile  bib-iso.sh  config.toml  config.yaml  edge-key  edge-key.pub  output  rhem-enroll.iso  virt-install.sh
 --
 
-.. Log in on RHEM, as an administrator, and verify that there are two managed devices, which correspond to the two test VMs.
+.. Log in to Edge Manager as an administrator and verify that there are two managed devices, which correspond to the two test VMs.
 +
 [source,subs="verbatim,quotes,attributes"]
 --
@@ -111,65 +93,45 @@ NAME                                                    ALIAS   OWNER   SYSTEM  
 
 .. Log in as the `student` user with the `student` password.
 On the left pane, select the menu:Devices[] page, and click the three vertical dots icon, to open the actions menu for any of the managed devices.
-+
-GRAB SCREENSHOT
 
-.. Notice that there is no action do either decomission or delete a device, but only to edit device configurations and view device details.
+.. Notice that there is no action to either decommission or delete a device, but only to edit device configurations and view device details.
 +
-Also notice, to the top of page, bellow the device filters, a slider button to display decommissioned devices.
-+
-GRAB SCREENSHOT
+Also notice, at the top of page, below the device filters, there is a slider button to display decommissioned devices.
 
 .. Click the menu:Show decommissioned devices[] button, and the page should show that there are no devices being decommissioned or already decommissioned.
-+
-GRAB SCREENSHOT
 
 .. Click on the `student` user name, to the top right, to open the user menu and select menu:Logout[].
-+
-GRAB SCREENSHOT
 
 3. Decomission the managed device which corresponds to your first test VM.
 
 .. Log in as the `admin` user with the `redhat` password.
 On the left pane, select the menu:Devices[] page, and click the three vertical dots icon, to open the actions menu for the `edge-2` managed device.
-+
-GRAB SCREENSHOT
 
 .. Click menu:Decommision device[].
 Confirm that you really want to decommission the managed device by clicking on the red menu:Decommision device[] button.
-+
-GRAB SCREENSHOT
 
 .. The menu:Devices[] page automatically switches to list decomissioned devices, and shows a status of `Decomissioning` for the device which has the UUID that used to belong to the `edge-2` managed device.
-Notice that, when you decomission a managed device, it loses all its labels but it does NOT lose the configurations managed by RHEM.
-+
-GRAB SCREENSHOT
+Notice that, when you decomission a managed device, it loses all its labels but it does NOT lose the configurations managed by Edge Manager.
 
 .. Click the UUID of the only device being decomissioned, which used to be the `edge-2` managed device, and see that it still display the configurations which were set for the device.
 +
 The device stays in that state on the assumption that some clean up procedure would be executed on it.
-+
-GRAB SCREENSHOT
 
 4. Delete the decommissioned device.
 
-.. You could keep the device as being decomissioned for as long as you wish, but after a time you probably want to remove its records from the RHEM database.
+.. You could keep the device as being decommissioned for as long as you wish, but after a time, you will probably want to remove its records from the Edge Manager database.
 +
 To remove the record for the device you just decomissioned, return to the menu:Devices[] page and click again menu:Show decommissioned devices[]. 
 Then click the actions menu button for the only device listed and select menu:Delete device[].
-+
-GRAB SCREENSHOT
 
 .. Confirm that you actually want to delete the device resource by clicking the red menu:Delete device[] button.
-Now your menu:Devices[] page should list no more decommissioned devices.
-+
-GRAB SCREENSHOT
+Now your menu:Devices[] page should list no decommissioned devices.
 
 5. Verify that decomissioned devices are not cleaned up.
 
 .. Switch to a terminal and enter the `temp-enroll` directory, which contains the SSH keys for acessing your test VMs.
 +
-Notice that it still contains the message of the day that you configured by using RHEM.
+Notice that it still contains the message of the day that you configured by using Edge Manager.
 +
 [source,subs="verbatim,quotes"]
 --
@@ -180,7 +142,7 @@ Last login: Thu Dec 19 14:05:12 2025 from 172.25.250.254
 [core@enroll ~]$ 
 --
 
-.. Verify that the test VM is still running the latest operating system image set by RHEM.
+.. Verify that the test VM is still running the latest operating system image set by Edge Manager.
 +
 [source,subs="verbatim,quotes"]
 --
@@ -201,9 +163,9 @@ $ *sudo bootc status*
 $ *exit*
 --
 
-6. Decomission another device, but now using the CLI.
+6. Decommission another device, but now use the CLI.
 
-.. Log in as the `student` user, just so you can see the error message you would get for insufficient permissions to perform the decommission operation.
+.. Log in as the `student` user, so you can see the error message you would get for insufficient permissions to perform the decommission operation.
 +
 [source,subs="verbatim,quotes,attributes"]
 --
@@ -217,7 +179,7 @@ $ *flightctl decommission device {edge-1-uuid-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 Error: unsuccessful decommissioning device request {edge-1-uuid-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}: Forbidden
 --
 
-.. Login as the `admin` user and decommission the `edge-1` managed device, which corresponds to your first test VM.
+.. Log in as the `admin` user and decommission the `edge-1` managed device, which corresponds to your first test VM.
 +
 [source,subs="verbatim,quotes,attributes"]
 --
@@ -231,7 +193,7 @@ $ *flightctl decommission device {edge-1-uuid-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 Device scheduled for decommissioning: 200 OK: {edge-1-uuid-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}
 --
 
-.. Verify that the device still appears in the device list, though it is not managed anymore by RHEM.
+.. Verify that the device still appears in the device list, though it is not managed by Edge Manager anymore.
 +
 [source,subs="verbatim,quotes,attributes"]
 --
@@ -251,7 +213,7 @@ Decommissioning
 
 7. Delete the last device, also by using the CLI.
 
-.. Use the `UUID` shell variable that you set int the previous step to delete the device resource from RHEM.
+.. Use the `UUID` shell variable that you set in the previous step to delete the device resource from Edge Manager.
 +
 Notice that, when using the CLI, there is no confirmation for either decommissioning or deleting a managed device.
 +
@@ -269,13 +231,13 @@ $ *flightctl get device -o wide*
 NAME    ALIAS   OWNER   SYSTEM  UPDATED APPLICATIONS    LABELS
 --
 
-8. Verify that your test devices cannot communicate with their RHEM server anymore.
+8. Verify that your test devices cannot communicate with their Edge Manager server.
 +
 ////
 Behavior changed from RC to 1.0.0. Devices used to attempt to re-enroll, now they don't.
 ////
 
-.. Open a SSH session to one of your test VMs and shutdown it.
+.. Open a SSH session to one of your test VMs and shut it down.
 +
 [source,subs="verbatim,quotes"]
 --
@@ -287,7 +249,7 @@ Under new management!
 
 .. Give it time to reboot and reconnect using SSH.
 +
-Verify that the device believes it is already enrolled with RHEM, but it cannot update its status on the RHEM server.
+Verify that the device believes it is already enrolled with Edge Manager, but it cannot update its status on the Edge Manager server.
 +
 [source,subs="verbatim,quotes,attributes"]
 -- 
@@ -314,7 +276,7 @@ NAME                                                    APPROVAL        APPROVER
 {edge-2-uuid-bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb}    Pending         <none>
 --
 
-.. Because they kept their configurations and identity, if you have a backup or their device manifests, you can re-enroll them and resynchronize with RHEM with no loss of service.
+.. Because they kept their configurations and identity, if you have a backup or their device manifests, you can re-enroll them and resynchronize with Edge Manager with no loss of service.
 ////
 
 9. Verify that the devices are still fully functional, by acessing their embedded web application.
@@ -325,7 +287,7 @@ $ *curl 127.0.0.1:8108*
 This would be the HTML and JavaScript code of a single-page web application.
 --
 
-You demonstrated that decommissioning and deleting managed devices on RHEM does not scrubs the devices.
+You demonstrated that decommissioning and deleting managed devices on Edge Manager does not scrub the devices.
 If they contained sentitive data, such as secrets to access corporate systems, that is still there, and you must implement a process for cleaning those devices of such data.
 
 == What's next

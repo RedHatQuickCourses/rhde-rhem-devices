@@ -11,7 +11,7 @@ Deploy Edge Manager on RHEL with minimal requirements.
 == Before you begin
 
 You need a _development machine_ running RHEL, to which you have unrestricted sudo access, and enough capacity to run a few VMs.
-Your _development machine_ is already registered to Red Hat with a valid RHDE subscription by the xref:ch1-intro:s3-classroom-lab.adoc[first lab].
+Your _development machine_ is already registered to Red Hat with a valid Red Hat Device Edge subscription by the xref:ch1-intro:s3-classroom-lab.adoc[first lab].
 
 You also need a _server machine_ running RHEL, to which you also have unrestricted sudo access.
 

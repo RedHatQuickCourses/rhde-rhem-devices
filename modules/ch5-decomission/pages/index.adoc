@@ -1,7 +1,7 @@
 = Remove Edge Devices from Red Hat Edge Manager
 
 Goal::
-
 Decommission managed devices.
 
-WARNING: Work in progress
+This chapter explains the differences between the decmomission and delete operations on a device.
+For Edge Manager, decomissioning a device is just a change of status and removal of labels, while deleting a device actually removes its API resource from Edge Manager.
