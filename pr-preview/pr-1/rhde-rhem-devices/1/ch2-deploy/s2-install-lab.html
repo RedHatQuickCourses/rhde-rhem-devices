@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Lab: Install Red Hat Edge Manager Standalone :: Deploying Red Hat Edge Manager and Managing Edge Devices</title>
+    <title>Lab: Install Red Hat Edge Manager on RHEL :: Deploying Red Hat Edge Manager and Managing Edge Devices</title>
     <link rel="prev" href="s1-quadlets.html">
     <link rel="next" href="../ch3-enroll/index.html">
     <meta name="generator" content="Antora 3.1.3">
@@ -77,7 +77,7 @@
     <a class="nav-link" href="s1-quadlets.html">Red Hat Edge Manager Services and Installation</a>
   </li>
   <li class="nav-item is-current-page" data-depth="2">
-    <a class="nav-link" href="s2-install-lab.html">Lab: Install Red Hat Edge Manager Standalone</a>
+    <a class="nav-link" href="s2-install-lab.html">Lab: Install Red Hat Edge Manager on RHEL</a>
   </li>
 </ul>
   </li>
@@ -172,7 +172,7 @@
   <ul>
     <li><a href="../index.html">Deploying Red Hat Edge Manager and Managing Edge Devices</a></li>
     <li><a href="index.html">Install Red Hat Edge Manager as Quadlets</a></li>
-    <li><a href="s2-install-lab.html">Lab: Install Red Hat Edge Manager Standalone</a></li>
+    <li><a href="s2-install-lab.html">Lab: Install Red Hat Edge Manager on RHEL</a></li>
   </ul>
 </nav>
 </div>
@@ -181,7 +181,7 @@
   <div class="toc-menu"></div>
 </aside>
 <article class="doc">
-<h1 class="page">Lab: Install Red Hat Edge Manager Standalone</h1>
+<h1 class="page">Lab: Install Red Hat Edge Manager on RHEL</h1>
 <div id="preamble">
 <div class="sectionbody">
 <div class="paragraph">
@@ -191,21 +191,9 @@
 <dl>
 <dt class="hdlist1">Objective</dt>
 <dd>
-<p>Deploy RHEM on RHEL with minimal requirements.</p>
+<p>Deploy Edge Manager on RHEL with minimal requirements.</p>
 </dd>
 </dl>
-</div>
-<div class="admonitionblock warning">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-warning" title="Warning"></i>
-</td>
-<td class="content">
-Work in progress
-</td>
-</tr>
-</table>
 </div>
 </div>
 </div>
@@ -234,7 +222,7 @@ Alternatively, you can open a shell or a console directly on the <code>servera</
 <h2 id="_instructions"><a class="anchor" href="#_instructions"></a>Instructions</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>You will install and configure RHEM on your <em>server machine</em>, configure a couple users with different permissions, and then you will use your <em>development machine</em> to run the web UI and the CLI of RHEM and verify that your new RHEM instance is healthy.</p>
+<p>You will install and configure Edge Manager on your <em>server machine</em>, configure a couple users with different roles, and then you will use your <em>development machine</em> to run the web UI and the CLI of Edge Manager and verify that your new Edge Manager instance is healthy.</p>
 </div>
 <div class="admonitionblock note">
 <table>
@@ -243,7 +231,7 @@ Alternatively, you can open a shell or a console directly on the <code>servera</
 <i class="fa icon-note" title="Note"></i>
 </td>
 <td class="content">
-The instructions here use the community artifacts from the flightctl projects, but are expected to work with the product artifacts from RHEM, when they become available, by just switching from the community repository to the RHEM product repository and using the Red Hat subscription manager to register your <em>server machine</em>.
+The instructions here use the community artifacts from the Flight Control project, but are expected to work with the product artifacts from Edge Manager, when they become available, by just switching from the community repository to the Edge Manager product repository and using the Red Hat subscription manager to register your <em>server machine</em>.
 </td>
 </tr>
 </table>
@@ -284,7 +272,7 @@ Overall Status: Registered</code></pre>
 </div>
 </li>
 <li>
-<p>Install the RHEM services on your <em>server machine</em>.</p>
+<p>Install the Edge Manager services on your <em>server machine</em>.</p>
 <div class="olist loweralpha">
 <ol class="loweralpha" type="a">
 <li>
@@ -297,7 +285,7 @@ servera</code></pre>
 </div>
 </li>
 <li>
-<p>Install the container tools on your <em>server machine</em> because the RHEM packages just configure Systemd to run the RHEM services as quadlets, that is, as Podman containers.</p>
+<p>Install the container tools on your <em>server machine</em> because the Edge Manager packages just configure Systemd to run the Edge Manager services as quadlets, that is, as Podman containers.</p>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>sudo dnf install podman skopeo</strong>
@@ -328,7 +316,7 @@ There is no need to register <code>servera</code> because the Flight Control ser
 </div>
 </li>
 <li>
-<p>Install the RHEM services.</p>
+<p>Install the Edge Manager services.</p>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>sudo dnf install -y flightctl-services-1.0.0</strong>
@@ -343,14 +331,14 @@ Complete!</code></pre>
 <i class="fa icon-note" title="Note"></i>
 </td>
 <td class="content">
-If you want to try the current lastest release from the upstream project, remove the version component <code>-1.0.0</code> from the package <code>flightctl-services</code> in the command above.
+If you want to try the current latest release from the upstream project, remove the version component <code>-1.0.0</code> from the package <code>flightctl-services</code> in the command above.
 </td>
 </tr>
 </table>
 </div>
 </li>
 <li>
-<p>Start the RHEM services.</p>
+<p>Start the Edge Manager services.</p>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>sudo systemctl enable --now flightctl.target</strong>
@@ -359,9 +347,9 @@ Created symlink '/etc/systemd/system/multi-user.target.wants/flightctl.target' â
 </div>
 </li>
 <li>
-<p>Verify that the RHEM services are up and running.</p>
+<p>Verify that the Edge Manager services are up and running.</p>
 <div class="paragraph">
-<p>Be patient, it may take a while until all container images required by RHEM are downloaded from the internet and it initializes its database and cache services.
+<p>Be patient, it may take a while until all container images required by Edge Manager are downloaded from the internet and it initializes its database and cache services.
 When it is all done, it is expected that some services will display <code>exited</code> as their substatus.</p>
 </div>
 <div class="listingblock">
@@ -415,7 +403,7 @@ Dec 15 13:45:26 servera flightctl-api[2032]: Trying to pull quay.io/flightctl/fl
 </div>
 </li>
 <li>
-<p>Verify that the RHEM containers are up and running.</p>
+<p>Verify that the Edge Manager containers are up and running.</p>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>sudo podman ps</strong>
@@ -435,7 +423,7 @@ f837128ddba2  quay.io/flightctl/flightctl-periodic:1.0.0            /bin/sh -c .
 </div>
 </li>
 <li>
-<p>You can also get logs directly from the containers, or enter then with <code>podman exec</code> for deeper troubleshooting.</p>
+<p>You can also get logs directly from the containers, or enter them with <code>podman exec</code> for deeper troubleshooting.</p>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>sudo podman logs flightctl-api</strong>
@@ -448,7 +436,7 @@ time="2025-12-15T13:45:34Z" level=info msg="Starting API service" func=main.main
 </div>
 </li>
 <li>
-<p>For simplicity, configure local users for the RHEM services, on the PAM issuer container.</p>
+<p>For simplicity, configure local users for the Edge Manager services, on the PAM issuer container.</p>
 <div class="olist loweralpha">
 <ol class="loweralpha" type="a">
 <li>
@@ -482,7 +470,7 @@ $ <strong>sudo podman exec -i flightctl-pam-issuer usermod -aG flightctl-admin a
 </div>
 </li>
 <li>
-<p>Verify you have the requires users and groups on the PAM issuer container.</p>
+<p>Verify you have the required users and groups on the PAM issuer container.</p>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>sudo podman exec -i flightctl-pam-issuer groups student</strong>
@@ -493,7 +481,7 @@ admin : admin flightctl-admin</code></pre>
 </div>
 </li>
 <li>
-<p>If you would rather be more throughout verifying users and groups on the PAM issue container.</p>
+<p>If you would rather be more thorough verifying users and groups on the PAM issue container, use the following commands.</p>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>sudo podman exec -i flightctl-pam-issuer getent passwd student</strong>
@@ -511,7 +499,7 @@ flightctl-operator:x:1001:student</code></pre>
 </div>
 </li>
 <li>
-<p>Install the RHEM CLI on your <em>development machine</em></p>
+<p>Install the Edge Manager CLI on your <em>development machine</em></p>
 <div class="olist loweralpha">
 <ol class="loweralpha" type="a">
 <li>
@@ -547,7 +535,7 @@ You must log in to view the server version. Please use the 'login' command to au
 </div>
 </li>
 <li>
-<p>Copy the self-signed certificate of the RHEM server and add it to the system&#8217;s trusted CA set.</p>
+<p>Copy the self-signed certificate of the Edge Manager server and add it to the system&#8217;s trusted CA set.</p>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>scp servera:/etc/flightctl/pki/ca-bundle.crt ~</strong>
@@ -558,7 +546,7 @@ $ <strong>sudo update-ca-trust extract</strong></code></pre>
 </div>
 </li>
 <li>
-<p>Log in on the RHEM server.</p>
+<p>Log in on the Edge Manager server.</p>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>flightctl login -u admin -p redhat https://servera.lab.example.com:3443</strong>
@@ -583,7 +571,7 @@ NAME    ALIAS   OWNER   SYSTEM  UPDATED APPLICATIONS</code></pre>
 </div>
 </li>
 <li>
-<p>Access the RHEM web UI.</p>
+<p>Access the Edge Manager web UI.</p>
 <div class="olist loweralpha">
 <ol class="loweralpha" type="a">
 <li>
@@ -591,17 +579,26 @@ NAME    ALIAS   OWNER   SYSTEM  UPDATED APPLICATIONS</code></pre>
 You should get a login screen without any web browser warnings about certificate issues.</p>
 </li>
 <li>
-<p>Log in as the <code>student</code> user, with password <code>student</code>.</p>
-<div class="paragraph">
-<p>If you wait too long iddle on the login page, you may get a "CSRF error".
-If it happens, just try again.</p>
+<p>Log in as the <code>student</code> user, with the password <code>student</code>.</p>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+If you are iddle for too long on the login page, you may get a "CSRF error".
+If it happens, just try again.
+</td>
+</tr>
+</table>
 </div>
 </li>
 <li>
-<p>You should get the RHEM Overview page, with three gray circles because there are no managed devices to report a status summary.</p>
+<p>You should get the Edge Manager <b class="menuref">Overview</b> page, with three gray circles because there are no managed devices on which to report a status summary.</p>
 </li>
 <li>
-<p>On the left panel, click on <strong>Devices</strong> to verify that there are indeed no managed devices.</p>
+<p>On the left panel, click <b class="menuref">Devices</b> to verify that there are indeed no managed devices.</p>
 </li>
 </ol>
 </div>
@@ -614,7 +611,7 @@ If it happens, just try again.</p>
 <h2 id="_whats_next"><a class="anchor" href="#_whats_next"></a>What&#8217;s next</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>In the next activity, you will create a bootc container image containing the RHEM client and use it to provision and enroll a test VM which stands in for a managed edge device.</p>
+<p>In the next activity, you will create a bootc container image containing the Edge Manager client and use it to provision and enroll a test VM which stands in for a managed edge device.</p>
 </div>
 </div>
 </div>
