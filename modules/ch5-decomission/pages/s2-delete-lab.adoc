@@ -1,0 +1,296 @@
+:time_estimate: 5
+
+= Lab: Decommission and Delete Edge Devices
+
+_Estimated reading time: *{time_estimate} minutes*._
+
+Objective::
+
+Make managed devices unmanaged and delete their device resources in Edge Manager.
+
+== Before you begin
+
+You need a customer portal account with access to a Red Hat Enterprise Linux (RHEL) subscription.
+It could be a https://developers.redhat.com/products/rhel/download[Red Hat Developer program] free subscription.
+
+You need a _development machine_ running RHEL, which contains two test VMs already enrolled into your Edge Manager server by a xref:ch3-enroll:s2-enroll-lab.adoc[previous lab].
+
+You also need a _server machine_ running RHEL, to which you also have unrestricted sudo access, which was already configured with Edge Manager.
+
+If you are using the course classroom, your _development machine_ is the `workstation` VM.
+Log in as the user `student` with password `student`.
+
+== Instructions
+
+You will decommission and delete both managed devices you enrolled and configured in previous labs, and you will verify that the configurations set by Edge Manager remain on the devices after they cease to be managed devices.
+
+1. Verify that you have the outcomes of previous labs.
+If you do not, go back and complete them, because you need their outcomes to proceed with this lab.
++
+NOTE: While this activity does not depend on outcomes from _all_ of the previous labs, it works better if you have already performed some configuration of managed devices; after enrolling them.
+
+.. There is a clone of the course samples repository on your home directory.
++
+[source,subs="verbatim,quotes"]
+--
+$ *cd*
+$ *ls rhde-rhem-samples*
+LICENSE  README.md  antora.yml  enroll  modules  webapp
+--
++
+// No need to access RPM packages here
++
+// No need to access container images either
+
+.. There are two local test VMs, named `edge-1` and `edge-2`.
++
+[source,subs="verbatim,quotes"]
+--
+$ *virsh list --all*
+ Id   Name     State
+-------------------------
+ -    edge-1   shut off
+ -    edge-2   shut off
+--
+
+.. If your test VMs are not running, because you stopped your classroom environment since completing the previous lab, start them now.
++
+[source,subs="verbatim,quotes"]
+--
+$ *virsh start edge-1*
+Domain 'edge-1' started
+$ *virsh start edge-2*
+Domain 'edge-2' started
+--
+
+.. Enter the `test-enroll` directory, which contains the SSH keys used to provision and access your two test VMs.
++
+[source,subs="verbatim,quotes"]
+--
+$ *cd temp-enroll*
+$ *ls*
+Containerfile  bib-iso.sh  config.toml  config.yaml  edge-key  edge-key.pub  output  rhem-enroll.iso  virt-install.sh
+--
+
+.. Log in to Edge Manager as an administrator and verify that there are two managed devices, which correspond to the two test VMs.
++
+[source,subs="verbatim,quotes,attributes"]
+--
+$ *flightctl login -u admin -p redhat https://servera.lab.example.com:3443*
+Auto-selected organization: 00000000-0000-0000-0000-000000000000 Default
+Login successful.
+$ *flightctl get device -o wide*
+NAME                                                    ALIAS   OWNER   SYSTEM  UPDATED         APPLICATIONS    LABELS
+{edge-1-uuid-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}    edge-1  <none>  Online  UpToDate        NoApplications  rhel=9.6,type=noapps,alias=edge-1
+{edge-2-uuid-bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb}    edge-2  <none>  Unknown Unknown         Unknown         rhel=9.6,type=noapps,alias=edge-2
+--
+
+.. Wait a few moments and repeat the latest command until both managed devices return as `OnLine` and `UpToDate`.
+
+2. Verify that you need full administrator rights to decomission managed devices.
+
+.. Open a web browser and visit `\https://servera.lab.example.com`
+
+.. Log in as the `student` user with the `student` password.
+On the left pane, select the menu:Devices[] page, and click the three vertical dots icon, to open the actions menu for any of the managed devices.
+
+.. Notice that there is no action to either decommission or delete a device, but only to edit device configurations and view device details.
++
+Also notice, at the top of page, below the device filters, there is a slider button to display decommissioned devices.
+
+.. Click the menu:Show decommissioned devices[] button, and the page should show that there are no devices being decommissioned or already decommissioned.
+
+.. Click on the `student` user name, to the top right, to open the user menu and select menu:Logout[].
+
+3. Decomission the managed device which corresponds to your first test VM.
+
+.. Log in as the `admin` user with the `redhat` password.
+On the left pane, select the menu:Devices[] page, and click the three vertical dots icon, to open the actions menu for the `edge-2` managed device.
+
+.. Click menu:Decommision device[].
+Confirm that you really want to decommission the managed device by clicking on the red menu:Decommision device[] button.
+
+.. The menu:Devices[] page automatically switches to list decomissioned devices, and shows a status of `Decomissioning` for the device which has the UUID that used to belong to the `edge-2` managed device.
+Notice that, when you decomission a managed device, it loses all its labels but it does NOT lose the configurations managed by Edge Manager.
+
+.. Click the UUID of the only device being decomissioned, which used to be the `edge-2` managed device, and see that it still display the configurations which were set for the device.
++
+The device stays in that state on the assumption that some clean up procedure would be executed on it.
+
+4. Delete the decommissioned device.
+
+.. You could keep the device as being decommissioned for as long as you wish, but after a time, you will probably want to remove its records from the Edge Manager database.
++
+To remove the record for the device you just decomissioned, return to the menu:Devices[] page and click again menu:Show decommissioned devices[]. 
+Then click the actions menu button for the only device listed and select menu:Delete device[].
+
+.. Confirm that you actually want to delete the device resource by clicking the red menu:Delete device[] button.
+Now your menu:Devices[] page should list no decommissioned devices.
+
+5. Verify that decomissioned devices are not cleaned up.
+
+.. Switch to a terminal and enter the `temp-enroll` directory, which contains the SSH keys for acessing your test VMs.
++
+Notice that it still contains the message of the day that you configured by using Edge Manager.
++
+[source,subs="verbatim,quotes"]
+--
+$ *cd temp-enroll*
+$ *ssh -i edge-2-key -p 8222 core@127.0.0.1*
+Under new management!
+Last login: Thu Dec 19 14:05:12 2025 from 172.25.250.254
+[core@enroll ~]$ 
+--
+
+.. Verify that the test VM is still running the latest operating system image set by Edge Manager.
++
+[source,subs="verbatim,quotes"]
+--
+$ *sudo bootc status*
+● Booted image: containers-storage:registry.lab.example.com:5000/rhem-webapp:v1.2
+        Digest: sha256:{rhem-webapp-v1-shaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}
+       Version: 9.6 (2025-12-02 08:30:48 UTC)
+
+  Rollback image: containers-storage:registry.lab.example.com:5000/rhem-webapp:v1.1
+          Digest: sha256:{rhem-enroll-v1-shaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}
+         Version: 9.6 (2025-12-02 08:30:48 UTC)
+--
+
+.. Terminate the SSH session and return to your host shell.
++
+[source,subs="verbatim,quotes"]
+--
+$ *exit*
+--
+
+6. Decommission another device, but now use the CLI.
+
+.. Log in as the `student` user, so you can see the error message you would get for insufficient permissions to perform the decommission operation.
++
+[source,subs="verbatim,quotes,attributes"]
+--
+$ *flightctl login -u student -p student https://servera.lab.example.com:3443*
+Auto-selected organization: 00000000-0000-0000-0000-000000000000 Default
+Login successful.
+$ *flightctl get device -o wide*
+NAME                                                    ALIAS   OWNER   SYSTEM  UPDATED         APPLICATIONS    LABELS
+{edge-1-uuid-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}    edge-1  <none>  Online  UpToDate        NoApplications  rhel=9.6,type=noapps,alias=edge-2
+$ *flightctl decommission device {edge-1-uuid-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}*
+Error: unsuccessful decommissioning device request {edge-1-uuid-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}: Forbidden
+--
+
+.. Log in as the `admin` user and decommission the `edge-1` managed device, which corresponds to your first test VM.
++
+[source,subs="verbatim,quotes,attributes"]
+--
+$ *flightctl login -u admin -p redhat https://servera.lab.example.com:3443*
+Auto-selected organization: 00000000-0000-0000-0000-000000000000 Default
+Login successful.
+$ *flightctl get device -o wide*
+NAME                                                    ALIAS   OWNER   SYSTEM  UPDATED         APPLICATIONS    LABELS
+{edge-1-uuid-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}    edge-1  <none>  Online  UpToDate        NoApplications  rhel=9.6,type=noapps,alias=edge-2
+$ *flightctl decommission device {edge-1-uuid-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}*
+Device scheduled for decommissioning: 200 OK: {edge-1-uuid-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}
+--
+
+.. Verify that the device still appears in the device list, though it is not managed by Edge Manager anymore.
++
+[source,subs="verbatim,quotes,attributes"]
+--
+$ *flightctl get device -o wide*
+NAME                                                    ALIAS   OWNER   SYSTEM  UPDATED         APPLICATIONS    LABELS
+{edge-1-uuid-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}            <none>  Online  UpToDate        NoApplications
+--
+
+.. You must check the `status` field of the device to know that it has been decommissioned.
++
+[source,subs="verbatim,quotes,attributes"]
+--
+$ *UUID={edge-1-uuid-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}*
+$ *flightctl get device $UUID -o json | jq -r '.status.lifecycle.status'*
+Decommissioning
+--
+
+7. Delete the last device, also by using the CLI.
+
+.. Use the `UUID` shell variable that you set in the previous step to delete the device resource from Edge Manager.
++
+Notice that, when using the CLI, there is no confirmation for either decommissioning or deleting a managed device.
++
+[source,subs="verbatim,quotes,attributes"]
+--
+$ *flightctl delete device $UUID*
+Deletion request for device "{edge-1-uuid-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}" completed
+--
+
+.. Verify that your device list is now empty.
++
+[source,subs="verbatim,quotes"]
+--
+$ *flightctl get device -o wide*
+NAME    ALIAS   OWNER   SYSTEM  UPDATED APPLICATIONS    LABELS
+--
+
+8. Verify that your test devices cannot communicate with their Edge Manager server.
++
+////
+Behavior changed from RC to 1.0.0. Devices used to attempt to re-enroll, now they don't.
+////
+
+.. Open a SSH session to one of your test VMs and shut it down.
++
+[source,subs="verbatim,quotes"]
+--
+$ *ssh -i edge-2-key -p 8222 core@127.0.0.1*
+Under new management!
+...
+[core@enroll ~]$ *sudo shutdown -r now*
+--
+
+.. Give it time to reboot and reconnect using SSH.
++
+Verify that the device believes it is already enrolled with Edge Manager, but it cannot update its status on the Edge Manager server.
++
+[source,subs="verbatim,quotes,attributes"]
+-- 
+$ *ssh -i edge-2-key -p 8222 core@127.0.0.1*
+...
+[core@enroll ~]$ *sudo journalctl -u flightctl-agent | grep -A 5 enrolled | tail -n 6*
+Jan 12 19:56:56 enroll flightctl-agent[868]: Your device is enrolled to flightctl,
+Jan 12 19:56:56 enroll flightctl-agent[868]: you can manage your device scanning the above QR. or following this URL:
+Jan 12 19:56:56 enroll flightctl-agent[868]: https://servera.lab.example.com:443/manage/{edge-1-uuid-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}
+Jan 12 19:56:56 enroll systemd[1]: Started Flight Control management agent.
+Jan 12 19:56:56 enroll flightctl-agent[868]: time="2026-01-12T19:56:56.471334Z" level=info msg="No OS update in progress"
+Jan 12 19:56:56 enroll flightctl-agent[868]: time="2026-01-12T19:56:56.516268Z" level=warning msg="Failed to update device status: update device status failed: 404 Not Found" file="device/status/status.go:159"
+[core@enroll ~]$ *exit*
+--
++
+////
+.. Verify that there are two new device enrollment requests, and that they have the same UUIDs as they did before.
++
+[source,subs="verbatim,quotes,attributes"]
+--
+$ *flightctl get enrollmentrequest*
+NAME                                                    APPROVAL        APPROVER        APPROVED LABELS
+{edge-1-uuid-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}    Pending         <none>
+{edge-2-uuid-bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb}    Pending         <none>
+--
+
+.. Because they kept their configurations and identity, if you have a backup or their device manifests, you can re-enroll them and resynchronize with Edge Manager with no loss of service.
+////
+
+9. Verify that the devices are still fully functional, by acessing their embedded web application.
++
+[source,subs="verbatim,quotes"]
+-- 
+$ *curl 127.0.0.1:8108*
+This would be the HTML and JavaScript code of a single-page web application.
+--
+
+You demonstrated that decommissioning and deleting managed devices on Edge Manager does not scrub the devices.
+If they contained sentitive data, such as secrets to access corporate systems, that is still there, and you must implement a process for cleaning those devices of such data.
+
+== What's next
+
+This is the final activity of this course.
+In the next course, you will configure device fleets, manage devices as members of fleets, and also manage containerized applications in device fleets.

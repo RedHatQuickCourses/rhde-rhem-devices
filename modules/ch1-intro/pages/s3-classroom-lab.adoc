@@ -1,0 +1,230 @@
+:time_estimate: 5
+
+= Lab: Prepare to Install Red Hat Edge Manager
+
+_Estimated reading time: *{time_estimate} minutes*._
+
+Objective::
+
+Prepare the environment for deploying Edge Manager by verifying that you have access to all its artifacts.
+
+== Before you begin
+
+You need a customer portal account with access to a Red Hat Enterprise Linux (RHEL) subscription.
+It could be a https://developers.redhat.com/products/rhel/download[Red Hat Developer program] free subscription, if you use the https://github.com/flightctl/flightctl-rpm[upstream packages] from the https://github.com/flightctl/flightctl[Flight Control^] project.
+
+WARNING: Be aware that, as time passes, there might be significant differences between newer upstream releases and the supported Red Hat product releases.
+
+IMPORTANT: The GA release of Edge Manager requires either a Red Hat Device Edge or RHEL with Edge Manager subscription and it is NOT included with the developer program individual subscription.
+
+You need a _development machine_ running RHEL, to which you have unrestricted sudo access, and enough capacity to run a few local VMs.
+
+You also need a _server machine_ running RHEL, to which you also have unrestricted sudo access.
+
+Both your _development machine_ and _server machine_ require internet access to download RPM packages and container images.
+
+If you are using the course classroom, your _development machine_ is the `workstation` VM.
+Log in as the user `student` with password `student`.
+From that machine, you may start SSH sessions to the `servera` VM, which is your _server_ machine, using the same user.
+Alternatively, you can open a shell or a console directly on the `servera` VM.
+
+== Instructions
+
+You can adapt the instructions in this course to any environment where you can install RPM packages, run Podman containers, and create VMs using libvirt.
+With a bit more effort, you could run everything on a Windows or MacOS workstation, using a single large VM running RHEL and nested virtualization, or a few smaller VMs, but this course does *NOT* provide instructions for doing so.
+
+This course was tested using a Red Hat Learning Environment (ROL) classroom which was originally created for another quick course series.
+There was no customization for the specific needs of Edge Manager, and there was no attempt at providing all requirements to install Edge Manager in disconnected mode.
+
+IMPORTANT: Some of the requirements of Edge Manager can be satisfied by the existing RPM package and container image mirrors in the ROL classroom, but some of them require internet access, a valid Red Hat login, and Red Hat subscription entitlements.
+
+This activity does NOT provide you with step-by-step instructions for operating the ROL environment.
+It starts with a checklist of tasks you need to know how to perform on ROL for this course, and then describes the customizations you require to be able to perform these course activities using the recommended HOL019 ROL classroom.
+
+Please check the online documentation available on ROL itself if it is your first time using a ROL classroom.
+
+1. Access the graphical console of your _development machine_.
+
+.. Ensure you can open the virtual console of the `workstation` VM, which should be already logged in.
+If you need to log in again, use the `student` user with the `student` password.
+
+.. Ensure you can open a Firefox web browser on the `workstation` VM.
+
+.. If you wish, you can open the terminal application and perform those tasks which require a Linux shell on the graphical console of the `workstation` VM.
+Most learners find that the classroom web application is more comfortable, especially if they want to cut-and-paste commands and file names from the course contents to the shell.
+
+2. Access the web application to get a shell on your _development machine_.
+
+.. Ensure you can open the classroom web application and open a workstation shell.
+
+.. Ensure you can escalate privileges by using the `sudo` command.
+You do not require the `root` user password, because the `student` user has unrestricted access to`sudo`.
+
+3. Open a terminal on your _server machine_.
+
+.. If you have a shell on `workstation` VM, you can start a SSH session to the `servera` VM.
+There is no need to specify the user because the `servera` VM is preconfigured with an SSH key for the `student` user.
+
+.. Alternatively, you can open the virtual console of the `servera` VM, and then log in as the `student` user, with the `student` password.
+
+.. As another alternative, the classroom web application can provide a shell on the `servera` VM, which is actually a SSH session from the `workstation` VM.
+
+4. For most activities in this course, you will need to keep three windows open:
+
+.. A `workstation` VM console, to use a web browser and access the Edge Manager web interface.
+
+.. A `workstation` VM shell, to use the Edge Manager CLI and RHEL administrator commands.
+
+.. A `servera` VM shell, to use RHEL administrator commands.
+
+
+5. On your _development machine_, download the sample code for this course.
+
+.. Using a shell on your _development machine_ (which is the `workstation VM`), ensure you are on your home directory.
+All labs start from there, but they will use different work directories, so this course starts all labs from the same reference point.
++
+[source,subs="verbatim,quotes"]
+--
+$ *cd*
+--
+
+.. Clone the course samples repository.
++
+[source,subs="verbatim,quotes"]
+--
+$ *git clone https://github.com/RedHatQuickCourses/rhde-Edge Manager-samples.git*
+Cloning into 'rhde-Edge Manager-samples'...
+...
+--
+
+.. The samples repository contains a number of subdirectories, but you will not make any changes directly on them.
+All changes will be made to copies which you will create on temporary work directories.
++
+[source,subs="verbatim,quotes"]
+--
+$ *ls rhde-Edge Manager-samples*
+LICENSE  README.md  antora.yml  config  enroll  modules  webapp
+--
+
+6. Install tools for managing containers and VMs on your _development machine_.
+
+.. Install the `container-tools` meta-package.
+Altough the `workstation` VM has Podman preinstalled, you will need the full suite of container tools in this course.
++
+[source,subs="verbatim,quotes"]
+--
+$ *sudo dnf install skopeo buildah*
+...
+Complete!
+--
++
+// RHEL 10 updates reintroduce the container-tools meta package.
+
+.. Install the libvirt tools and enable its QEMU socket service.
++
+[source,subs="verbatim,quotes"]
+--
+$ *sudo dnf install qemu-kvm libvirt virt-install virt-viewer*
+...
+Complete!
+$ *sudo systemctl enable virtqemud.socket --now*
+Created symlink /etc/systemd/system/multi-user.target.wants/virtqemud.socket → /usr/lib/systemd/system/virtqemud.socket.
+--
+
+.. Check that your unprivileged user can connect using the libvirt session interface.
++
+[source,subs="verbatim,quotes"]
+--
+$ *virsh uri*
+qemu:///session
+$ *virsh nodeinfo*
+CPU model:           x86_64
+...
+--
+
+7. Configure your _development machine_ to access RPM packages and container images from Red Hat, over the internet.
+
+.. Register your _development machine_ with the Red Hat subscription manager.
++
+If you are using the upstream Flight Control packages, you can use the login from a free Red Hat Developer subscription for individuals.
++
+NOTE: The `workstation` VM is preconfigured with access to a private mirror containing RHEL 10 packages, but it will need RHEL 9 packages to build bootc container images for edge devices that will be managed by Edge Manager.
++
+[source,subs="verbatim,quotes"]
+--
+$ *sudo subscription-manager register*
+...
+The registered system name is: workstation
+--
++
+////
+
+.. Verify that you have access to the Edge Manager packages [CANNOT DO IT YET BECAUSE IT'S NOT ON THE CUSTOMER PORTAL]
+
+.. May need to add a subscription for the Edge Manager packages, to get the Edge Manager agent during bootc container builds
+
+////
+
+.. Log in on the Red Hat container registry.
++
+Use the same Red Hat login that you used with subscription manager.
++
+[source,subs="verbatim,quotes"]
+--
+$ *podman login registry.redhat.io*
+...
+Login Succeeded!
+--
+
+.. Verify that you can access the bootc image builder container image.
+You may get a different hash, because the container image was updated since these instructions were written.
++
+[source,subs="verbatim,quotes"]
+--
+$ *skopeo inspect --format '{{.Digest}}' docker://registry.redhat.io/rhel9/bootc-image-builder:9.6*
+sha256:f5e1860fae45c9d01fb612fcfad6c1d3a93e9ea4533bf01ea1c4d47ae2226580
+--
+
+.. Download the bootc image builder to the container storage of the root user.
++
+You will run bootc image builder as root, so you must log in again on the Red Hat container registry.
++
+[source,subs="verbatim,quotes"]
+--
+$ *sudo podman login registry.redhat.io*
+...
+Login Succeeded!
+$ *podman pull docker://registry.redhat.io/rhel9/bootc-image-builder:9.6*
+...
+Storing signatures
+a93aa271855242ac292133fb261c2132dd88859abb7edc29fb5681d30db422f2
+--
+
+////
+
+.. Verify that you can find container images with the name `Edge Manager/flightctl`.
++
+[source,subs="verbatim,quotes"]
+--
+$ *podman search registry.redhat.io/Edge Manager/flightctl*
+NAME                                                        DESCRIPTION
+registry.redhat.io/Edge Manager/flightctl-ui-rhel9                  Flight Control UI
+registry.redhat.io/Edge Manager/flightctl-cli-artifacts-rhel9       Flight Control CLI Downloads
+...
+--
+
+.. Verify that you can access Edge Manager container images.
++
+[source,subs="verbatim,quotes"]
+--
+$ *skopeo inspect --format '{{.Digest}}' docker://registry.redhat.io/Edge Manager/flightctl-api-rhel9:v1.0.0*
+sha256:059f44efe0fa7fc440d25ae5ea9036ffb7d7be2404707ce910d20591ee742b77
+--
+
+////
+
+Now your _development machine_ is ready to build bootc container images with RHEL 9 for edge devices, run local VMs as virtual edge devices, and access a Red Hat Edge Manager server, which you will configure in this course and will manage those virtual edge devices.
+
+== What's next
+
+In the next lab, you will install and configure a Edge Manager server on your _server machine_ and configure administrator and non-administrator users on the Edge Manager server.

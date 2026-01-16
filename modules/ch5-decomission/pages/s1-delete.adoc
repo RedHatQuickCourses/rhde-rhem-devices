@@ -1,0 +1,36 @@
+:time_estimate: 2
+
+= Decommission and Delete Edge Devices with Edge Manager
+
+_Estimated reading time: *{time_estimate} minutes*._
+
+Objective::
+Remove a device from Edge Manager management and, optionally, delete the device resource.
+
+== Decommission versus delete operations
+
+At some point, you will have to remove your devices from Edge Manager management.
+Perhaps a device is being sent to another location, for a different use.
+Maybe a device is just broken beyond repair, or lost.
+
+Edge Manager provides a decommission operation, which requires the administrator role, and removes all labels of a device, thus removing it from any fleet.
+The device status is set to decommissioned, so it is hidden from regular device listings in the web UI.
+
+The API resource of a deco,missioned device is still stored, so you have a track record of device information.
+Edge Manager does not perform any scrubbing of the device: if there is sensitive data which must be securely deleted, you need a specialized tool for it.
+
+NOTE: You could have a fleet configured just for running a scrubbing tool, and move devices there before decommissioning them.
+
+Decommissioned devices are not cleaned in any way: they retain the last system image, configurations, and applications that Edge Manager put there.
+Managed devices allways keep operating despite having access to Edge Manager, including after being decommissioned.
+
+At some point, you will want to remove records of decommissioned devices, to keep your Edge Manager database nimble.
+The delete operation also requires the administrator role and it is unrecoverable.
+
+After a device is deleted, it still contains a Edge Manager agent and an enrollment certificate, which could be used to re-enroll the device.
+
+== What's next
+
+The final activity of this course exercises decomissioning and deleting devices.
+After you complete it, stay tuned for the next course in the series, which teaches fleet and application management.
+

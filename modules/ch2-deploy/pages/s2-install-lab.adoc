@@ -1,56 +1,537 @@
 :time_estimate: 5
 
-= Lab: Install Red Hat Edge Manager Standalone
+= Lab: Install Red Hat Edge Manager on RHEL
 
 _Estimated reading time: *{time_estimate} minutes*._
 
 Objective::
 
-Deploy RHEM on RHEL with minimal requirements.
-
-WARNING: Not started yet
+Deploy Edge Manager on RHEL with minimal requirements.
 
 == Before you begin
 
-You need a _development machine_ running RHEL, to which you have unrestricted sudo access.
-The _development machine_ has access to mirrors of RHEL package repositories and bootc container images.
+You need a _development machine_ running RHEL, to which you have unrestricted sudo access, and enough capacity to run a few VMs.
+Your _development machine_ is already registered to Red Hat with a valid Red Hat Device Edge subscription by the xref:ch1-intro:s3-classroom-lab.adoc[first lab].
 
-These instructions were tested on RHEL 10.0 but should work with minimal or no changes on newer and older RHEL releases, since 9.6.
+You also need a _server machine_ running RHEL, to which you also have unrestricted sudo access.
 
-If you are using the course classroom, log in on the `workstation` VM as the user `student` with password `student`.
-If not, please adapt the instructions to your test environment.
+Both your _development machine_ and _server machine_ require internet access to download RPM packages and container images.
 
-IMPORTANT: This activity is a continuation of the xref:ch2-online:s2-update-lab.adoc[previous lab] of this course.
-You must perform the two activities in sequence, without destroying your classroom environment or its VMs.
+If you are using the course classroom, your _development machine_ is the `workstation` VM.
+Log in as the user `student` with password `student`.
+From that machine, you may start SSH sessions to the `servera` VM, which is your _server_ machine, using the same user.
+Alternatively, you can open a shell or a console directly on the `servera` VM.
 
 == Instructions
 
-////
+You will install and configure Edge Manager on your _server machine_, configure a couple users with different roles, and then you will use your _development machine_ to run the web UI and the CLI of Edge Manager and verify that your new Edge Manager instance is healthy.
 
-* Verify availability of all required packages and container images.
-
-* Install RHEM using dnf
-
-* Configure DNF to use sssd (if not default) and hostname for the UI.
-
-* Generate and use a TLS certificate using the virtual classroom CA, or add the self-signed certificate to the trust store of the development machine. Avoid disabling TLS validation for CLI and web access.
-
-* Check the health of all RHEM systemd services/quadlets/containers.
-
-* Connect to RHEM using CLI and Web interface to assess it is healthy and running.
+NOTE: The instructions here use the community artifacts from the Flight Control project, but are expected to work with the product artifacts from Edge Manager, when they become available, by just switching from the community repository to the Edge Manager product repository and using the Red Hat subscription manager to register your _server machine_.
 
 ////
+servera wants to use the DLE Satellite. How can I clean it to use the internet?
 
-Lorem ipsum dolor sit amet
+$ sudo subscription-manager register
+Registering to: satellite-dle.ole.redhat.com:443/rhsm
 
-1. Do something
+$ sudo cp /etc/rhsm/rhsm.conf /etc/rhsm/rhsm.conf.dle
+$ sudo cp /etc/rhsm/rhsm.conf.bak /etc/rhsm/rhsm.conf
 
-.. Do a piece of something
+$ sudo subscription-manager register
+Registering to: subscription.rhsm.redhat.com:443/subscription
+Username: rht-flozano
+...
+The registered system name is: servera
+
+Using an off-line copy (scp) of the RHEM 1.0.0 GA packages, but I'm not sure how it will get container images.
+I do have access to the container images if I podman login registry.redhat.io using my employee account, but I don't know how products authenticate.
+
+$ sudo dnf install RHEM-1.0.0/*
+
+Cannot use the current RHEM artifacts with RHEL 10, their containers fail signature check. Have to keep using Fight Control upstream artifacts or create a classroom with RHEL 9.6 servers (which I also need for MicroShift)
+////
+
+1. Verify that you have the outcomes of previous labs.
+If you do not, go back and complete them, because you need their outcomes to continue with this course.
+
+.. On your _development machine_, verify that there is a clone of the course samples repository on your home directory.
 +
 [source,subs="verbatim,quotes"]
 --
 $ *cd*
 $ *ls rhde-rhem-samples*
-[ GRAB OUTPUT ]
+LICENSE  README.md  antora.yml  enroll  modules  webapp
+--
+
+.. Verify that your _development machine_ is registered to Red Hat, so it can access package repositories of any RHEL version.
++
+[source,subs="verbatim,quotes"]
+--
+$ *sudo subscription-manager status*
++-------------------------------------------+
+   System Status Details
++-------------------------------------------+
+Overall Status: Registered
+--
+
+.. Other preparation tasks performed during the xref:ch1-intro:s3-classroom-lab.adoc[first lab] of this course are not required yet, because most of this lab happens on the _server machine_, but they will be necessary for the remaining labs.
+
+2. Install the Edge Manager services on your _server machine_.
+
+.. Make sure your current shell is on the right machine.
++
+[source,subs="verbatim,quotes"]
+--
+$ *hostname*
+servera
+--
+
+.. Install the container tools on your _server machine_ because the Edge Manager packages just configure Systemd to run the Edge Manager services as quadlets, that is, as Podman containers.
++
+[source,subs="verbatim,quotes"]
+--
+$ *sudo dnf install podman skopeo*
+...
+Complete!
+--
++
+////
+
+.. Restore the default configuration for RHEL subscription services and register your _server machine_ with the Red Hat subscription manager and enable the Red Hat Edge Manager repository.
+[ not registering, trying to use offline packages from scp ]
++
+[source,subs="verbatim,quotes"]
+--
+$ *sudo cp /etc/rhsm/rhsm.conf.bak /etc/rhsm/rhsm.conf*
+$ *sudo subscription-manager register*
+GRAB OUTPUT
+$ *sudo subscription-manager repos --enable edge-manager-1.0-for-rhel-9-x86_64-rpms*
+GRAB OUTPUT
+--
++
+NOTE: The product package channel was not available yet, at the time this was written, but it was tested using packaged downloaded manually from Red Hat product engineering.
+
+.. Log in to the Red Hat registry using your customer portal account.
+[only for product artifacts]
+You need this because the Edge Manager RPM packages need to download their container images.
++
+[source,subs="verbatim,quotes"]
+--
+$ *sudo podman login registry.redhat.io*
+Login succeed!
+--
+
+////
+
+.. Enable the Flight Control repository from EPEL.
++
+[source,subs="verbatim,quotes"]
+--
+$ *sudo dnf config-manager --add-repo https://rpm.flightctl.io/flightctl-epel.repo*
+Adding repo from: https://rpm.flightctl.io/flightctl-epel.repo
+--
++
+NOTE: There is no need to register `servera` because the Flight Control services package contains no dependencies other than a container engine (Podman) and the classroom environment contains a mirror of the RHEL 10 packages, which the `sererva` machine is preconfigured to use.
+
+.. Install the Edge Manager services.
++
+[source,subs="verbatim,quotes"]
+--
+$ *sudo dnf install -y flightctl-services-1.0.0*
+...
+Complete!
+--
++
+NOTE: If you want to try the current latest release from the upstream project, remove the version component `-1.0.0` from the package `flightctl-services` in the command above.
++
+////
+
+.. Edit the Edge Manager configuration in `/etc/flightctl/service-config.yaml` to use the fully qualified domain (FQDN) of your _server machine_.
++
+This step shouldn't be needed, so I'm trying skipping it.
++
+[source,subs="verbatim,quotes"]
+--
+global:
+  baseDomain: *servera.lab.example.com*
+  auth:
 ...
 --
+
+.. In my rc1/2 testing, I used the IP address
++
+[source,subs="verbatim,quotes"]
+--
+global:
+  baseDomain: *172.25.250.10*
+  auth:
+...
+--
+
+.. I also had to provide an explicit URL, using the IP address, for the OIDC service
++
+[source,subs="verbatim,quotes"]
+--
+...
+    pamOidcIssuer:
+      enabled: true
+      # OIDC issuer URL - must include /api/v1/auth path. Leave empty to auto-configure as https://${global.baseDomain}:8444/api/v1/auth
+      issuer: *https://172.25.250.10:8444/api/v1/auth*
+      clientId: flightctl-client
+...
+--
+////
+
+.. Start the Edge Manager services.
++
+[source,subs="verbatim,quotes"]
+--
+$ *sudo systemctl enable --now flightctl.target*
+Created symlink '/etc/systemd/system/multi-user.target.wants/flightctl.target' → '/usr/lib/systemd/system/flightctl.target'.
+--
+
+.. Verify that the Edge Manager services are up and running.
++
+Be patient, it may take a while until all container images required by Edge Manager are downloaded from the internet and it initializes its database and cache services.
+When it is all done, it is expected that some services will display `exited` as their substatus.
++
+[source,subs="verbatim,quotes"]
+--
+$ **sudo systemctl list-units 'flightctl*' --all**
+  UNIT                                 LOAD   ACTIVE SUB     DESCRIPTION                                             
+  flightctl-alert-exporter.service     loaded active running Flight Control Alert Exporter service
+  flightctl-alertmanager-proxy.service loaded active running Flight Control Alertmanager Proxy service
+  flightctl-alertmanager.service       loaded active running Flight Control Alertmanager service
+  flightctl-api-init.service           loaded active exited  Flight Control API Initialization
+  flightctl-api.service                loaded active running Flight Control API server
+  flightctl-certs-init.service         loaded active exited  Flight Control Certificates Initialization
+  flightctl-cli-artifacts-init.service loaded active exited  Flight Control CLI Artifacts Certificates Initialization
+  flightctl-cli-artifacts.service      loaded active running Flight Control CLI Artifacts service
+  flightctl-db-migrate.service         loaded active exited  Flight Control Database Migration service
+  flightctl-db-users-init.service      loaded active exited  Flight Control Database Users Initialization
+  flightctl-db-wait.service            loaded active exited  Flight Control Database Wait
+  flightctl-db.service                 loaded active running PostgreSQL Database for Flightctl
+  flightctl-kv.service                 loaded active running Flight Control Key Value service
+  flightctl-network.service            loaded active exited  flightctl-network.service
+  flightctl-pam-issuer.service         loaded active running Flight Control PAM OIDC Issuer server
+  flightctl-periodic.service           loaded active running Flight Control Periodic service
+  flightctl-ui-init.service            loaded active exited  Flight Control UI Initialization
+  flightctl-ui.service                 loaded active running Flight Control UI
+  flightctl-worker.service             loaded active running Flight Control Worker service                           
+  flightctl.target                     loaded active active  Flight Control Services Group
+
+Legend: LOAD   → Reflects whether the unit definition was properly loaded.
+        ACTIVE → The high-level unit activation state, i.e. generalization of SUB.
+        SUB    → The low-level unit activation state, values depend on unit type.
+
+20 loaded units listed.
+To show all installed unit files use 'systemctl list-unit-files'.
+--
++
+////
+
+Interesting, the upstream 1.0.0 contains fewer services than the downstream 1.0.0 GA
+Or maybe because I installed all off-line packages, I might have installed optional components from GA?
+
+Oh crap, failed and missing units using the GA packages :-(
+
+[student@servera ~]$ systemctl list-units 'flightctl*' --all
+  UNIT                                 LOAD      ACTIVE     SUB          DESCRIPTION                                             
+● flightctl-alert-exporter.service     loaded    activating auto-restart Flight Control Alert Exporter service
+● flightctl-alertmanager-proxy.service loaded    activating auto-restart Flight Control Alertmanager Proxy service
+● flightctl-alertmanager.service       loaded    activating auto-restart Flight Control Alertmanager service
+  flightctl-api-init.service           loaded    active     exited       Flight Control API Initialization
+● flightctl-api.service                loaded    activating auto-restart Flight Control API server
+  flightctl-certs-init.service         loaded    active     exited       Flight Control Certificates Initialization
+  flightctl-cli-artifacts-init.service loaded    active     exited       Flight Control CLI Artifacts Certificates Initialization
+● flightctl-cli-artifacts.service      loaded    activating auto-restart Flight Control CLI Artifacts service
+● flightctl-db-migrate.service         loaded    activating auto-restart Flight Control Database Migration service
+● flightctl-db-users-init.service      loaded    failed     failed       Flight Control Database Users Initialization
+● flightctl-db-wait.service            loaded    failed     failed       Flight Control Database Wait
+● flightctl-db.service                 loaded    activating auto-restart Flight Control Database service
+  flightctl-grafana.service            loaded    inactive   dead         Flight Control Grafana Dashboard
+● flightctl-kv.service                 loaded    activating auto-restart Flight Control Key Value service
+  flightctl-network.service            loaded    active     exited       flightctl-network.service
+● flightctl-pam-issuer.service         loaded    activating auto-restart Flight Control PAM OIDC Issuer server
+● flightctl-periodic.service           loaded    activating auto-restart Flight Control Periodic service
+  flightctl-prometheus.service         loaded    inactive   dead         Flight Control Prometheus Metrics Server
+  flightctl-telemetry-gateway.service  loaded    inactive   dead         Flight Control Telemetry Gateway service
+  flightctl-ui-init.service            loaded    active     exited       Flight Control UI Initialization
+● flightctl-ui.service                 loaded    activating auto-restart Flight Control UI
+● flightctl-userinfo-proxy.service     not-found inactive   dead         flightctl-userinfo-proxy.service
+● flightctl-worker.service             loaded    activating auto-restart Flight Control Worker service                           
+  flightctl-observability.target       loaded    inactive   dead         Flight Control Full Observability Stack target
+  flightctl-telemetry-gateway.target   loaded    inactive   dead         Flight Control Telemetry Gateway target
+  flightctl.target                     loaded    active     active       Flight Control Services Group
+
+Legend: LOAD   → Reflects whether the unit definition was properly loaded.
+        ACTIVE → The high-level unit activation state, i.e. generalization of SUB.
+        SUB    → The low-level unit activation state, values depend on unit type.
+
+26 loaded units listed.
+To show all installed unit files use 'systemctl list-unit-files'.
+
+And no running containers at all
+[student@servera ~]$ sudo podman ps
+CONTAINER ID  IMAGE       COMMAND     CREATED     STATUS      PORTS       NAMES
+[student@servera ~]$ sudo podman ps -a
+CONTAINER ID  IMAGE       COMMAND     CREATED     STATUS      PORTS       NAMES
+[student@servera ~]$
+
+All services are "activating" and on "auto-restart"... maybe it's just taking time to load container imges?
+
+From stage docs, it seems I need a sudo podman login registry.redhat.io BEFORE starting the services.
+Let's see if it auto-recovers after login... looks promising, got some images and containers after a few moments.
+
+After minutes, have a lot of "running" but not yet everything
+
+[student@servera ~]$ systemctl list-units 'flightctl*' --all
+  UNIT                                 LOAD      ACTIVE     SUB          DESCRIPTION                                             
+  flightctl-alert-exporter.service     loaded    active     running      Flight Control Alert Exporter service
+  flightctl-alertmanager-proxy.service loaded    active     running      Flight Control Alertmanager Proxy service
+  flightctl-alertmanager.service       loaded    active     running      Flight Control Alertmanager service
+  flightctl-api-init.service           loaded    active     exited       Flight Control API Initialization
+● flightctl-api.service                loaded    activating auto-restart Flight Control API server
+  flightctl-certs-init.service         loaded    active     exited       Flight Control Certificates Initialization
+  flightctl-cli-artifacts-init.service loaded    active     exited       Flight Control CLI Artifacts Certificates Initialization
+  flightctl-cli-artifacts.service      loaded    active     running      Flight Control CLI Artifacts service
+  flightctl-db-migrate.service         loaded    active     exited       Flight Control Database Migration service
+  flightctl-db-users-init.service      loaded    active     exited       Flight Control Database Users Initialization
+  flightctl-db-wait.service            loaded    active     exited       Flight Control Database Wait
+  flightctl-db.service                 loaded    active     running      Flight Control Database service
+  flightctl-grafana.service            loaded    inactive   dead         Flight Control Grafana Dashboard
+● flightctl-kv.service                 loaded    activating auto-restart Flight Control Key Value service
+  flightctl-network.service            loaded    active     exited       flightctl-network.service
+  flightctl-pam-issuer.service         loaded    active     running      Flight Control PAM OIDC Issuer server
+  flightctl-periodic.service           loaded    active     running      Flight Control Periodic service
+  flightctl-prometheus.service         loaded    inactive   dead         Flight Control Prometheus Metrics Server
+  flightctl-telemetry-gateway.service  loaded    inactive   dead         Flight Control Telemetry Gateway service
+  flightctl-ui-init.service            loaded    active     exited       Flight Control UI Initialization
+● flightctl-ui.service                 loaded    activating auto-restart Flight Control UI
+● flightctl-userinfo-proxy.service     not-found inactive   dead         flightctl-userinfo-proxy.service
+● flightctl-worker.service             loaded    activating auto-restart Flight Control Worker service                           
+  flightctl-observability.target       loaded    inactive   dead         Flight Control Full Observability Stack target
+  flightctl-telemetry-gateway.target   loaded    inactive   dead         Flight Control Telemetry Gateway target
+  flightctl.target                     loaded    active     active       Flight Control Services Group
+
+Legend: LOAD   → Reflects whether the unit definition was properly loaded.
+        ACTIVE → The high-level unit activation state, i.e. generalization of SUB.
+        SUB    → The low-level unit activation state, values depend on unit type.
+
+26 loaded units listed.
+To show all installed unit files use 'systemctl list-unit-files'.
+
+Looks like you need patience to get an api-service running, and even more to get the kv and ui.
+Or was it because I started without a registry login?
+
+Oops... api back to activating... after lunch, still have "activating"
+api is in a loop trying to connect to redis (kv?)
+kv fails to download its container image
+Jan 06 19:49:30 servera flightctl-kv[80024]: Pulling image //registry.redhat.io/rhel9/redis-7:9.6 inside systemd: setting pull timeout to 5m0s
+Jan 06 19:49:31 servera flightctl-kv[80024]: Error: unable to copy from source docker://registry.redhat.io/rhel9/redis-7:9.6: copying system image from manifest list: Source image rejected: None of the signatures were accepted, reasons: missing dev.sigstore.cosign/bundle annotation; missing dev.sigstore.cosign/bundle annotation; Signature for identity "registry.redhat.io/rhel9/redis-7:1" is not accepted; Signature for identity "registry.redhat.io/rhel9/redis-7:1-1762344503" is not accepted
+
+Similar error for ui
+Jan 06 19:50:58 servera flightctl-ui[80664]: Pulling image //registry.redhat.io/rhem/flightctl-ui-rhel9:1.0.0 inside systemd: setting pull timeout to 5m0s
+Jan 06 19:50:59 servera flightctl-ui[80664]: Error: unable to copy from source docker://registry.redhat.io/rhem/flightctl-ui-rhel9:1.0.0: copying system image from manifest list: Source image rejected: None of the signatures were accepted, reasons: missing dev.sigstore.cosign/bundle annotation; missing dev.sigstore.cosign/bundle annotation
+Jan 06 19:50:59 servera podman[80664]: 2026-01-06 19:50:59.396191482 +0000 UTC m=+1.135604067 image pull-error  registry.redhat.io/rhem/flightctl-ui-rhel9:1.0.0 unable to copy from source docker://registry.redhat.io/rhem/flightctl-ui-rhel9:1.0.0: copying system image from manifest list: Source image rejected: None of the signatures were accepted, reasons: missing dev.sigstore.cosign/bundle annotation; missing dev.sigstore.cosign/bundle annotation
+
+Will try again from scratch, to see if doing podman login sooner would fix anything.
+Well, it looked much faster... but got the same errors with the kv and ui services. :-(
+Maybe I need something which was not on RHEL 10.0 at GA?
+Attempting a complete "dnf update" (more than 700 packages), I hope I don't get the kernel/boot update issues I had with HOL014
+/etc/redhat-release says I'm at 10.1 let's see if it survives reboot.
+It survived, but after a new podman login got the same signature errors.
+So recreating the classroom to try the upstream 1.0.0
+
+Tested on a RHEL 9.7 VM (installed as 9.6 then updated to 9.7) and Edge Manager packages just work. Too bad it's not an environment I can easily add virtual edge devices. And even worse it's not something I can easily replicate on ROLE: I'd have to build a new custom classroom (a new HOLxxx) which adds days/weeks to my schedule. :-(
+////
+
+.. If some of services do not start, you can check their status and log messages, for example:
++
+[source,subs="verbatim,quotes"]
+--
+$ *sudo systemctl status flightctl-api*
+[sudo] password for student: 
+● flightctl-api.service - Flight Control API server
+     Loaded: loaded (/usr/share/containers/systemd/flightctl-api.container; generated)
+...
+$ *sudo journalctl -u flightctl-api*
+Dec 15 13:45:24 servera systemd[1]: Starting flightctl-api.service - Flight Control API server...
+Dec 15 13:45:26 servera flightctl-api[2032]: Trying to pull quay.io/flightctl/flightctl-api:1.0.0...
+..
+--
+
+.. Verify that the Edge Manager containers are up and running.
++
+[source,subs="verbatim,quotes"]
+--
+$ *sudo podman ps*
+CONTAINER ID  IMAGE                                                 COMMAND               CREATED        STATUS        PORTS                                           NAMES
+5e4f160e9960  docker.io/library/redis:7.4.1                         /bin/sh -c redis-...  3 minutes ago  Up 3 minutes  6379/tcp                                        flightctl-kv
+3af809caa1ce  quay.io/sclorg/postgresql-16-c9s:20250214             run-postgresql        3 minutes ago  Up 3 minutes  5432/tcp                                        flightctl-db
+fbb088c20e9e  quay.io/flightctl/flightctl-pam-issuer:1.0.0          ./flightctl-pam-i...  3 minutes ago  Up 3 minutes  0.0.0.0:8444->8444/tcp                          flightctl-pam-issuer
+538587d0fd89  quay.io/flightctl/flightctl-cli-artifacts:1.0.0                             3 minutes ago  Up 3 minutes  0.0.0.0:8090->8090/tcp                          flightctl-cli-artifacts
+416eae4717da  quay.io/prometheus/alertmanager:v0.28.1               --config.file=/us...  3 minutes ago  Up 3 minutes  9093/tcp                                        flightctl-alertmanager
+4f8004841ec7  quay.io/flightctl/flightctl-api:1.0.0                 /bin/sh -c ./flig...  3 minutes ago  Up 3 minutes  0.0.0.0:3443->3443/tcp, 0.0.0.0:7443->7443/tcp  flightctl-api
+48d43e7b0fa5  quay.io/flightctl/flightctl-worker:1.0.0              /bin/sh -c ./flig...  3 minutes ago  Up 3 minutes                                                  flightctl-worker
+1a11c7715407  quay.io/flightctl/flightctl-alertmanager-proxy:1.0.0  /bin/sh -c ./flig...  3 minutes ago  Up 3 minutes  0.0.0.0:8443->8443/tcp                          flightctl-alertmanager-proxy
+3ace447e222b  quay.io/flightctl/flightctl-alert-exporter:1.0.0      /bin/sh -c ./flig...  3 minutes ago  Up 3 minutes                                                  flightctl-alert-exporter
+37f1b68a7e79  quay.io/flightctl/flightctl-ui:1.0.0                  /bin/sh -c ./flig...  3 minutes ago  Up 3 minutes  0.0.0.0:443->8080/tcp                           flightctl-ui
+f837128ddba2  quay.io/flightctl/flightctl-periodic:1.0.0            /bin/sh -c ./flig...  3 minutes ago  Up 3 minutes                                                  flightctl-periodic
+--
++
+////
+CONTAINER ID  IMAGE                                                     COMMAND               CREATED        STATUS        PORTS                                           NAMES
+88fee8adbc8a  docker.io/library/redis:7.4.1                             /bin/sh -c redis-...  2 minutes ago  Up 2 minutes  6379/tcp                                        flightctl-kv
+dcec17e5ce36  quay.io/sclorg/postgresql-16-c9s:20250214                 run-postgresql        2 minutes ago  Up 2 minutes  5432/tcp                                        flightctl-db
+ae375cbd787d  quay.io/prometheus/alertmanager:v0.28.1                   --config.file=/us...  2 minutes ago  Up 2 minutes  9093/tcp                                        flightctl-alertmanager
+6735c35b4c94  quay.io/flightctl/flightctl-alert-exporter:1.0.0-rc2      /bin/sh -c ./flig...  2 minutes ago  Up 2 minutes                                                  flightctl-alert-exporter
+4adbea0863c4  quay.io/flightctl/flightctl-pam-issuer:1.0.0-rc2          ./flightctl-pam-i...  2 minutes ago  Up 2 minutes  0.0.0.0:8444->8444/tcp                          flightctl-pam-issuer
+f7bc10df3b84  quay.io/flightctl/flightctl-worker:1.0.0-rc2              /bin/sh -c ./flig...  2 minutes ago  Up 2 minutes                                                  flightctl-worker
+ef129d3b0ba0  quay.io/flightctl/flightctl-alertmanager-proxy:1.0.0-rc2  /bin/sh -c ./flig...  2 minutes ago  Up 2 minutes  0.0.0.0:8443->8443/tcp                          flightctl-alertmanager-proxy
+25603c3e2bd3  quay.io/flightctl/flightctl-api:1.0.0-rc2                 /bin/sh -c ./flig...  2 minutes ago  Up 2 minutes  0.0.0.0:3443->3443/tcp, 0.0.0.0:7443->7443/tcp  flightctl-api
+b4f26b0f4fa4  quay.io/flightctl/flightctl-ui:1.0.0-rc2                  /bin/sh -c ./flig...  2 minutes ago  Up 2 minutes  0.0.0.0:443->8080/tcp                           flightctl-ui
+f204d574cd11  quay.io/flightctl/flightctl-periodic:1.0.0-rc2            /bin/sh -c ./flig...  2 minutes ago  Up 2 minutes                                                  flightctl-periodic
+aac92db2a9a6  quay.io/flightctl/flightctl-cli-artifacts:1.0.0-rc2                             2 minutes ago  Up 2 minutes  0.0.0.0:8090->8090/tcp                          flightctl-cli-artifacts
+--
+////
+
+.. You can also get logs directly from the containers, or enter them with `podman exec` for deeper troubleshooting.
++
+[source,subs="verbatim,quotes"]
+--
+$ *sudo podman logs flightctl-api*
+time="2025-12-15T13:45:34Z" level=info msg="Starting API service" func=main.main file="/app/cmd/flightctl-api/main.go:40"
+..
+--
+
+3. For simplicity, configure local users for the Edge Manager services, on the PAM issuer container.
+
+.. Create groups which correspond to the `admin`, `operator`, and `viewer` roles.
++
+[source,subs="verbatim,quotes"]
+--
+$ *sudo podman exec -i flightctl-pam-issuer groupadd flightctl-admin*
+$ *sudo podman exec -i flightctl-pam-issuer groupadd flightctl-operator*
+$ *sudo podman exec -i flightctl-pam-issuer groupadd flightctl-viewer*
+--
+
+.. Create a user named `student` and grant it the `operator` role.
++
+[source,subs="verbatim,quotes"]
+--
+$ *sudo podman exec flightctl-pam-issuer adduser student*
+$ *sudo podman exec -i flightctl-pam-issuer sh -c 'echo "student:student" | chpasswd'*
+$ *sudo podman exec -i flightctl-pam-issuer usermod -aG flightctl-operator student*
+--
+
+.. Create a user named `admin` and grant it the `admin` role.
++
+[source,subs="verbatim,quotes"]
+--
+$ *sudo podman exec flightctl-pam-issuer adduser admin*
+$ *sudo podman exec -i flightctl-pam-issuer sh -c 'echo "admin:redhat" | chpasswd'*
+$ *sudo podman exec -i flightctl-pam-issuer usermod -aG flightctl-admin admin*
+--
+
+.. Verify you have the required users and groups on the PAM issuer container.
++
+[source,subs="verbatim,quotes"]
+--
+$ *sudo podman exec -i flightctl-pam-issuer groups student*
+student : student flightctl-operator
+$ *sudo podman exec -i flightctl-pam-issuer groups admin*
+admin : admin flightctl-admin
+--
+
+.. If you would rather be more thorough verifying users and groups on the PAM issue container, use the following commands.
++
+[source,subs="verbatim,quotes"]
+--
+$ *sudo podman exec -i flightctl-pam-issuer getent passwd student*
+student:x:1000:1003::/home/student:/bin/bash
+$ *sudo podman exec -i flightctl-pam-issuer getent passwd admin*
+admin:x:1001:1004::/home/admin:/bin/bash
+$ *sudo podman exec -i flightctl-pam-issuer getent group flightctl-admin*
+flightctl-admin:x:1000:admin
+$ *sudo podman exec -i flightctl-pam-issuer getent group flightctl-operator*
+flightctl-operator:x:1001:student
+--
+
+4. Install the Edge Manager CLI on your _development machine_
+
+.. Make sure your current shell is on the right machine.
++
+[source,subs="verbatim,quotes"]
+--
+$ *hostname*
+workstation
+--
+.. Enable the flight repository from EPEL and install its CLI package.
++
+[source,subs="verbatim,quotes"]
+--
+$ *sudo dnf config-manager --add-repo https://rpm.flightctl.io/flightctl-epel.repo*
+Adding repo from: https://rpm.flightctl.io/flightctl-epel.repo
+$ *sudo dnf install flightctl-cli*
+...
+Complete!
+--
+
+.. Verify that the `flightctl` command is in your command PATH.
++
+[source,subs="verbatim,quotes"]
+--
+$ *flightctl version*
+Client Version: v1.0.0
+Server Version: Could not read server version
+You must log in to view the server version. Please use the 'login' command to authenticate before proceeding
+--
+
+.. Copy the self-signed certificate of the Edge Manager server and add it to the system's trusted CA set.
++
+[source,subs="verbatim,quotes"]
+--
+$ *scp servera:/etc/flightctl/pki/ca-bundle.crt ~*
+ca-bundle.crt             100% 1222   128.6KB/s   00:00
+$ *sudo cp ca-bundle.crt /etc/pki/ca-trust/source/anchors/*
+$ *sudo update-ca-trust extract*
+--
+
+.. Log in on the Edge Manager server.
++
+[source,subs="verbatim,quotes"]
+--
+$ *flightctl login -u admin -p redhat https://servera.lab.example.com:3443*
+Auto-selected organization: 00000000-0000-0000-0000-000000000000 Default
+Login successful.
+--
+
+.. Verify that the CLI can now get the server's version, and that there are no managed devices yet.
++
+[source,subs="verbatim,quotes"]
+--
+$ *flightctl version*
+Client Version: v1.0.0
+Server Version: v1.0.0
+$ *flightctl get device*
+NAME    ALIAS   OWNER   SYSTEM  UPDATED APPLICATIONS
+--
+
+5. Access the Edge Manager web UI.
+
+.. Open a web browser and visit `\https://servera.lab.example.com`.
+You should get a login screen without any web browser warnings about certificate issues.
+
+.. Log in as the `student` user, with the password `student`. 
++
+NOTE: If you are iddle for too long on the login page, you may get a "CSRF error".
+If it happens, just try again.
+
+.. You should get the Edge Manager menu:Overview[] page, with three gray circles because there are no managed devices on which to report a status summary.
+
+.. On the left panel, click menu:Devices[] to verify that there are indeed no managed devices.
+
+== What's next
+
+In the next activity, you will create a bootc container image containing the Edge Manager client and use it to provision and enroll a test VM which stands in for a managed edge device.

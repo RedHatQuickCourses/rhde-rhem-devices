@@ -2,6 +2,8 @@
 
 Goal::
 
-Understand the purpose of Red Hat Edge Manager (RHEM) and how it relates to other infrastructure management tools from Red Hat.
+Understand the purpose of Red Hat Edge Manager and how it relates to other infrastructure management tools from Red Hat.
 
-WARNING: Not started yet
+This provides an introduction to edge computing and the Red Hat edge portfolio.
+It covers what is Red Hat Edge Manager, its upstream project Flight Control, and how Edge Manager relates to Red Hat products, such as Red Hat Device Edge and Red Hat Enterprise Linux (RHEL).
+It also mentions the possibility of using Edge Manager integrated with other Red Hat management products, such as Red Hat Ansible Automation Platform and Red Hat Advanced Cluster Management.

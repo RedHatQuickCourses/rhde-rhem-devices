@@ -1,0 +1,192 @@
+:time_estimate: 14
+
+= Manage Edge Devices with Red Hat Edge Manager
+
+_Estimated reading time: *{time_estimate} minutes*._
+
+Objective::
+
+Configure and update managed devices using Edge Manager.
+
+As we already learned, Red Hat Edge Manager manages three aspects of a device configuration:
+
+* Its operating system image, as a bootc container image.
+
+* Operating system and application configuration files, in the `/etc` directory and other locations.
+
+* Workloads running as containerized applications.
+
+In this course, we focus on the first two, and we cover managing workloads or applications with Edge Manager in the next course.
+
+Before presenting Edge Manager device templates, let's go over when it is appropriate to use Edge Manager to configure a device.
+
+== System configuration at day-0 with image mode
+
+With image mode for RHEL, it is expected that most configurations are set by a bootc container image, which would be configurations set at day-0, before provisioning a system, during image build time.
+These configurations will be the same for all devices using the image.
+
+Having configurations hardcoded in a system image, so they are applied when installing the operating system, instead of after installing the operating system, ensures devices have a known initial state and reduces the amount of configurations to watch for drift.
+
+While it is possible to override configurations set by a bootc container image, because the `/etc` and `/var` directories are read-write, these changes should be kept to a minimum and done only intentionally.
+Modern Linux applications and services are expected to take their primary configurations from the `/usr/lib` directory, which is read-only on image mode systems, and use drop directories such as `/etc/something.d` for configuration snippets that add to or override their primary configurations.
+
+There are always some configuration settings that must vary between different devices, or between different edge sites, and writable configuation files in the `/etc` directory would be reserved for such exceptions.
+
+There is also the matter of secrets management. It is considered a bad security practice to embed authentication credentials such as passwords, tokens, and certificates in system images.
+For example, there should not exist any predefined user, with a well-known password, that could be used to access production systems.
+This applies to edge devices as well as to data center servers.
+
+== System configuration at day-1 with kickstart and cloud-init
+
+Per-device and per-site configurations, as well as also secrets, can be applied to devices at day-1; (that is, at device provisioning time, also known as installation time), or at day-2; (that is, as a regular day-to-day management operation).
+
+Most operating system installation and provisioning methods offer some way of adding configuration files and running configuration scripts.
+The RHEL installer, called Anaconda, provides the *kickstart* feature, which can set all settings the installer would otherwise prompt for during an interactive installation, and also run arbitrary pre-installation and post-installation scripts.
+It is a common practice to embed kickstart files in custom RHEL installation media, or in network boot servers, for both package and image modes.
+
+Most hypervisors and cloud providers nowadays support the *cloud-init* configuration mechanism, which has similar capacities to kickstart, but with its own syntax.
+
+By using kickstart or cloud-init scripts, you can perform bootstrapping configurations such as setting a SSH key to access the newly provisioned machines.
+Having initial users and access credentials set this way makes them easier and safer to change at day-2, because they are not set by read-only files in the system image, and avoids the risk of accidentally reverting to whatever was set by the system image.
+But it also can be considered a risk for leak, when they are stored in installation media.
+
+Per-device and per-site configurations, if they are expected to be set only once, at provisioning time, and never (or rarely) changed on day-2, are good candidates for kickstart and cloud-init.
+
+== System configuration at day-2 with Edge Manager
+
+Anything that you are expected to change regularly, after provisioning a device, is a good candidate for traditional operating system management tools, such as Red Hat Ansible Automation Platform, and edge management tools, such as Edge Manager.
+
+Some organizations prefer to use day-2 tools to perform first-time configuration of new devices, that is, to perform day-1 configuration on those devices.
+Such organizations could provision devices using a very generic image, that is, to use day-1 only to set credentials for a management tool, and then let the management tool perform the remaining day-1 configurations.
+
+== Onboarding devices
+
+From the previous discussion, you know that Edge Manager adds to and potentially overrides configurations already set by a bootc container image and by a provisioning mechanism, such as kickstart, and also adds new configurations on day-2.
+
+It may not be intuitive that Edge Manager is not required to take over and control all configurations of a device.
+Edge Manager does not have to be the _only_ management tool you use to configure managed devices:
+You can still perform adhoc, manual configuration of settrings that are not managed by Edge Manager.
+And you can configure some of those settings using a different day-2 configuration tool, such as Ansible.
+
+Of course, having a device configured by multiple tools can be a challenge to manage, but you may find scenarios where it is easier, or more secure, to do so with a combination of tools, and use Edge Manager in a larger workflow.
+
+For example, by onboarding an edge device most organizations expect to more than just performing its first-time (day-1) configuration.
+If your devices run applications that require access to other devices, cloud resources, or corporate systems, they need access credentials to all that.
+Providing the required credentials securely is not a trivial task and there are specialized tools for secrets management, for example Hashicorp Vault.
+You could configure everything except secrets using Edge Manager, and let Vault configure secrets for the device.
+
+As another example, if your organization sets network access from devices using layer 2, you may need to configure networking gear as part of the device onboarding process, to set MAC addresses, IP addresses, and VLANs.
+
+If you must implement a more sophisticated onboarding workflow, you may need a tool capable of orchestrating Edge Manager together with other management tools.
+Red Hat Ansible Automation Platform is great for such tasks.
+
+== Drift detection and reconciliation
+
+Edge Manager can manage operating and application configuration files, but it does not need to manage all of them in any given device.
+If a file is not set by Edge Manager configurations in a device or fleet template, it can be set by any other means.
+
+You cannot use Edge Manager to forcibly lock down all configuration files in a device and prevent users or tools from performing unintended changes to those files.
+But, if a file is managed by Edge Manager, Edge Manager will detect changes to it (configuration drift) and revert the file to whatever contents are expected by Edge Manager.
+
+While it is not practical to add all possible configuration files to a device template, because such configurations would be huge and impractical to maintain (just check how many files exist in the `/etc` directory of any Linux system!), Edge Manager provides you with a reliable recovery path from unintended changes outside of its set of managed files: reinstall the device, as if it were a newly provisioned device, and let Edge Manager apply the expected configurations to it.
+This way, you can restore any device to a known good configuration state, considering all of day-0, day-1, and day-2.
+
+Now that you have some idea about what to configure and when to configure something in a device using Edge Manager, let's focus on the mechanics of Edge Manager device configurations.
+
+== Edge Manager device configuration types
+
+If a managed device is not a member of a fleet, its device API resource may contain a list of configuration items, a list of applications, and a reference to an operating system image.
+
+Each configuration item has a name, which is supposedly a descriptive name, and a type, which specifies the configuration provider responsible for retrieving the contents of the files in that configuration.
+
+With Edge Manager on RHEL, you would normally use the following configuration providers:
+
+inline::
+Configuration files are stored in the device API resource itself, using the ignition format.
+If these configuration files are text files, they are just YAML multiline string values.
+
+HTTP::
+Configuration files are retrieved from a web server or anything that can respond to HTTP requests, like an S3-compatible object storage or a REST API endpoint.
+This provider is commonly used to simplify integration between management tools, for example when Edge Manager runs integrated with Red Hat Advanced Cluster Manager, so the other management tool provides configuration files for devices managed by Edge Manager.
+
+Git::
+Configuration files are retrieved from a git repository.
+This enables Edge Manager to work as GitOps for the operating system.
+It also enables easy testing and troubleshooting of configuration files, because you do not need to extract and embed these files in a Edge Manager API resource: the configuration files are just regular files in a Git tree.
+
+Notice that a single device can contain multiple configuration items, using different providers, or even using the same provider.
+And each configuration item can contain multiple configuration files.
+This enables logical grouping of configuration files by purpose, and enables a degree of separation of concerns.
+
+For example, a Edge Manager administrator may opt for configuring some files as inline configurations, and keep control over them, while configuring other files from a Git repository, and delegate those files to non-Edge Manager administrators with access to that repository.
+
+Managed devices never connect directly to external configuration providers.
+For example, managed devices do not connect directly to Git servers, so they do not require access credentials to a Git repository.
+The Edge Manager server connects to configuration providers and grabs all required files, and a Edge Manager agent downloads all of them from its Edge Manager server.
+
+NOTE: In this course, we focus on the inline configuration provider, so we can learn the basics of Edge Manager.
+In the next course, we focus on the Git configuration provider; and use fleets to demonstrate an effective GitOps workflow.
+
+== Operating system image changes
+
+There is not a lot to say about managing operating system images with Edge Manager: a device API resource contains the name of a bootc container image.
+If that field changes, the Edge Manager agent performs a `bootc switch` operation and reboots the device.
+
+The new system image does not need to be related, in any way, to the previous system image.
+It could provide a different RHEL release, a different set of system services, and come from a different container registry.
+It does not matter. To Edge Manager and boot, it's just another system image.
+
+That enables you to implement effective repurposing workflows, switching a device to a different system image, with different configurations, and running different applications.
+
+During initial device enrollment, the operating system image field is left empty: Edge Manager does not record the image which the device was booted (or provisioned) with.
+The system image is considered not managed by Edge Manager, and changeable manually by using the `bootc` command on the device, until a Edge Manager user explicit sets the value of the operating system image in the device template.
+
+== Updating managed devices
+
+Updating a device with Edge Manager may not align what you think of as an update.
+Most IT professionals intuitively think about device updates as operating system updates, or patching.
+
+To Edge Manager, any change to a device template -- including a change of configurations or applications -- is an update.
+It does not need to be an update of the operating system, that is, it does not need to make a manage device switch to an updated operating system image.
+
+Edge Manager treats all of the device template as a unit, during a device reconciliation, so if you change all three aspects of a device template, at the same time, Edge Manager applies all changes to configurations, system image, and applications, at one.
+If any one of them fails, for whatever reason, the entire update operation, or reconciliation, failed and the device status is set to `Out-of-Date`.
+
+If you check the device status details, for example, by getting the full device resource in YAML format, you can get information about what the device failed to update, and why.
+For example, a device may fail to download a bootc container image because it lacks credentials to access a container image registry.
+
+Edge Manager has no concept of retrying an update.
+If there's a failure during device reconciliation, you must change the device template, thus forcing another update operation.
+Edge Manager assumes that updates should work all the time, otherwise there is an issue with the device template itself, which must be fixed.
+
+But how dowes Edge Manager prevent intermitent errors?
+The Edge Manager agent first downloads all artifacts it needs: bootc container images, configuration files, and application containers.
+Only after all of them are completely downloaded and verified, it starts applying them to the device.
+
+The agent may take time to download all artifacts, especially unreliable network connections, and the device status in Edge Manager states that the agent is still downloading artifacts.
+
+If an update fails because of a condition internal to the device, for example low disk space, this is also considered a device template issue: it should not force into devices more files than they can store.
+
+== Shell sessions on managed devices
+
+Edge Manager enables its users to get a shell on a managed device and run commands as the root user.
+It uses the network connection the agent establishes with the Edge Manager server, so a device does not need to have an addressable IP address, like you would need for SSH connections.
+
+You even could opt to not run an SSH daemon at all on managed devices and do all remote access using Edge Manager.
+
+The `flightctl console` command, and the menu:Terminal[] tab in the menu:Device details[] page of the web UI, are two ways of starting Edge Manager shell sessions.
+
+== Permissions and roles
+
+You have already learned that you must be a Edge Manager administrator to approve device enrollment requests, but you do not need such privileges to manage devices.
+
+Edge Manager recognizes three access roles: administrator, operator, and viewer.
+Users with either the administrator or the operator role can manage devices, that is, change their device templates and start shell sessions.
+Users with the viewer role, as expected, cannot make such changes.
+
+NOTE: This course does not covers the use of organizations, which enable multi-tenancy within a RHEL server.
+Edge Manager users might be assigned different roles in different organizations, and this is set by group membership using the PAM issuer.
+
+== What's next
+
+The next two activities focus first on device configuration and later on operating system updates with Edge Manager, and the following chapter teaches how to exclude a device from Edge Manager management.

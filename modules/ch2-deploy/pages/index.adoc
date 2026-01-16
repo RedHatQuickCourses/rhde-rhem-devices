@@ -2,6 +2,8 @@
 
 Goal::
 
-Deploy RHEM standalone on RHEL from RPM packages.
+Deploy Edge manager on RHEL from RPM packages.
 
-WARNING: Not started yet
+This chapter introduces the main Edge Manager components and how they run on RHEL as Podman Containers, using quadlets managed by the System Daemon (Systemd).
+It also presents the PAM issue component of Edge Manager, which enables use of local users instead of an external identity management system.
+Finally, this chapter introduces the two main interfaces of Edge Manager, a command-line interface (CLI) and a web user interface (web UI).

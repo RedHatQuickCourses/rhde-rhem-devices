@@ -1,0 +1,136 @@
+:time_estimate: 6
+
+= Enroll Edge Devices in Edge Manager
+
+_Estimated reading time: *{time_estimate} minutes*._
+
+Objective::
+
+Install the Edge Manager agent in managed devices, as part of their system images, and enroll managed devices in a Edge Manager server.
+
+Now that you have a running Edge Manager server, the next step is onboarding devices to Edge Manager management, so they become known to Edge Manager and start reconciling their state with a device or fleet template stored on Edge Manager.
+
+image::Device-onboarding.svg[title="Simplified device onboarding flow", width="80%", align="center"]
+
+Because all communication between managed devices and Edge Manager starts from devices, devices must begin their own enrollment process to become managed devices.
+
+The onboarding process usually consistis of two steps:
+
+* Enroll a device in Edge Manager.
+
+* Make the device a member of a fleet.
+
+Once a device is enrolled, it's state is set to `OutOfDate`, and it starts its own reconciliation process.
+If a device is not joined to a fleet, there would be no state to reconcile, but you could change the individual device template afterwards to give it a new system image, operating system configurations, and applications.
+
+Instead of managing an individual device, you could change the new managed device labels so it becomes a member of a fleet, and then it gets all its configurations from the fleet template.
+In fact, you can set managed device labels at enrollment time, and make it a member of a fleet from the start, performing the two onboarding steps at once.
+
+== Adding the Edge Manager agent to a system image
+
+Because Edge Manager assumes its managed devices run image mode for RHEL, you must include the Edge Manager agent, that is, the `flightctl-agent` RPM package, in all bootc container images that you intend to use with your edge devices.
+You cannot add the Edge Manager agent after provisioning, as you would do with package mode.
+
+The bootc image container image used for initial provisioning of a managed device does not need to be the intended, final system image.
+It could be a minimal image you use only for onboarding and enrollment, and later Edge Manager switches the device to a different system image.
+But all system images set by Edge Manager must also contain the Edge Manager agent.
+
+== Early binding versus late binding
+
+To start the onboarding process, a device needs some data:
+
+* A configuration file with information to locate a Edge Manager server.
+
+* A TLS certificate to authenticate to the Edge Manager API.
+
+* An optional public CA certificate to validate the server certificate of the Edge Manager API endpoint, if the server certificate was not signed by a corporate CA preconfigured as a trusted CA in the system image.
+
+NOTE: Remember that all communication between Edge Manager agents and the Edge Manager API is secured by mTLS, so both sites must present a TLS certificate and validate the certificate from the other side.
+
+That data could be embedded into the system image, which we call _early binding_.
+Early binding produces a system image that is hardcoded to enroll with a fixed Edge Manager server.
+
+Alternatively, that data could be provided at device provisioning time, using RHEL kickstart, cloud-init, Red Hat Ansible Automation Platform, or other means, which we call _late binding_.
+Late binding produces a generic system image that could be used with different Edge Manager servers.
+
+image::early-vs-late-binding.svg[title="Early binding vs. late binding with a Edge Manager server"]
+
+Late binding is especially useful for organizations that run multiple Edge Manager servers in edge locations themselves or in regional data centers.
+
+== Approving device enrollment requests
+
+Once a device starts its Edge Manager agent, it sends an enrollment request to the configured Edge Manager server.
+Devices keep polling the state of their enrollment requests periodically, waiting for approval.
+
+Those requests become `enrollmentrequest` resources in the Edge Manager API, which you visualize using either the Edge Manager CLI or its web UI and verify some device data, such as its MAC address, if you must distinguish between multiple requests, from different devices.
+
+Only after a Edge Manager administrator approves the enrollment request that a device becomes a managed device, with a corresponding `device` API resource.
+At that time, the Edge Manager administrator can optionally set device labels, which make the device join a fleet.
+
+The Edge Manager web UI lists both `enrollmentrequest` and `device` resources on its menu:Devices[] page. 
+There is a slider button that switches between displaying each type of resource.
+
+Edge Manager users without administrator rights can view and list enrollment requests, but they cannot approve them.
+
+== Device unique IDs and managed device authentication
+
+The enrollment credentials (a TLS certificate) can be shared between multiple devices because it is used only for enrollment.
+
+When a Edge Manager agent starts for the first time, it generates a unique identity for the device, as an UUID, which it sends to its Edge Manager server as part of its enrollment request.
+
+If the enrollment request is approved, the Edge Manager server generates a new TLS certificate for the device.
+The device gets this TLS certificate as a response to its enrollment request response, and uses that certificate for any subsequent communication with its Edge Manager server.
+
+Edge Manager uses the same UUID as the name of both an `enrollmentrequest` and its corresponding `device` resource, if the enrollment request is approved.
+That way, it seems that approval turns an enrollment request resource into a managed device resource.
+
+Because an UUID is not user-friendly, the Edge Manager web UI uses the value of the `alias` label as a display name for a device.
+But this label is not an actual name.
+Multiple devices, including devices on the same fleet and organization, could have the same value for their `alias` labels.
+
+== Syntax of the Edge Manager CLI
+
+The Edge Manager CLI is a thin wrapper over the Edge Manager API.
+Because the Edge Manager API is inspired by the Kubernetes API, you may find that the `flightctl` command is similar to the `kubectl` command from Kubernetes: you can use verbs such as `get`, `edit`, and `apply` with different resource types.
+
+For example, you can list all enrollment requests using the command:
+
+[source,subs="verbatim,quotes"]
+--
+$ *flightctl get enrollmentrequest*
+--
+
+If a resource type can contain labels (most of them do), you can filter the list based on resource labels keys and their values, for example:
+
+[source,subs="verbatim,quotes"]
+--
+$ *flightctl get device -l type=pos*
+--
+
+You identify individual resources by their names, for example:
+
+[source,subs="verbatim,quotes,attributes"]
+--
+$ *flightctl get device {edge-1-uuid-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}*
+--
+
+The Edge Manager CLI provides online help the expected way, for example to get a list of its verbs or commands:
+
+[source,subs="verbatim,quotes"]
+--
+$ *flightctl --help*
+--
+
+And to view the online help for a given command:
+
+[source,subs="verbatim,quotes,attributes"]
+--
+$ *flightctl approve --help*
+--
+
+This course does not intend to provide a complete reference to the Edge Manager CLI or its web UI.
+Please check the Edge Manager product documentation or the upstream Flight Control documentation for that level of detail.
+
+== What's Next
+
+The next activity creates some VMs, to act as edge devices, and onboards them in Edge Manager using late binding.

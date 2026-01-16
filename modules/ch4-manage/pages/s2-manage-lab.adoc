@@ -1,0 +1,376 @@
+:time_estimate: 5
+
+= Lab: Configure Edge Devices
+
+_Estimated reading time: *{time_estimate} minutes*._
+
+Objective::
+
+Configure managed devices by using inline configuration in their device specifications.
+
+== Before you begin
+
+You need a customer portal account with access to a Red Hat Enterprise Linux (RHEL) subscription.
+It could be a https://developers.redhat.com/products/rhel/download[Red Hat Developer program] free subscription.
+
+You need a _development machine_ running RHEL, which contains two test VMs already enrolled into your Edge Manager server by a xref:ch3-enroll:s2-enroll-lab.adoc[previous lab].
+
+You also need a _server machine_ running RHEL, to which you also have unrestricted sudo access, which was already configured with Edge Manager.
+
+If you are using the course classroom, your _development machine_ is the `workstation` VM.
+Log in as the user `student` with password `student`.
+
+== Instructions
+
+At the end of the previous lab, you had two managed devices which were provisioned from the same installation disk.
+
+Right now, they have identical settings, among them a well-known SSH key, which is considered insecure because it's available to any field personnel whom possess an installation media.
+
+You will remediate this by configuring your managed devices with different SSH keys, provided as inline configurations in each device manifest.
+
+Then you will exercise Edge Manager's ability to detect and correct configuration drift, by making manual changes to configuration files, and observing that Edge Manager restores the configurations set for each device.
+
+1. Verify that you have the outcomes of previous labs.
+If you do not, go back and complete them, because you need their outcomes to proceed with this lab.
+
+.. There is a clone of the course samples repository on your home directory.
++
+[source,subs="verbatim,quotes"]
+--
+$ *cd*
+$ *ls rhde-rhem-samples*
+LICENSE  README.md  antora.yml  enroll  modules  webapp
+--
++
+// No need to access RPM packages here
++
+// No need to access container images either
+
+.. There are two local test VMs, named `edge-1` and `edge-2`.
++
+[source,subs="verbatim,quotes"]
+--
+$ *virsh list --all*
+ Id   Name     State
+-------------------------
+ -    edge-1   shut off
+ -    edge-2   shut off
+--
+
+.. If your test VMs are not running, because you stopped your classroom environment since completing the previous lab, start them now.
++
+[source,subs="verbatim,quotes"]
+--
+$ *virsh start edge-1*
+Domain 'edge-1' started
+$ *virsh start edge-2*
+Domain 'edge-2' started
+--
+
+.. Enter the `test-enroll` directory, which contains the SSH key used to access your two test VMs.
++
+[source,subs="verbatim,quotes"]
+--
+$ *cd temp-enroll*
+$ *ls*
+Containerfile  bib-iso.sh  config.toml  config.yaml  edge-key  edge-key.pub  output  rhem-enroll.iso  virt-install.sh
+--
++
+// Do I really need this step here, or should I defer it to later?
+
+.. Log in on Edge Manager, as a non-administrator, and verify that there are two managed devices, which correspond to the two test VMs.
++
+[source,subs="verbatim,quotes,attributes"]
+--
+$ *flightctl login -u student -p student https://servera.lab.example.com:3443*
+Auto-selected organization: 00000000-0000-0000-0000-000000000000 Default
+Login successful.
+$ *flightctl get device -o wide*
+NAME                                                    ALIAS   OWNER   SYSTEM  UPDATED         APPLICATIONS    LABELS
+{edge-1-uuid-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}    edge-1  <none>  Online  UpToDate        NoApplications  rhel=9.6,type=noapps,alias=edge-1
+{edge-2-uuid-bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb}    edge-2  <none>  Unknown Unknown         Unknown         rhel=9.6,type=noapps,alias=edge-2
+--
++
+////
+It seems my test VMs are consitently offline, and don't connecto to Edge Manager, when I continue the next day.
+I found that my VMs had their system time on the previous day, maybe because I didn't shut then down?
+Using virsh start --force-boot may solve the issue.
+////
+
+.. Wait a few moments and repeat the latest command until both managed devices return as `OnLine` and `UpToDate`.
++
+[IMPORTANT]
+====
+If it seems that your test VMs are staying for too long in the `Unknown` state, access them using SSH and verify if their clocks are accurate by using the `date -u` command and comparing the output with the same command on your _development machine_.
+
+It has been observed that, when you power off your test VMs without shutting them down, libvirt saves their in-memory state to disk and restores it on the next restart, which causes them to not resynchronize their system clocks.
+The skewed clocks prevent the VMs from synching with Edge Manager.
+
+Simply rebooting those VMs, using the `shutdown -r now` command, seems to resolve that issue.
+
+Alternatively, you could use the `--force-boot` option with the `virsh start` command every time you restart your test VMs.
+====
+
+2. Configure the second test VM using the Edge Manager web UI.
+
+.. Open a web browser and visit `\https://servera.lab.example.com`
+
+.. Log in as the `student` user with the `student` password.
+Notice we are NOT using the `admin` user anymore, because you do NOT require full administrator privileges on Edge Manager to manage devices.
+
+.. On the left panel, click menu:Devices[] and click the icon with three vertical icons in the row of the `edge-2` device. 
+Then click menu:Edit device configurations[].
++
+NOTE: The same option is available from the menu:Actions[] button in the device details page.
+
+.. On the menu:General info[] tab of the menu:Edit device[] page, click menu:Next[].
+
+.. On the menu:Device template[] tab, click menu:Add configuration[] and complete the form as follows:
++
+--
+...  *Source name*: `ssh-key`
+
+... *Source type*: `Inline configuration`
+--
+
+.. When you select the source type, the page expands to show the menu:File 1[] heading with a couple additional fields.
+Leave the form as it is, do not click anywhere else, because you have to generate the content for the SSH key file.
+
+.. Now switch from the web browser to a terminal, but do NOT close your web browser, and run the following command to create a new SSH key pair, which is exclusive to the second device.
++
+[source,subs="verbatim,quotes"]
+--
+$ *ssh-keygen -N '' -f edge-2-key -C 'key for the edge-2 managed device'*
+Generating public/private rsa key pair.
+...
+--
+
+.. Display the public key file and copy its contents to the clipboard, so you can paste it on your web browser.
+Of course, your SSH key will have different contents than the ones listed here.
++
+[source,subs="verbatim,quotes"]
+--
+$ *cat edge-2-key.pub*
+ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILy6lU52yOY7IZ2BFpQhCQaQNBvyo1ydbsd5uyzPZBNq key for the edge-2 managed device
+--
+
+.. When you select the source type, the page expands to show a new menu:File 1[] heading with a couple additional fields.
+Fill in as follows:
++
+--
+...  *File path on the device*: `/home/core/.ssh/authorized_keys`
+
+... *Content*: <paste here the contents of your SSH key public file>
+--
++
+NOTE: Instead of doing cut-and-paste from the terminal to the web browser, you could use the menu:Browse[] button to select the `~/temp/enroll/edge-2-key.pub` file in the *Content* field.
+
+.. Scroll down, not changing any of the other fields from menu:File 1[], and click menu:Add configuration[] again.
++
+You could add multiple files to the same configuration, but when the files are not directly related to each other, it improves readability and maintainability of the configuration having files as distinct inline configuration items.
+
+.. Fill in the fields inside menu:Configuration 2[] as follows:
++
+--
+... *Source name*: `motd`
+
+... *Source type*: `Inline configuration`
+--
+
+.. And fill in the fields from the new menu:File 1[] panel as follows:
++
+--
+... *File path on the device*: `/etc/motd`
+
+... *Content*: `Under new management!`
+--
+
+.. Do not make any changes to applications or services, and click menu:Next[]
+
+.. On the menu:Updates[] tab, leave menu:Use basic configurations[] checked, and click menu:Next[]
+
+.. On the menu:Review and save[] tab, verify that two configurations are listed, named `hostname` and `motd`, and click menu:Save[].
+
+3. Verify that the managed device synchronizes with Edge Manager and receives the new configurations.
+
+.. After clicking menu:Save[], you are in the details page for the `edge-2` device.
+Its menu:System status[] panel should display an *Update status* of `Out-of-date`.
+
+.. Wait until the *Update status* changes to `Up-to-date` and switch to a terminal window.
+
+.. Open a SSH session to the `edge-2` test VM using the new key.
++
+Notice that, if you reuse a previous `ssh` command from your history, you would use the old key and it would ask for the password of the `core` user.
+Also notice the message from `/etc/motd`.
++
+[source,subs="verbatim,quotes"]
+--
+$ *ssh -i edge-2-key -p 8222 core@127.0.0.1*
+Under new management!
+Last login: Thu Dec 18 20:03:46 2025 from 172.25.250.254
+[core@enroll ~]$ 
+--
+
+.. Logs from the Edge Manager agent would indicate there was a reconciliation of the device configuration.
++
+[source,subs="verbatim,quotes"]
+--
+$ *sudo journalctl -u flightctl-agent | tail -n 2*
+Dec 18 20:02:52 enroll flightctl-agent[820]: time="2025-12-18T20:02:52.191095Z" level=info msg="Version updated from '13' to '14'"
+Dec 18 20:03:22 enroll flightctl-agent[820]: time="2025-12-18T20:03:22.434238Z" level=info msg="Spec reconciliation complete: current version 14"
+--
+
+4. Change a managed configuration file and verify that Edge Manager will undo your edits.
+
+.. If you didn't notice on your latest SSH log in, there is "a message of day".
++
+[source,subs="verbatim,quotes"]
+--
+$ *cat /etc/motd*
+Under new management!
+--
+
+.. Change it to something else.
++
+[source,subs="verbatim,quotes"]
+--
+$ *sudo bash -c "echo 'Sysadmin doing nasty things' > /etc/motd"*
+$ *cat /etc/motd*
+Sysadmin doing nasty things
+--
+
+.. Also change the system time zone.
++
+[source,subs="verbatim,quotes"]
+--
+$ *timedatectl show -p Timezone*
+Timezone=UTC
+$ *sudo timedatectl set-timezone "Europe/Rome"*
+$ timedatectl show -p Timezone
+Timezone=Europe/Rome
+--
+
+.. Wait a few moments and verify that the message reverts to the one set by Edge Manager.
++
+[source,subs="verbatim,quotes"]
+--
+$ *cat /etc/motd*
+Under new management!
+--
+
+.. Notice that the time zone change will NOT revert, because Edge Manager is not managing the file `/etc/localtime`, so you must revert that change manually.
++
+[source,subs="verbatim,quotes"]
+--
+$ timedatectl show -p Timezone
+Timezone=Europe/Rome
+$ *sudo timedatectl set-timezone UTC*
+--
+
+.. Close the SSH connection and return to your _development machine_ shell.
++
+[source,subs="verbatim,quotes"]
+--
+$ *exit*
+--
+
+5. Apply similar configurations to the `edge-1` managed device, but this time use the CLI.
+
+.. Copy and inspect the template manifest from the course samples repository.
++
+If you compare it with the complete YAML manifest form devices, which you already saw in the previous lab, you will notice the absence of some metadata fields and of all status fields.
+Manifests that you apply should focus on the device specification, and provide just the device UUID and labels on its metadata.
++
+[source,subs="verbatim,quotes"]
+--
+$ *cp ../rhde-rhem-samples/config/edge-1.yaml .*
+$ *less edge-1.yaml*
+include::1@samples:config:example$edge-1.yaml[]
+--
+
+.. Generate an SSH key for the device.
++
+[source,subs="verbatim,quotes"]
+--
+$ *ssh-keygen -N '' -f edge-1-key -C 'key for the edge-1 managed device'*
+Generating public/private rsa key pair.
+...
+--
+
+.. Insert the correct UUID for the device in the manifest
++
+[source,subs="verbatim,quotes,attributes"]
+--
+$ *UUID=$( flightctl get device -o name -l alias=edge-1 )*
+$ *echo $UUID*
+{edge-1-uuid-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}
+$ *sed -i "s|REPLACE_WITH_UUID|$UUID|" edge-1.yaml*
+--
+
+.. Insert the new SSH key in the manifest.
++
+[source,subs="verbatim,quotes"]
+--
+$ *SSH_PUB_KEY=$( cat edge-1-key.pub )*
+$ *sed -i "s|REPLACE_WITH_SSH_KEY|$SSH_PUB_KEY|" edge-1.yaml*
+--
+
+.. Review the `edge-1.yaml` manifest file and verify that it contains no `REPLACE_WITH` markers.
+
+.. Apply the manifest on Edge Manager.
++
+[source,subs="verbatim,quotes,attributes"]
+--
+$ *flightctl apply -f edge-1.yaml*
+edge-1.yaml: applying device/{edge-1-uuid-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}: 200 OK
+--
+
+.. Wait until the device synchronizes with Edge Manager.
++
+[source,subs="verbatim,quotes,attributes"]
+--
+$ *flightctl get device $UUID -o wide*
+NAME                                                    ALIAS   OWNER   SYSTEM  UPDATED         APPLICATIONS    LABELS
+{edge-1-uuid-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}    edge-1  <none>  Online  OutOfDate        NoApplications  alias=edge-1,rhel=9.6,type=noapps
+...
+$ *flightctl get device $UUID -o wide*
+NAME                                                    ALIAS   OWNER   SYSTEM  UPDATED         APPLICATIONS    LABELS
+{edge-1-uuid-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}    edge-1  <none>  Online  UpToDate        NoApplications  alias=edge-1,rhel=9.6,type=noapps
+--
+
+.. Verify that the device actually contains the new configurations, by starting an SSH session using the newly generated key.
++
+Also remember that, in the previous lab, you created the file `/root/device.txt` only in the `edge-1` test VM.
++
+[source,subs="verbatim,quotes"]
+--
+$ *ssh -i edge-1-key -p 8122 core@127.0.0.1*
+Under new management!
+[core@enroll ~]$ *sudo ls /root*
+anaconda-ks.cfg  buildinfo  device.txt  original-ks.cfg
+[core@enroll ~]$ *exit*
+--
+
+//77. If, by any reason, an agent fails to apply a configuration update, it will NOT retry. 
+//You must apply another configuration change to the Edge Manager server so the agent fetches a new rendered config to apply.
+
+////
+
+The agent has insufficient permissions (on its SELinux policy) to set the hostname.
+https://issues.redhat.com/browse/EDM-2833
+The fix is expected to be in 1.1.0 so I could use it for fleets in the next course
+
+I could workaround with 'setenforce 0' and wait for an update... but maybe I should have a "plan B" to not depend on it.
+
+Create feature requests in the Edge Manager project (EDM?) -- recover the conversation, I tried it long ago and it failed because of improper configuration in JIRA. Anyway, I'd have other requests, such as:
+
+- explain command
+- whoamI command (to get a token)
+- cp command (derived from console + redirection, see the sos report blob)
+https://github.com/flightctl/flightctl/blob/724dfaeef04cbc4b891864908b1398fce2b0bc3c/docs/user/using/troubleshooting.md#generating-and-downloading-an-sos-report
+
+////
+
+== What's next
+
+In the next activity, you will update devices with a new bootc container image.

@@ -1,6 +1,208 @@
-= Section 1
+:time_estimate: 18
 
-* Create multiple copies of this section as needed.
-* Remove any unnecessary sections or chapter pages.
-* Customize the section as appropriate.
-* Ensure that each page contains a manageable amount of content.
+= Managing Edge Devices with Red Hat Edge Manager
+
+_Estimated reading time: *{time_estimate} minutes*._
+
+Objective::
+
+Describe Red Hat Edge Manager, its high-level architecture, and its relations to other infrastructure management tools from Red Hat, such as Red Hat Satellite, Red Hat Ansible Automation Platform, and Red Hat Advanced Cluster Management.
+
+== Introduction to Edge Computing
+
+_Edge computing_ is any computing infrastructure that is located close to the source of data generation or production, such as a factory floor, a retail store, or an offshore oil rig.
+
+An _edge site_ is any location where you have edge computing resources.
+It could be as small as a single automated teller machine in a retail store, a few point-of-sale systems in a drug store, or an automated pick up location, such as an Amazon Locker, in a train terminal. 
+
+image::Edge-site.svg[title="Characteristics of edge sites"]
+
+Some edge sites, like a cruise ship or a department store, may contain a large number of computing resources and even a "server room" with compute and network racks, uninterruptible power supplies, and other resources similar to a data center.
+But other edge sites may put compute resources in an environment which the owner of the edge resources does not fully control, exposed to the climate and to tampering by outsiders, including from customers.
+
+Unlike traditional data centers and large office buildings, edge sites often face limitations regarding power, cooling, and hardware capabilities.
+Edge sites may also be disconnected, air-gapped, or have low bandwidth connections to the outside.
+
+But more important than hardware and networing capabilities, edge sites often lack on-site Information Technology (IT) expertise, prioritizing other needs from the _Operational Technology_ (OT) domain, such as PLC programming, radiology equipment maintenance, or non-IT and non-OT needs such as store management.
+
+Traditional IT management tools focus on the high capacity, always connected, and highly standardized world of data centers and clouds, and they cater to the needs of IT personnel only.
+Edge management tools, on the other hand, must be friendlier to OT personnel and deal with the large variety of form factors, intermittent network connectivity, limited hardware capabilities, and possibly harsh conditions of edge sites.
+
+While edge computing used to be the domain of highly specialized and proprietary devices and software, there's a desire to be closer to the world of cloud computing, to enable workload portability, better integration with corporate systems, and deployment of novell applications such as artificial intelligence, which require corporate resources for development or to integrate with larger business processes.
+
+Nowadays, there's an emerging class of edge devices that are much closer to traditional computers, having the capability to run Red Hat Enterprise Linux and benefit from containerized applications, and leading vendors are applying to edge computing more of the open source tools and agile processes that used to be viable only for cloud computing.
+
+In the context of enabling the use of more standardized hardware and open source innovations for edge use cases, Red Hat offers a number of solutions, among them Red Hat Device Edge.
+
+== Introduction to Red Hat Device Edge
+
+_Red Hat Device Edge_ (Red Hat Device Edge) is a solution for edge computing, which consists of three products and technologies from Red Hat:
+
+Red Hat Enterprise Linux (RHEL)::
+An operating system foundation, optimzed for edge computing (in addition to cloud and data center), that ensures stability and reliability.
+
+Red Hat build of MicroShift::
+A lightweight Kubernetes distribution, based on Red Hat OpenShift, but optimized for resource-constrained environments.
+
+Red Hat Edge Manager::
+A control plane that streamlines fleet management of edge devices.
+
+image::RHDE-benefits.svg[title="Benefits of Red Hat Device Edge"]
+
+Most of components of Red Hat Device Edge, except for MicroShift, are available as part of other Red Hat products, and when that happens their contents are not changed in any way, compared to what is provided by Red Hat Device Edge.
+You get the same features from each component, no matter which product subscription provides them.
+
+For example, the RHEL you get from Red Hat Device Edge is the same RHEL you get from a regular RHEL subscription.
+There are no changes in RHEL capabilities and it provides the same packages and containers.
+It provides the same Linux kernel, the same libraries, and the same system services.
+This ensures that, as developers build and test applications on the data center, that software runs unchanged on edge devices running Red Hat Device Edge, as long as their applications do not demand more capabilities than available on the target devices and sites.
+
+image::RHEM-SKUs.svg[title="Two ways of procuring Red Hat Edge Manager"]
+
+The main benefit of purchasing Red Hat Device Edge, instead of other Red Hat products that provide some of the same components, is lower cost.
+Most RHEL subscriptions assume customers are using data center servers, containing many CPUs, lots of memory, and the capacity of serving hundreds or even thousands of users.
+
+Red Hat Device Edge, on the other hand, has a cost that is aligned with small devices, which are single-CPU, have a small amount of memory, and usually run a single application for a single user at a time.
+
+Nothing prevents Red Hat Device Edge from running multiple applications in parallel, serving dozens of users, and this is common in a class of edge devices usually known as _edge gateways_, which collect data and control multiple smaller edge devices, like security cameras and industrial sensors, that would not be able to run Red Hat Device Edge by themselves.
+
+NOTE: This course focuses on Edge Manager with RHEL.
+It does not address using Edge Manager with MicroShift.
+
+== The Red Hat Edge Computing Portfolio
+
+Red Hat Device Edge is only one of https://www.redhat.com/en/products/edge[many solutions^] that Red Hat offers for edge computing.
+For example, your edge devices may be powerful enough to run Red Hat OpenShift using single node, two nodes, or three nodes (compact cluster) topologies and also support legacy virtualization applications, while still being smaller than typical data center servers.
+In such cases, you could use distributed computing unit (DCU) SKUs of RHEL and OpenShift, for cost optimization.
+
+Another example: Connectivity to your edge sites may be good enough that you could run Red Hat Satellite capsule servers and Ansible execution nodes (from Ansible automation mesh) on your edge sites, and even a regional Red Hat Advanced Cluster Management cluster, conected to a central global hub cluster, and manage your edge computing resources mostly as you would manage a regional data center or campus.
+
+image::Edge-portfolio.svg[title="Red Hat edge porfolio: Red Hat Device Edge, OpenShift, RHEL, and Ansible"]
+
+Some edge sites may be best designed with a mix of solutions: a few larger servers and applications run with data center tools, such as package mode RHEL and Red Hat OpenShift, while armies of smaller edge devices and gateways run with Red Hat Device Edge and Edge Manager.
+For such sites, running Edge Manager integrated with Advanced Cluster Management or Ansible Automation Platform may be the best approach.
+
+NOTE: This course does not attempt to teach skills about all variations of deploying Edge Manager and integrating it with other Red Hat management tools. It focuses on Edge Manager with Red Hat Device Edge and Edge Manager with RHEL, even though there is more to edge computing with Red Hat products than Red Hat Device Edge and Edge Manager.
+
+== Introduction to Red Hat Edge Manager
+
+The best way of describing Red Hat Edge Manager is as providing _Kubernetes-style GitOps for the operating system_.
+Edge Manager manages declarative state about managed devices and continuously monitors that state, detecting drift and reconciling any deviations:
+
+* If an administrator alters the declared state, Edge Manager ensures that managed devices are changed to be consistent with the new state.
+
+* If an administrator changes some state of a device that is managed by Edge Manager, for example by using a direct SSH connection, Edge Manager reverts that change to maintain the device consistent with the declared state.
+
+You can store the declarative configuration of managed devices inside of Edge Manager's own database, as inline configurations, but the recommended practice is to store most of them in a git repository, which makes updates, testing, and troubleshooting easier.
+
+image::RHDE-benefits.svg[title="Benefits of Red Hat Edge Manager"]
+
+Red Hat Edge Manager controls three aspects of device configurations:
+
+. The operating system image running on managed devices, as a bootc container image from image mode for RHEL.
+
+. Operating system and application configuration files on managed devices, usually stored in `/etc` and `/var` directories.
+
+. Containerized applications running on managed devices, from single containers to Podman Quadlets managed by the System Daemon (Systemd).
+
+image::RHEM-device-fleet-template.svg[title="Edge Manager device and fleet templates",width="80%",align="center"]
+
+Red Hat Edge Manager is based on the https://github.com/flightctl/flightctl[Flight Control^] open source project, and its capabilities are expanding quickly.
+
+////
+Future releases of Edge Manager
+ may add a number of features, sich as support for managing devices not running image mode for RHEL or additional types of applications, such as Helm applications.
+////
+
+The way Edge Manager supports image mode for RHEL and containerized applications adapts to different approaches that IT and OT teams take to their own organization:
+
+* Some teams may opt for a fully "appliance" approach, in which applications are embedded into the operating system image as a single artifact, and OT field people just turn the device on.
+
+* Other teams may opt for a strict separation of concerns, in which an infrastructure team manages operating system configurations and hardware lifecycle, while other teams manage application lifecycle and data.
+
+== Fleet Management with Red Hat Edge Manager
+
+The concept of _fleet management_ is key to Edge Manager.
+This concept applies a proven cloud-based practice to operating system management: managing applications and cloud instances as undifferentiated sets, instead of unique entities, each one with their own specific settings.
+If you heard the popular analogy of _pets vs cattle_, Edge Manager enables you to manage the operating system and applications in edge devices as _cattle_.
+
+image::fleets.svg[title="Managing individual devices vs managing fleets of devices"]
+
+For example, a retail chain could define once the configuration for all pont-of-sale (PoS) systems in all their stores, and let Edge Manager apply that single configuration to all of them.
+Edge Manager also lets you know which ones are updated or not to the current configuration, so you can investigate the failure: are some the devices disconnected or faulty?
+
+In fact, Edge Manager continuously monitors the health of its managed devices, as long as they can connect to the Edge Manager server, and report conditions such as low free disk space.
+
+Alternatively, you could define a configuration only for the PoS systems in a single store, or all stores in a single region, before applying it to all your remaining stores.
+
+Edge Manager provides mechanisms to create small variations to target individual devices of a fleet, or to create subsets of devices in the same fleet.
+It is not a rigid approach that all managed devices must be configured in exactly the same way, but it is flexible enough to address small variations in a centralized manner, for example: each edge site contains its own HTTP proxy server and all PoS systems must use the proxy from their own site.
+
+NOTE: This course, as the first in a series, focuses on managing the operating system on individual edge devices using Edge Manager, to build a strong conceptual and practical foundation for the next course in the series, which focuses on managing fleets and applications.
+
+== Running Red Hat Edge Manager standalone and with other management tools from Red Hat
+
+Edge Manager can be used by itself, as the single edge device management tool, from provisioning to  decommissioning, and to manage all applications running on managed devices.
+
+Alternatively, Edge Manager can work integrated with other https://www.redhat.com/en/blog/managing-red-hat-device-edge-tools-and-strategies[management tools from Red Hat^], such as Red Hat Ansible Automation Platform and Red Hat Advanced Cluster Management.
+Teams that have mature practices and skills on such tools may benefit from using them together with Edge Manager, and over time adopt more and more of Edge Manager capabilities, as they perceive advantages of using them compared to the capabilities they are alreaydy familiar with and were already using for data centers and clouds.
+
+If you opt for deploying Edge Manager integrated with either Advanced Cluster Management or Ansible Automation Platform, Edge Manager looks like it is part of them, integrated to their web interfaces, their API routing, and using their authentication and authorization mechanisms, but still offering its own features and APIs.
+For example: if you deploy Edge Manager on OpenShift, with or without Advanced Cluster Management, Edge Manager still stores managed device state on its own database instead of storing as Kubernetes custom resources.
+
+Even if you opt for deploying Edge Manager standalone on either RHEL or OpenShift, you may still need other tools to provide capabilities not included in Edge Manager, for example:
+
+* *Red Hat Satellite* to manage RPM package repositories made available to developers who build operating system images and network boot artifacts made available to edge sites.
+
+* *Red Hat Quay* to manage operating system images (bootc container images), application container images, helm charts, large language models (LLMs), and other software artifacts made available to developers and edge sites.
+
+* *Red Hat Ansible Automation Platform* to manage networking gear in edge sites or between those sites and corporate data centers.
+
+* *Red Hat OpenShift Container Platform* to offer developers an application platform to build, test, and secure containerized applications and bootc container images that will be deployed on edge sites.
+
+* *Red Hat AI* to fine-tune standard LLMs, populate retrieval-aumented generation (RAG) databases, test guard-rails to ensure model safety, evaluate models to avoid bias, and develop AI-enabled applications that will be deployed on edge sites.
+
+Of course, you could use alternative tools from any other vendor to provide similar capabilities and still benefit from Edge Manager.
+
+NOTE: In this course, we focus on the simplest deployment modes of Edge Manager on RHEL, without other Red Hat tools, and using open source web servers and container registries to provide the minimum required infrastructure, so we can focus on operating Edge Manager itself to manage edge devices.
+
+== Red Hat Edge Manager, Inspired by Kubernetes
+
+Edge Manager is inspired by Kubernetes, but it does not require Kubernetes at all.
+IT and OT professionals who are already familiar with Kubernetes may notice many similarities between the structure of their APIs, their CLIs, and underlying concepts, such as the reconciliation loop.
+
+image::agent-vs-server.svg[title="Edge Manager agent (on managed devices) and Edge Manager server"]
+
+If you make the analogy between Edge Manager and Kubernetes, the server piece of Edge Manager provides the API server, resource controllers, and state database.
+Individual managed devices run an Edge Manager agent, similar to a kubelet, which observes configuration changes from the API server and state changes from the device itself, and reconciles them if there is any difference.
+
+But Edge Manager is still a new product, and you may miss some of the comforts already provided by Kubernetes.
+We expect some of them will be added over time, based on community and customer demand.
+For example, Edge Manager does not provide a self-description of its own API resources, like Kubernetes offers with its `explain` command.
+And Edge Manager is not extensible with custom resource types.
+
+On the other hand, Edge Manager offers a much less intimidating learning curve, with a feature set tailored to the specific needs of edge device management.
+Kubernetes is considered difficult to master because it offers a large number of features, targeting diverse IT needs.
+This nature makes it good for many data center and cloud computing scenarios, from software development to virtual machine management.
+But you do not require all those features to manage edge devices and edge sites.
+
+Edge Manager does not attempt to be the single tool to manage all your edge computing needs.
+For example, it is not designed to manage network gear at edge sites -- for that you may use Red Hat Ansible Automation Platform.
+Edge Manager is designed to manage edge devices running RHEL, with or without MicroShift, at scale and under the constraints of connectivity that are common at edge sites, enabling workflows that are friendly to OT personnel.
+
+== What's Next
+
+Before we describe the detailed architecture of Edge Manager and is services, the first activity of this course confirms that you have all you need to complete the labs, such as access to RHEL packages and container images.
+
+////
+Image sources (only available to Red Hat employees):
+
+New Edge Computing Overview (EBC) _DRAFT
+https://docs.google.com/presentation/d/1UxipniPummlg0QnMQzBkPlyZkGeaYxMtWjPuyb-PWGQ/edit?slide=id.g3af6ed57e6b_0_12977#slide=id.g3af6ed57e6b_0_12977
+
+RedHatEdgeManager_Overview_Draft
+https://docs.google.com/presentation/d/1zyP0QOMweqP3tdhUkG6mJyb5YnbNkIz7rj0FaUlhpPE/edit?slide=id.g3a204372679_0_903#slide=id.g3a204372679_0_903
+
+DRAFT Red Hat Edge Manager Technical Deck (Limited Share Audience)
+https://docs.google.com/presentation/d/17cWSUdQnS5mSHaiLQieJO24tiPp3VzAu9dIsKc-fyAw/edit?slide=id.g33d0db3e9fb_0_3709#slide=id.g33d0db3e9fb_0_3709
+////

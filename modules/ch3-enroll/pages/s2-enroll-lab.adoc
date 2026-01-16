@@ -1,0 +1,617 @@
+:time_estimate: 5
+
+= Lab: Enroll Edge Devices Using Late Binding
+
+_Estimated reading time: *{time_estimate} minutes*._
+
+Objective::
+
+Provision and enroll devices on Edge Manager from an installation ISO.
+
+== Before you begin
+
+You need a _development machine_ running RHEL, to which you have unrestricted sudo access, and enough capacity to run a few VMs.
+Your _development machine_ is already registered to Red Hat with a valid Red Hat Device Edge subscription.
+
+You also need a _server machine_ running RHEL, to which you also have unrestricted sudo access, which was already configured with Edge Manager by the xref:ch2-deploy:s2-install-lab.adoc[previous lab].
+
+Finally, you need a _private registry_ to store bootc container images for your managed edge devices.
+
+Your _development machine_ requires internet access to download RPM packages and container images.
+
+If you are using the course classroom, your _development machine_ is the `workstation` VM.
+Log in as the user `student` with the password `student`.
+
+== Instructions
+
+You will build a minimal bootc container image, which contains the Edge Manager agent, and create an installable ISO which contains enrollment credentials.
+Then you will use that ISO to provision a test VM, which stands in for a managed edge device, and verify that it attempts to enroll in your Edge Manager server.
+Finally, you will approve that device enrollment request, and verify that you can use the same ISO, unchanged, to provision additional edge devices.
+
+1. Verify that you have the outcomes of previous labs.
+If you do not, go back and complete them, because you need their outcomes to proceed with this lab.
+
+.. On your _development machine_, verify that there is a clone of the course samples repository on your home directory.
++
+[source,subs="verbatim,quotes"]
+--
+$ *cd*
+$ *ls rhde-rhem-samples*
+LICENSE  README.md  antora.yml  enroll  modules  webapp
+--
+
+.. Verify that your unprivileged user can connect using the libvirt session interface.
++
+[source,subs="verbatim,quotes"]
+--
+$ *virsh uri*
+qemu:///session
+$ *virsh nodeinfo*
+CPU model:           x86_64
+...
+--
+
+.. Verify that your _development machine_ is registered to Red Hat, so it can access package repositories of any RHEL version.
++
+[source,subs="verbatim,quotes"]
+--
+$ *sudo subscription-manager status*
++-------------------------------------------+
+   System Status Details
++-------------------------------------------+
+Overall Status: Registered
+--
+
+.. Verify that you can access RHEL containers.
+You may get a different hash for the RHEL base bootc container image because `9.6` is a floating tag.
++
+[source,subs="verbatim,quotes"]
+--
+$ *podman login registry.redhat.io*
+...
+Login Succeeded!
+$ *skopeo inspect --format '{{.Digest}}' docker://registry.redhat.io/rhel9/rhel-bootc:9.6*
+sha256:d64013d886f00ff8afd3141918139d6a6789612d7ce4d3b5c4ffc3b98fc9dec1
+--
+
+.. Verify that you have access to a private container registry.
++
+[source,subs="verbatim,quotes"]
+--
+$ *podman login -u student -p redhat registry.lab.example.com:5000*
+Login Succeeded!
+$ *podman search registry.lab.example.com:5000/ubi9*
+NAME                                     DESCRIPTION
+registry.lab.example.com:5000/ubi9/ubi
+--
++
+NOTE: Later in this lab, you will log in again on both the Red Hat registry and your private registry as the root user, because different Linux users do not share container registry authentication tokens.
+
+.. Verify that you have administrator access to an Edge Manager server.
++
+[source,subs="verbatim,quotes"]
+--
+$ *flightctl login -u admin -p redhat https://servera.lab.example.com:3443*
+Auto-selected organization: 00000000-0000-0000-0000-000000000000 Default
+Login successful.
+--
+
+2. Create a bootc container image, which includes the Edge Manager agent.
+
+.. Copy the Containerfile and related files for the enrollment image to a work directory.
+Then make the work directory your current directory.
++
+[source,subs="verbatim,quotes"]
+--
+$ *cp -r rhde-rhem-samples/enroll temp-enroll*
+$ *cd temp-enroll*
+--
+
+.. Review the Containerfile that builds a minimal enrollment image.
++
+It adds a few things over a base RHEL 9 bootc container image.
++
+--
+... Installs the Edge Manager agent package.
+
+... Masks the bootc update time service, so Edge Manager has control system updates.
+
+... Adds a certificate authority (CA) to the system PKI trust, so that devices provisioned from this bootc container image can fetch system updates without disabling TLS validation.
+--
++
+Your organization may opt to add more things to that image, for example anti-malware packages and enabling Firewalld.
++
+[source,subs="verbatim,quotes"]
+--
+$ *less Containerfile*
+include::1@samples:enroll:example$Containerfile[]
+--
++
+NOTE: If you want to try with the current latest release of the upstream project, edit your Containerfile to remove the version component `-1.0.0` from the package `flightctl-agent`.
+
+.. Copy the CA certificate of the private container registry.
+Notice that the last argument of the `scp` command is a period, for the current directory.
++
+[source,subs="verbatim,quotes"]
+--
+$ *scp student@utility:/opt/registry/certs/domain.crt .*
+domain.crt
+--
+
+.. Build the bootc container image.
+Notice that the `podman build` command also finishes with a period.
++
+[source,subs="verbatim,quotes,attributes"]
+--
+$ *podman build -t rhem-enroll .*
+STEP 1/2: FROM registry.redhat.io/rhel9/rhel-bootc:9.6
+...
+Successfully tagged localhost/rhem-enroll:latest
+{rhem-enroll-v1-shaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}
+--
+
+.. Publish the container image in the private registry.
++
+[source,subs="verbatim,quotes,attributes"]
+--
+$ *skopeo copy containers-storage:localhost/rhem-enroll:latest docker://registry.lab.example.com:5000/rhem-enroll:v1.0*
+...
+Writing manifest to image destination
+--
+
+3. Create an installable ISO containing the bootc container image from the previous step.
+
+.. Pull your bootc container image to the container storage of the root user.
++
+[source,subs="verbatim,quotes,attributes"]
+--
+$ *sudo podman login -u student -p redhat registry.lab.example.com:5000*
+Login Succeeded!
+$ *sudo podman pull registry.lab.example.com:5000/rhem-enroll:v1.0*
+...
+Writing manifest to image destination
+{rhem-enroll-v1-shaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}
+--
+
+.. Review the TOML file, which embeds a kickstart script for unattended installation of RHEL.
++
+That kickstart script contains a `%post` block that initializes credentials for console and SSH login with the `core` user and for enrollment in a Edge Manager server.
++
+[source,subs="verbatim,quotes"]
+--
+$ *less Containerfile*
+include::1@samples:enroll:example$config.toml[]
+--
+
+.. Set the initial user password in your kickstart script.
++
+[source,subs="verbatim,quotes"]
+--
+$ *sed -i 's/REPLACE_WITH_PASSWD/redhat123/' config.toml*
+--
+
+.. Generate an SSH key and embed it in your kickstart script.
++
+[source,subs="verbatim,quotes"]
+--
+$ *ssh-keygen -N '' -f edge-key -C 'initial key for edge devices'*
+Generating public/private rsa key pair.
+...
+$ *SSH_PUB_KEY=$( cat edge-key.pub )*
+$ *sed -i "s|REPLACE_WITH_SSH_KEY|$SSH_PUB_KEY|" config.toml*
+--
+
+.. Retrieve the enrollment configuration and certificate from Edge Manager and embed it in your kickstart script.
++
+[source,subs="verbatim,quotes"]
+--
+$ *flightctl certificate request --expiration=365d --output=embedded > config.yaml*
+Creating new ECDSA key pair and writing to "client-enrollment.key".
+Submitting certificate signing request "client-enrollment-ddbfd221"... success.
+Waiting for certificate to be approved and issued.... success.
+$ *sed -i -e '/REPLACE_WITH_CONFIG_YAML/r config.yaml' -e '/REPLACE_WITH_CONFIG_YAML/d' config.toml*
+--
+
+.. Review your `config.toml` file to be sure that all `REPLACE_WITH` markers are gone.
++
+NOTE: You can remove the files named `ca.crt`, `client-enrollment.crt`, and `client-enrollment.key`, created by the `flightctl certificate request` command, because their contents are embedded in the `client.yaml` file.
+
+.. Create a temporary directory and use the provided script to invoke bootc image builder to produce an installable ISO image.
++
+[source,subs="verbatim,quotes"]
+--
+$ *sudo podman login registry.redhat.io*
+...
+Login Succeeded!
+$ *mkdir output*
+$ *bash bib-iso.sh*
+...
+Build complete!
+Results saved in .
+--
+
+4. Create a test VM using the installable ISO.
+
+.. Copy the generated ISO image file to a more recognizable name, outside the temporary directory.
++
+[source,subs="verbatim,quotes"]
+--
+$ *cp output/bootiso/install.iso rhem-enroll.iso*
+--
+
+.. Use the provided script to invoke `virt-install` to create a local test VM, booting it from the ISO.
++
+The script expects a single digit as an argument, which is used to compose both the name of the VM and the local port to forward to the SSH port of the VM.
++
+At the end of the instalation, press kbd:[Ctrl+\]] to leave the text console of the VM and return to your host shell.
++
+[source,subs="verbatim,quotes"]
+--
+$ *bash virt-install.sh 1*
+Creating VM edge-1, use port 8122 for SSH.
+...
+Domain creation completed.
+Restarting guest.
+Running text console command: virsh --connect qemu:///session console edge-1
+Connected to domain 'edge-1'
+Escape character is ^] (Ctrl + ])
+--
+
+.. If you need to retry creating your test VM, use the following command and return to the step that copies the generated ISO image.
++
+[source,subs="verbatim,quotes"]
+--
+$ *virsh destry edge-1*
+Domain 'edge-1' destroyed
+$ *virsh undefine edge-1 --remove-all-storage*
+Domain 'edge-1' has been undefined
+--
+
+.. Access your test VM using SSH.
++
+[source,subs="verbatim,quotes"]
+--
+$ *ssh -i edge-key -p 8122 core@127.0.0.1*
+...
+[core@enroll ~]$
+--
+
+.. On your test VM, verify that it's booted from a bootc container image and that the `flightctl-agent` service is active.
++
+Remember that the password set by kickstart for the `core` user is `redhat123`.
++
+[source,subs="verbatim,quotes,attributes"]
+--
+$ *sudo bootc status*
+● Booted image: registry.lab.example.com:5000/rhem-enroll:v1.0
+...
+$ *sudo systemctl is-active flightctl-agent*
+active
+--
+
+.. Notice that, in the beginning of the Edge Manager agent logs, it generates a certificate signing request (CSR) for its own individual enrollment request with the Edge Manager server, and its own unique UUID.
++
+Look for the entry with the message "Bootstrapping device".
++
+[source,subs="verbatim,quotes,attributes"]
+--
+$ *sudo journalctl -u flightctl-agent | head -n 10*
+Dec 17 21:31:15 enroll systemd[1]: Starting Flight Control management agent...
+Dec 17 21:31:15 enroll flightctl-agent[837]: time="2025-12-17T21:31:15.714433Z" level=info msg="Loaded configuration: {"audit":{"enabled":true},"log-level":"info","pull-retry-steps":6,"pull-timeout":"10m0s","spec-fetch-interval":"1m0s","status-update-interval":"1m0s","system-info":["hostname","kernel","distroName","distroVersion","productName","productUuid","productSerial","netInterfaceDefault","netIpDefault","netMacDefault"],"system-info-timeout":"2m0s","tpm":{"device-path":"/dev/tpm0","storage-file-path":"/var/lib/flightctl/tpm-blob.yaml"}}"
+Dec 17 21:31:15 enroll flightctl-agent[837]: time="2025-12-17T21:31:15.719693Z" level=info msg="Starting agent..."
+Dec 17 21:31:15 enroll flightctl-agent[837]: time="2025-12-17T21:31:15.720372Z" level=info msg="TPM device identity is disabled. Skipping TPM setup."
+Dec 17 21:31:15 enroll flightctl-agent[837]: time="2025-12-17T21:31:15.720527Z" level=info msg="Using file-based identity provider"
+Dec 17 21:31:15 enroll flightctl-agent[837]: time="2025-12-17T21:31:15.721499Z" level=info msg="No persisted CSR found, generating new CSR for enrollment"
+Dec 17 21:31:15 enroll flightctl-agent[837]: time="2025-12-17T21:31:15.738231Z" level=info msg="CSR generated and persisted successfully"
+Dec 17 21:31:15 enroll flightctl-agent[837]: time="2025-12-17T21:31:15.738788Z" level=info msg="OS managed by bootc client"
+Dec 17 21:31:15 enroll flightctl-agent[837]: time="2025-12-17T21:31:15.754107Z" level=info msg="Bootstrapping device: {edge-1-uuid-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}"
+Dec 17 21:31:15 enroll flightctl-agent[837]: time="2025-12-17T21:31:15.879142Z" level=info msg="System information: version=v1.0.0-rc2, go-version=go1.25.3 (Red Hat 1.25.3-1.el9_7) X:strictfipsruntime, platform=linux/amd64, git-commit=unknown, podman-version=5.4"
+--
+
+.. Also notice that the agent keeps polling the Edge Manager server for its enrollment request to be approved.
++
+[source,subs="verbatim,quotes"]
+--
+$ *sudo journalctl -u flightctl-agent | tail -n 2*
+Dec 17 21:42:42 enroll flightctl-agent[1163]: time="2025-12-17T21:42:42.141680Z" level=info msg="Waiting for enrollment to be approved"
+Dec 17 21:42:42 enroll flightctl-agent[1163]: time="2025-12-17T21:42:42.143024Z" level=info msg="Enrollment request not yet approved"
+--
+
+.. The agent logs also provide a URL and a QR code (not shown in the output below) which you can use to approve the certificate request for the device.
++
+[source,subs="verbatim,quotes,attributes"]
+--
+$ *sudo journalctl -u flightctl-agent | grep 'QR code' -A1 -B1 | tail -n 3*
+Dec 17 21:44:59 enroll flightctl-agent[1194]: Enroll your device to flightctl by scanning
+Dec 17 21:44:59 enroll flightctl-agent[1194]: the above QR code or following this URL:
+Dec 17 21:44:59 enroll flightctl-agent[1194]: https://servera.lab.example.com:443/enroll/{edge-1-uuid-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}
+--
+
+.. You can now leave the SSH session and return to your host shell.
++
+[source,subs="verbatim,quotes"]
+--
+$ *exit*
+--
+
+5. On your _development machine_, approve the enrollment request
+
+.. Verify that there is an enrollment request with an UUID that corresponds to the one in the logs of your test VM, but no devices.
++
+[source,subs="verbatim,quotes,attributes"]
+--
+$ *flightctl get device*
+NAME                                                    ALIAS   OWNER   SYSTEM  UPDATED APPLICATIONS
+$ *flightctl get enrollmentrequest*
+NAME                                                    APPROVAL        APPROVER        APPROVED LABELS
+{edge-1-uuid-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}    Pending         <none>
+--
+
+.. Approve the enrollment request, setting a few labels on the managed device, especially the `alias` label which the web UI uses as the display name of managed devices.
++
+Be sure you use the same UUID you got from the previous step to refer to the enrollment request.
++
+[source,subs="verbatim,quotes,attributes"]
+--
+$ *flightctl approve enrollmentrequest _{edge-1-uuid-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}_ -l alias=edge-1 -l rhel=9.6 -l type=noapps*
+--
++
+// There's no output from the approve command
+
+.. Verify that the enrollment request now is set to approved and there is a managed device.
++
+[source,subs="verbatim,quotes,attributes"]
+--
+$ *flightctl get enrollmentrequest*
+NAME                                                    APPROVAL        APPROVER        APPROVED LABELS
+{edge-1-uuid-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}    Approved        admin           alias=edge-1,rhel=9.6,type=noapps
+$ *flightctl get device -o wide*
+NAME                                                    ALIAS   OWNER   SYSTEM  UPDATED         APPLICATIONS    LABELS
+{edge-1-uuid-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}    edge-1  <none>  Online  OutOfDate       NoApplications  alias=edge-1,rhel=9.6,type=noapps
+--
+
+.. Wait a few moments while the Edge Manager agent finishes synchronizing the device with the configurations set by Edge Manager.
++
+[source,subs="verbatim,quotes,attributes"]
+--
+$ *flightctl get device -o wide*
+NAME                                                    ALIAS   OWNER   SYSTEM  UPDATED         APPLICATIONS    LABELS
+{edge-1-uuid-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}    edge-1  <none>  Online  UpToDate        NoApplications  alias=edge-1,rhel=9.6,type=noapp
+--
+
+6. Verify that the test VM is now managed by Edge Manager.
+
+.. Because the device was just enrolled and it is not a member of a fleet, its configuration is empty, that is, it contains an empty `spec` field.
+Also notice that its `status` field reports a good amount of information.
++
+[source,subs="verbatim,quotes,attributes"]
+--
+$ *flightctl get device _{edge-1-uuid-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}_ -o yaml*
+apiVersion: flightctl.io/v1beta1
+kind: Device
+metadata:
+  annotations:
+    device-controller/renderedSpecHash: 44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a
+    device-controller/renderedVersion: "1"
+  creationTimestamp: "2025-12-17T21:51:56.869947Z"
+  generation: 1
+  labels:
+    alias: edge-1
+    rhel: "9.6"
+    type: noapps
+  name: {edge-1-uuid-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}
+  resourceVersion: "10"
+spec: {}
+status:
+  applications: []
+  applicationsSummary:
+    info: Device has not reported any application workloads yet.
+    status: NoApplications
+  conditions:
+  - lastTransitionTime: "2025-12-17T21:54:31.661072107Z"
+    message: 'Updated to desired renderedVersion: 1'
+    reason: Updated
+    status: "False"
+    type: Updating
+  - lastTransitionTime: "2025-12-17T21:51:57.019841739Z"
+    message: ""
+    reason: Valid
+    status: "True"
+    type: SpecValid
+  config:
+    renderedVersion: "1"
+  integrity:
+    deviceIdentity:
+      status: Unsupported
+    info: TPM not present or not enabled on this device
+    status: Unsupported
+    tpm:
+      status: Unsupported
+  lifecycle:
+    status: Enrolled
+  os:
+    image: registry.lab.example.com:5000/rhem-enroll:v1.0
+    imageDigest: sha256:{rhem-enroll-v1-shaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}
+  resources:
+    cpu: Healthy
+    disk: Healthy
+    memory: Healthy
+  summary:
+    info: Device's system resources are healthy.
+    status: Online
+  systemInfo:
+    agentVersion: v1.0.0-rc2
+    architecture: amd64
+    bootID: 395cd453-412a-4a0b-ac95-49acbad09a51
+    distroName: Red Hat Enterprise Linux
+    distroVersion: 9.6 (Plow)
+    hostname: enroll
+    kernel: 5.14.0-570.62.1.el9_6.x86_64
+    netInterfaceDefault: enp1s0
+    netIpDefault: 172.25.250.9/24
+    netMacDefault: 52:54:00:6a:6d:83
+    operatingSystem: linux
+    productName: KVM
+    productSerial: ""
+    productUuid: c6efb5f1-6136-4411-989d-76979291896a
+  updated:
+    info: Device was updated to the latest device spec.
+    status: UpToDate
+--
+
+.. If you did not set the correct labels, during approval, you can use the following command to edit the device resource and add the three entries under `labels:` and the previous listing as a guide.
++
+[source,subs="verbatim,quotes,attributes"]
+--
+$ *flightctl edit device {edge-1-uuid-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}*
+--
+
+.. The flightctl command does not provide built-in filtering, but you can pipe its JSON output to the `jq` utility and filter just the information you need, for example:
++
+[source,subs="verbatim,quotes,attributes"]
+--
+$ *flightctl get device {edge-1-uuid-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa} -o json | jq -r '.status.resources.cpu'*
+Healthy
+--
+
+.. You can refer to the device alias, instead of its UUID, with the following trick:
++
+[source,subs="verbatim,quotes,attributes"]
+--
+$ *flightctl get device $( flightctl get device -o name -l alias=edge-1 )*
+NAME                                                    ALIAS   OWNER   SYSTEM  UPDATED         APPLICATIONS
+{edge-1-uuid-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}    edge-1  <none>  Online  UpToDate        NoApplications
+--
+
+.. Use the Edge Manager CLI to get a shell on the managed device.
++
+[source,subs="verbatim,quotes"]
+--
+$ *flightctl console device $( flightctl get device -o name -l alias=edge-1 )*
+[root@enroll ~]#
+--
+
+.. On the managed device, verify that the logs Edge Manager agent records that the device was enrolled and synchronized, that is, reconciled with its currently empty configuration in the Edge Manager server.
++
+[source,subs="verbatim,quotes"]
+--
+# *journalctl -u flightctl-agent | grep -E 'enrolled|reconciliation'*
+Dec 17 21:52:01 enroll flightctl-agent[1271]: Your device is enrolled to flightctl,
+Dec 17 21:54:31 enroll flightctl-agent[1271]: time="2025-12-17T21:54:31.627237Z" level=info msg="Spec reconciliation complete: current version 1"
+Dec 17 22:06:01 enroll flightctl-agent[1271]: time="2025-12-17T22:06:01.661683Z" level=info msg="Spec reconciliation complete: current version 2"
+--
+
+.. Create a file on the managed device, so you can easily distinguish it from other managed devices you create during this course.
++
+[source,subs="verbatim,quotes"]
+--
+# *echo 'managed #1' > device.txt*
+# *ls*
+anaconda-ks.cfg  buildinfo  device.txt  original-ks.cfg
+# *cat device.txt*
+managed #1
+--
+
+.. Return to your host shell.
++
+[source,subs="verbatim,quotes"]
+--
+# *exit*
+--
+
+7. Provision another test VM using the same installable ISO.
+
+.. Use the provided script to create a second test VM.
+Remember to give it a different digit from the previous one.
++
+At the end of the instalation, press kbd:[Ctrl+\]] to return to your shell.
++
+[source,subs="verbatim,quotes"]
+--
+$ *bash virt-install.sh 2*
+Creating VM edge-2, use port 8222 for SSH.
+...
+Domain creation completed.
+Restarting guest.
+Running text console command: virsh --connect qemu:///session console edge-2
+Connected to domain 'edge-2'
+Escape character is ^] (Ctrl + ])
+
+--
+
+.. Access your second test VM and verify it is running a Edge Manager agent.
+Notice it has the same hostname as the first test VM, because that configuration is hardcoded in the kickstart script from the installation ISO.
++
+[source,subs="verbatim,quotes"]
+--
+$ *ssh -i edge-key -p 8222 core@127.0.0.1*
+...
+[core@enroll ~]$
+--
+
+.. On your second test VM, verify that it generated a different UUID to identify itself to Edge Manager and return to your host shell.
++
+[source,subs="verbatim,quotes,attributes"]
+--
+$ *sudo journalctl -u flightctl-agent | grep -m 1 Bootstrapping*
+Dec 17 22:16:47 enroll flightctl-agent[844]: time="2025-12-17T22:16:47.552079Z" level=info msg="Bootstrapping device: {edge-2-uuid-bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb}"
+$ *exit*
+--
+
+8. Enroll your second test VM on Edge Manager, but this time using its web interface.
+
+.. Open a web browser and visit `\https://servera.lab.example.com`.
+
+.. Log in as the `admin` user with the `redhat` password.
+
+.. The overview page should indicate that you have one healthy managed device, with no applications.
+You will see one blue circle followed by two green circles.
+
+.. On the left panel, click menu:Devices[].
+The beginning of the page indicates that there's one device pending approval.
+
+.. Verify that the name of that device matches the UUID you got from the logs in your second test VM.
+
+.. Scroll down and verify that the first test VM is listed as a managed device, on the same page.
+
+.. Scroll back to the beginning of the page to approve your second test VM as a managed device.
++
+Click on the menu:Untitled[] link on the menu:Alias[] column.
+You can then see information about the device, such as its MAC address, if you must confirm its identity before approving it.
+
+.. Return to the menu:Devices[] page and click on the menu:Approve[] link to the right.
+
+.. Type `edge-2` as the alias of the device and click menu:Add label[] to show a text field where you will type the key and value for the next label.
+
+.. Type `rhel=9.6` and press kbd:[Tab] to display the menu:Add label[] link again.
+Repeat the process to add another label, and type `type=noapps`.
+Feel free to add more labels, but be sure to include those two.
+
+.. The warning _No fleet is matching the selected labels_ is expected and can be safely ignored. 
+Click menu:Approve[].
+
+.. The menu:Devices[] page now shows no devices pending approval, and shows the new managed device with an `Out-of-date` status.
+
+.. Wait a few moments until the device synchronizes with Edge Manager and its status changes to `Up-to-date`.
+
+9. Verify that, despite being provisioned from the same enrollment request data, each test VM retains its own identity and configuration from Edge Manager.
+
+.. On the menu:Devices[] page, click on the menu:edge-2[] alias to enter the managed device details page of your second test VM.
+
+.. Click menu:YAML[] to see the resource manifest of the device, as you would get from the `flightctl get device -o yaml` command.
+
+.. Click menu:Terminal[] to get a shell on the managed device, as you would get from the `flightctl console` command.
+
+.. Verify that the second test VM does not contain a `device.txt` file by using the `ls` command.
+
+You now have two test VMs enrolled in Edge Manager as managed devices.
+You also know how to identify each one and access these devices, to run troubleshooting commands, directly through Edge Manager.
+Finally, you know that you can perform most actions by using either the CLI or the web interface.
+One of the few exceptions, which requires using the CLI, is fetching enrollment request data.
+
+IMPORTANT: Grab screenshots with the latest RC or the GA release, whatever is the one for this course initial release.
+Not taking screen shots right now to avoid changes to UI, styling, and branding.
+
+== What's next
+
+In the next activity, you will exercise management of edge devices from Edge Manager, by changing and updating their operating system images and system configurations.

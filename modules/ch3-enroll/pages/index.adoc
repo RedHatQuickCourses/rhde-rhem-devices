@@ -2,6 +2,7 @@
 
 Goal::
 
-Enroll managed devices on RHEM.
+Enroll managed devices on Edge Manager.
 
-WARNING: Not started yet
+This chapter starts with the requirements for system images of managed devices and then describes the enrollment proccess which makes devices managed by Edge Manager.
+Then it presents device IDs, which are UUIDs, and the general syntax of the Edge Manager CLI.
