@@ -4,8 +4,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>Manage Edge Devices with Red Hat Edge Manager :: Deploying Red Hat Edge Manager and Managing Edge Devices</title>
-    <link rel="prev" href="../ch3-enroll/index.html">
-    <link rel="next" href="../ch5-decomission/index.html">
+    <link rel="prev" href="../ch3-enroll/s2-enroll-lab.html">
+    <link rel="next" href="s1-manage.html">
     <meta name="generator" content="Antora 3.1.3">
     <link rel="stylesheet" href="../../../_/css/site.css">
     <script>var uiRootPath = '../../../_'</script>
@@ -54,7 +54,16 @@
   <li class="nav-item" data-depth="0">
 <ul class="nav-list">
   <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
     <a class="nav-link" href="../ch1-intro/index.html">Introduction to Red Hat Edge Manager</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../ch1-intro/s1-architecture.html">Managing Edge Devices with Red Hat Edge Manager</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../ch1-intro/s3-classroom-lab.html">Lab: Prepare to Install Red Hat Edge Manager</a>
+  </li>
+</ul>
   </li>
 </ul>
   </li>
@@ -68,7 +77,7 @@
     <a class="nav-link" href="../ch2-deploy/s1-quadlets.html">Red Hat Edge Manager Services and Installation</a>
   </li>
   <li class="nav-item" data-depth="2">
-    <a class="nav-link" href="../ch2-deploy/s2-install-lab.html">Lab: Install Red Hat Edge Manager Standalone</a>
+    <a class="nav-link" href="../ch2-deploy/s2-install-lab.html">Lab: Install Red Hat Edge Manager on RHEL</a>
   </li>
 </ul>
   </li>
@@ -77,21 +86,51 @@
   <li class="nav-item" data-depth="0">
 <ul class="nav-list">
   <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
     <a class="nav-link" href="../ch3-enroll/index.html">Add Edge Devices to Red Hat Edge Manager</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../ch3-enroll/s1-enroll.html">Enroll Edge Devices in Edge Manager</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../ch3-enroll/s2-enroll-lab.html">Lab: Enroll Edge Devices Using Late Binding</a>
+  </li>
+</ul>
   </li>
 </ul>
   </li>
   <li class="nav-item" data-depth="0">
 <ul class="nav-list">
   <li class="nav-item is-current-page" data-depth="1">
+    <button class="nav-item-toggle"></button>
     <a class="nav-link" href="index.html">Manage Edge Devices with Red Hat Edge Manager</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="s1-manage.html">Manage Edge Devices with Red Hat Edge Manager</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="s2-manage-lab.html">Lab: Configure Edge Devices</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="s3-update-lab.html">Lab: Update Edge Devices</a>
+  </li>
+</ul>
   </li>
 </ul>
   </li>
   <li class="nav-item" data-depth="0">
 <ul class="nav-list">
   <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
     <a class="nav-link" href="../ch5-decomission/index.html">Remove Edge Devices from Red Hat Edge Manager</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../ch5-decomission/s1-delete.html">Decommission and Delete Edge Devices with Edge Manager</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../ch5-decomission/s2-delete-lab.html">Lab: Decommission and Delete Edge Devices</a>
+  </li>
+</ul>
   </li>
 </ul>
   </li>
@@ -146,25 +185,24 @@
 <dl>
 <dt class="hdlist1">Goal</dt>
 <dd>
-<p>Onboard, update, and repurpose managed devices.</p>
+<p>Configure, update, and repurpose managed devices.</p>
 </dd>
 </dl>
 </div>
-<div class="admonitionblock warning">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-warning" title="Warning"></i>
-</td>
-<td class="content">
-Not started yet
-</td>
-</tr>
-</table>
+<div class="paragraph">
+<p>This chapter starts with a discussion of common settings and tools to perform day-0, day-1, and day-2 configurations on devices, and classifies Edge Manager as a tool for day-2 configuration.
+It also describes how Edge Manager can be part of a more sophisticated device onboarding workflow, possibly complemented by other, specialized tools.</p>
+</div>
+<div class="paragraph">
+<p>Then, the chapter switches to the Edge Manager drift detection and reconciliation of managed device configuations, and presents the most common configuration provider types in a device template.
+It proceeds with a discussion on operating system updates (patching) vs. Edge Manager updates (which also include configurations and applications).</p>
+</div>
+<div class="paragraph">
+<p>Finally, it shows how to get shell access of managed devices through Edge Manager and the differences between administrator roles, which you require to enroll managed devices, and operator roles, which are allowed to manage edge devices.</p>
 </div>
 <nav class="pagination">
-  <span class="prev"><a href="../ch3-enroll/index.html">Add Edge Devices to Red Hat Edge Manager</a></span>
-  <span class="next"><a href="../ch5-decomission/index.html">Remove Edge Devices from Red Hat Edge Manager</a></span>
+  <span class="prev"><a href="../ch3-enroll/s2-enroll-lab.html">Lab: Enroll Edge Devices Using Late Binding</a></span>
+  <span class="next"><a href="s1-manage.html">Manage Edge Devices with Red Hat Edge Manager</a></span>
 </nav>
 </article>
   </div>

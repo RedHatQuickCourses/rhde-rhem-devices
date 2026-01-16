@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Lab: Decommission and Delete Edge Devices :: Deploying Red Hat Edge Manager and Managing Edge Devices</title>
+    <link rel="prev" href="s1-delete.html">
+    <meta name="generator" content="Antora 3.1.3">
+    <link rel="stylesheet" href="../../../_/css/site.css">
+    <script>var uiRootPath = '../../../_'</script>
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="https://www.redhat.com" target="_blank"><img src="../../../_/img/redhat-logo.png" height="40px" alt="Red Hat"></a>
+      <a class="navbar-item" style="font-size: 24px; color: white" href="../../..">Deploying Red Hat Edge Manager and Managing Edge Devices</a>
+      <button class="navbar-burger" data-target="topbar-nav">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <a class="navbar-item" href="https://github.com/RedHatQuickCourses/rhde-rhem-devices/issues" target="_blank">Report Issues</a>
+      </div>
+    </div>
+  </nav>
+</header>
+<div class="body">
+<div class="nav-container" data-component="rhde-rhem-devices" data-version="1">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <h3 class="title"><a href="../index.html">Deploying Red Hat Edge Manager and Managing Edge Devices</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../index.html">Home</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../LABENV/index.html">Lab Environment</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../ch1-intro/index.html">Introduction to Red Hat Edge Manager</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../ch1-intro/s1-architecture.html">Managing Edge Devices with Red Hat Edge Manager</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../ch1-intro/s3-classroom-lab.html">Lab: Prepare to Install Red Hat Edge Manager</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../ch2-deploy/index.html">Install Red Hat Edge Manager as Quadlets</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../ch2-deploy/s1-quadlets.html">Red Hat Edge Manager Services and Installation</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../ch2-deploy/s2-install-lab.html">Lab: Install Red Hat Edge Manager on RHEL</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../ch3-enroll/index.html">Add Edge Devices to Red Hat Edge Manager</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../ch3-enroll/s1-enroll.html">Enroll Edge Devices in Edge Manager</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../ch3-enroll/s2-enroll-lab.html">Lab: Enroll Edge Devices Using Late Binding</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../ch4-manage/index.html">Manage Edge Devices with Red Hat Edge Manager</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../ch4-manage/s1-manage.html">Manage Edge Devices with Red Hat Edge Manager</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../ch4-manage/s2-manage-lab.html">Lab: Configure Edge Devices</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../ch4-manage/s3-update-lab.html">Lab: Update Edge Devices</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="index.html">Remove Edge Devices from Red Hat Edge Manager</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="s1-delete.html">Decommission and Delete Edge Devices with Edge Manager</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="2">
+    <a class="nav-link" href="s2-delete-lab.html">Lab: Decommission and Delete Edge Devices</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Deploying Red Hat Edge Manager and Managing Edge Devices</span>
+    <span class="version">1</span>
+  </div>
+  <ul class="components">
+    <li class="component is-current">
+      <a class="title" href="../index.html">Deploying Red Hat Edge Manager and Managing Edge Devices</a>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="../index.html">1</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <a class="title" href="../../../samples/1/index.html">samples</a>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../samples/1/index.html">1</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../index.html">Deploying Red Hat Edge Manager and Managing Edge Devices</a></li>
+    <li><a href="index.html">Remove Edge Devices from Red Hat Edge Manager</a></li>
+    <li><a href="s2-delete-lab.html">Lab: Decommission and Delete Edge Devices</a></li>
+  </ul>
+</nav>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Lab: Decommission and Delete Edge Devices</h1>
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p><em>Estimated reading time: <strong>5 minutes</strong>.</em></p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Objective</dt>
+<dd>
+<p>Make managed devices unmanaged and delete their device resources in Edge Manager.</p>
+</dd>
+</dl>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_before_you_begin"><a class="anchor" href="#_before_you_begin"></a>Before you begin</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>You need a customer portal account with access to a Red Hat Enterprise Linux (RHEL) subscription.
+It could be a <a href="https://developers.redhat.com/products/rhel/download">Red Hat Developer program</a> free subscription.</p>
+</div>
+<div class="paragraph">
+<p>You need a <em>development machine</em> running RHEL, which contains two test VMs already enrolled into your Edge Manager server by a <a href="../ch3-enroll/s2-enroll-lab.html" class="xref page">previous lab</a>.</p>
+</div>
+<div class="paragraph">
+<p>You also need a <em>server machine</em> running RHEL, to which you also have unrestricted sudo access, which was already configured with Edge Manager.</p>
+</div>
+<div class="paragraph">
+<p>If you are using the course classroom, your <em>development machine</em> is the <code>workstation</code> VM.
+Log in as the user <code>student</code> with password <code>student</code>.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_instructions"><a class="anchor" href="#_instructions"></a>Instructions</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>You will decommission and delete both managed devices you enrolled and configured in previous labs, and you will verify that the configurations set by Edge Manager remain on the devices after they cease to be managed devices.</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Verify that you have the outcomes of previous labs.
+If you do not, go back and complete them, because you need their outcomes to proceed with this lab.</p>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+While this activity does not depend on outcomes from <em>all</em> of the previous labs, it works better if you have already performed some configuration of managed devices; after enrolling them.
+</td>
+</tr>
+</table>
+</div>
+<div class="olist loweralpha">
+<ol class="loweralpha" type="a">
+<li>
+<p>There is a clone of the course samples repository on your home directory.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>cd</strong>
+$ <strong>ls rhde-rhem-samples</strong>
+LICENSE  README.md  antora.yml  enroll  modules  webapp</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>There are two local test VMs, named <code>edge-1</code> and <code>edge-2</code>.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>virsh list --all</strong>
+ Id   Name     State
+-------------------------
+ -    edge-1   shut off
+ -    edge-2   shut off</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>If your test VMs are not running, because you stopped your classroom environment since completing the previous lab, start them now.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>virsh start edge-1</strong>
+Domain 'edge-1' started
+$ <strong>virsh start edge-2</strong>
+Domain 'edge-2' started</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Enter the <code>test-enroll</code> directory, which contains the SSH keys used to provision and access your two test VMs.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>cd temp-enroll</strong>
+$ <strong>ls</strong>
+Containerfile  bib-iso.sh  config.toml  config.yaml  edge-key  edge-key.pub  output  rhem-enroll.iso  virt-install.sh</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Log in to Edge Manager as an administrator and verify that there are two managed devices, which correspond to the two test VMs.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>flightctl login -u admin -p redhat https://servera.lab.example.com:3443</strong>
+Auto-selected organization: 00000000-0000-0000-0000-000000000000 Default
+Login successful.
+$ <strong>flightctl get device -o wide</strong>
+NAME                                                    ALIAS   OWNER   SYSTEM  UPDATED         APPLICATIONS    LABELS
+1u63hvsgtua9tjjbmla9bgh5h2s77cb8esepphnf68m3ocf8qfng    edge-1  &lt;none&gt;  Online  UpToDate        NoApplications  rhel=9.6,type=noapps,alias=edge-1
+g7ombcqk46tqq458j9uju454441mf1lgt9qqqva8ti0fnvosm57g    edge-2  &lt;none&gt;  Unknown Unknown         Unknown         rhel=9.6,type=noapps,alias=edge-2</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Wait a few moments and repeat the latest command until both managed devices return as <code>OnLine</code> and <code>UpToDate</code>.</p>
+</li>
+</ol>
+</div>
+</li>
+<li>
+<p>Verify that you need full administrator rights to decomission managed devices.</p>
+<div class="olist loweralpha">
+<ol class="loweralpha" type="a">
+<li>
+<p>Open a web browser and visit <code>https://servera.lab.example.com</code></p>
+</li>
+<li>
+<p>Log in as the <code>student</code> user with the <code>student</code> password.
+On the left pane, select the <b class="menuref">Devices</b> page, and click the three vertical dots icon, to open the actions menu for any of the managed devices.</p>
+</li>
+<li>
+<p>Notice that there is no action to either decommission or delete a device, but only to edit device configurations and view device details.</p>
+<div class="paragraph">
+<p>Also notice, at the top of page, below the device filters, there is a slider button to display decommissioned devices.</p>
+</div>
+</li>
+<li>
+<p>Click the <b class="menuref">Show decommissioned devices</b> button, and the page should show that there are no devices being decommissioned or already decommissioned.</p>
+</li>
+<li>
+<p>Click on the <code>student</code> user name, to the top right, to open the user menu and select <b class="menuref">Logout</b>.</p>
+</li>
+</ol>
+</div>
+</li>
+<li>
+<p>Decomission the managed device which corresponds to your first test VM.</p>
+<div class="olist loweralpha">
+<ol class="loweralpha" type="a">
+<li>
+<p>Log in as the <code>admin</code> user with the <code>redhat</code> password.
+On the left pane, select the <b class="menuref">Devices</b> page, and click the three vertical dots icon, to open the actions menu for the <code>edge-2</code> managed device.</p>
+</li>
+<li>
+<p>Click <b class="menuref">Decommision device</b>.
+Confirm that you really want to decommission the managed device by clicking on the red <b class="menuref">Decommision device</b> button.</p>
+</li>
+<li>
+<p>The <b class="menuref">Devices</b> page automatically switches to list decomissioned devices, and shows a status of <code>Decomissioning</code> for the device which has the UUID that used to belong to the <code>edge-2</code> managed device.
+Notice that, when you decomission a managed device, it loses all its labels but it does NOT lose the configurations managed by Edge Manager.</p>
+</li>
+<li>
+<p>Click the UUID of the only device being decomissioned, which used to be the <code>edge-2</code> managed device, and see that it still display the configurations which were set for the device.</p>
+<div class="paragraph">
+<p>The device stays in that state on the assumption that some clean up procedure would be executed on it.</p>
+</div>
+</li>
+</ol>
+</div>
+</li>
+<li>
+<p>Delete the decommissioned device.</p>
+<div class="olist loweralpha">
+<ol class="loweralpha" type="a">
+<li>
+<p>You could keep the device as being decommissioned for as long as you wish, but after a time, you will probably want to remove its records from the Edge Manager database.</p>
+<div class="paragraph">
+<p>To remove the record for the device you just decomissioned, return to the <b class="menuref">Devices</b> page and click again <b class="menuref">Show decommissioned devices</b>.
+Then click the actions menu button for the only device listed and select <b class="menuref">Delete device</b>.</p>
+</div>
+</li>
+<li>
+<p>Confirm that you actually want to delete the device resource by clicking the red <b class="menuref">Delete device</b> button.
+Now your <b class="menuref">Devices</b> page should list no decommissioned devices.</p>
+</li>
+</ol>
+</div>
+</li>
+<li>
+<p>Verify that decomissioned devices are not cleaned up.</p>
+<div class="olist loweralpha">
+<ol class="loweralpha" type="a">
+<li>
+<p>Switch to a terminal and enter the <code>temp-enroll</code> directory, which contains the SSH keys for acessing your test VMs.</p>
+<div class="paragraph">
+<p>Notice that it still contains the message of the day that you configured by using Edge Manager.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>cd temp-enroll</strong>
+$ <strong>ssh -i edge-2-key -p 8222 core@127.0.0.1</strong>
+Under new management!
+Last login: Thu Dec 19 14:05:12 2025 from 172.25.250.254
+[core@enroll ~]$</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Verify that the test VM is still running the latest operating system image set by Edge Manager.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>sudo bootc status</strong>
+● Booted image: containers-storage:registry.lab.example.com:5000/rhem-webapp:v1.2
+        Digest: sha256:{rhem-webapp-v1-shaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}
+       Version: 9.6 (2025-12-02 08:30:48 UTC)
+
+  Rollback image: containers-storage:registry.lab.example.com:5000/rhem-webapp:v1.1
+          Digest: sha256:{rhem-enroll-v1-shaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}
+         Version: 9.6 (2025-12-02 08:30:48 UTC)</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Terminate the SSH session and return to your host shell.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>exit</strong></code></pre>
+</div>
+</div>
+</li>
+</ol>
+</div>
+</li>
+<li>
+<p>Decommission another device, but now use the CLI.</p>
+<div class="olist loweralpha">
+<ol class="loweralpha" type="a">
+<li>
+<p>Log in as the <code>student</code> user, so you can see the error message you would get for insufficient permissions to perform the decommission operation.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>flightctl login -u student -p student https://servera.lab.example.com:3443</strong>
+Auto-selected organization: 00000000-0000-0000-0000-000000000000 Default
+Login successful.
+$ <strong>flightctl get device -o wide</strong>
+NAME                                                    ALIAS   OWNER   SYSTEM  UPDATED         APPLICATIONS    LABELS
+1u63hvsgtua9tjjbmla9bgh5h2s77cb8esepphnf68m3ocf8qfng    edge-1  &lt;none&gt;  Online  UpToDate        NoApplications  rhel=9.6,type=noapps,alias=edge-2
+$ <strong>flightctl decommission device 1u63hvsgtua9tjjbmla9bgh5h2s77cb8esepphnf68m3ocf8qfng</strong>
+Error: unsuccessful decommissioning device request 1u63hvsgtua9tjjbmla9bgh5h2s77cb8esepphnf68m3ocf8qfng: Forbidden</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Log in as the <code>admin</code> user and decommission the <code>edge-1</code> managed device, which corresponds to your first test VM.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>flightctl login -u admin -p redhat https://servera.lab.example.com:3443</strong>
+Auto-selected organization: 00000000-0000-0000-0000-000000000000 Default
+Login successful.
+$ <strong>flightctl get device -o wide</strong>
+NAME                                                    ALIAS   OWNER   SYSTEM  UPDATED         APPLICATIONS    LABELS
+1u63hvsgtua9tjjbmla9bgh5h2s77cb8esepphnf68m3ocf8qfng    edge-1  &lt;none&gt;  Online  UpToDate        NoApplications  rhel=9.6,type=noapps,alias=edge-2
+$ <strong>flightctl decommission device 1u63hvsgtua9tjjbmla9bgh5h2s77cb8esepphnf68m3ocf8qfng</strong>
+Device scheduled for decommissioning: 200 OK: 1u63hvsgtua9tjjbmla9bgh5h2s77cb8esepphnf68m3ocf8qfng</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Verify that the device still appears in the device list, though it is not managed by Edge Manager anymore.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>flightctl get device -o wide</strong>
+NAME                                                    ALIAS   OWNER   SYSTEM  UPDATED         APPLICATIONS    LABELS
+1u63hvsgtua9tjjbmla9bgh5h2s77cb8esepphnf68m3ocf8qfng            &lt;none&gt;  Online  UpToDate        NoApplications</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>You must check the <code>status</code> field of the device to know that it has been decommissioned.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>UUID=1u63hvsgtua9tjjbmla9bgh5h2s77cb8esepphnf68m3ocf8qfng</strong>
+$ <strong>flightctl get device $UUID -o json | jq -r '.status.lifecycle.status'</strong>
+Decommissioning</code></pre>
+</div>
+</div>
+</li>
+</ol>
+</div>
+</li>
+<li>
+<p>Delete the last device, also by using the CLI.</p>
+<div class="olist loweralpha">
+<ol class="loweralpha" type="a">
+<li>
+<p>Use the <code>UUID</code> shell variable that you set in the previous step to delete the device resource from Edge Manager.</p>
+<div class="paragraph">
+<p>Notice that, when using the CLI, there is no confirmation for either decommissioning or deleting a managed device.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>flightctl delete device $UUID</strong>
+Deletion request for device "1u63hvsgtua9tjjbmla9bgh5h2s77cb8esepphnf68m3ocf8qfng" completed</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Verify that your device list is now empty.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>flightctl get device -o wide</strong>
+NAME    ALIAS   OWNER   SYSTEM  UPDATED APPLICATIONS    LABELS</code></pre>
+</div>
+</div>
+</li>
+</ol>
+</div>
+</li>
+<li>
+<p>Verify that your test devices cannot communicate with their Edge Manager server.</p>
+<div class="olist loweralpha">
+<ol class="loweralpha" type="a">
+<li>
+<p>Open a SSH session to one of your test VMs and shut it down.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>ssh -i edge-2-key -p 8222 core@127.0.0.1</strong>
+Under new management!
+...
+[core@enroll ~]$ <strong>sudo shutdown -r now</strong></code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Give it time to reboot and reconnect using SSH.</p>
+<div class="paragraph">
+<p>Verify that the device believes it is already enrolled with Edge Manager, but it cannot update its status on the Edge Manager server.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>ssh -i edge-2-key -p 8222 core@127.0.0.1</strong>
+...
+[core@enroll ~]$ <strong>sudo journalctl -u flightctl-agent | grep -A 5 enrolled | tail -n 6</strong>
+Jan 12 19:56:56 enroll flightctl-agent[868]: Your device is enrolled to flightctl,
+Jan 12 19:56:56 enroll flightctl-agent[868]: you can manage your device scanning the above QR. or following this URL:
+Jan 12 19:56:56 enroll flightctl-agent[868]: https://servera.lab.example.com:443/manage/1u63hvsgtua9tjjbmla9bgh5h2s77cb8esepphnf68m3ocf8qfng
+Jan 12 19:56:56 enroll systemd[1]: Started Flight Control management agent.
+Jan 12 19:56:56 enroll flightctl-agent[868]: time="2026-01-12T19:56:56.471334Z" level=info msg="No OS update in progress"
+Jan 12 19:56:56 enroll flightctl-agent[868]: time="2026-01-12T19:56:56.516268Z" level=warning msg="Failed to update device status: update device status failed: 404 Not Found" file="device/status/status.go:159"
+[core@enroll ~]$ <strong>exit</strong></code></pre>
+</div>
+</div>
+</li>
+</ol>
+</div>
+</li>
+<li>
+<p>Verify that the devices are still fully functional, by acessing their embedded web application.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>curl 127.0.0.1:8108</strong>
+This would be the HTML and JavaScript code of a single-page web application.</code></pre>
+</div>
+</div>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>You demonstrated that decommissioning and deleting managed devices on Edge Manager does not scrub the devices.
+If they contained sentitive data, such as secrets to access corporate systems, that is still there, and you must implement a process for cleaning those devices of such data.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_whats_next"><a class="anchor" href="#_whats_next"></a>What&#8217;s next</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>This is the final activity of this course.
+In the next course, you will configure device fleets, manage devices as members of fleets, and also manage containerized applications in device fleets.</p>
+</div>
+</div>
+</div>
+<nav class="pagination">
+  <span class="prev"><a href="s1-delete.html">Decommission and Delete Edge Devices with Edge Manager</a></span>
+</nav>
+</article>
+  </div>
+</main>
+</div>
+<footer class="footer">
+  <img src="../../../_/img/rhl-logo-red.png" height="40px" alt="Red Hat"  href="https://redhat.com" >
+</footer><script id="site-script" src="../../../_/js/site.js" data-ui-root-path="../../../_"></script>
+<script async src="../../../_/js/vendor/highlight.js"></script>
+  </body>
+</html>

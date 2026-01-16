@@ -1,0 +1,1044 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Lab: Enroll Edge Devices Using Late Binding :: Deploying Red Hat Edge Manager and Managing Edge Devices</title>
+    <link rel="prev" href="s1-enroll.html">
+    <link rel="next" href="../ch4-manage/index.html">
+    <meta name="generator" content="Antora 3.1.3">
+    <link rel="stylesheet" href="../../../_/css/site.css">
+    <script>var uiRootPath = '../../../_'</script>
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="https://www.redhat.com" target="_blank"><img src="../../../_/img/redhat-logo.png" height="40px" alt="Red Hat"></a>
+      <a class="navbar-item" style="font-size: 24px; color: white" href="../../..">Deploying Red Hat Edge Manager and Managing Edge Devices</a>
+      <button class="navbar-burger" data-target="topbar-nav">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <a class="navbar-item" href="https://github.com/RedHatQuickCourses/rhde-rhem-devices/issues" target="_blank">Report Issues</a>
+      </div>
+    </div>
+  </nav>
+</header>
+<div class="body">
+<div class="nav-container" data-component="rhde-rhem-devices" data-version="1">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <h3 class="title"><a href="../index.html">Deploying Red Hat Edge Manager and Managing Edge Devices</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../index.html">Home</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../LABENV/index.html">Lab Environment</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../ch1-intro/index.html">Introduction to Red Hat Edge Manager</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../ch1-intro/s1-architecture.html">Managing Edge Devices with Red Hat Edge Manager</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../ch1-intro/s3-classroom-lab.html">Lab: Prepare to Install Red Hat Edge Manager</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../ch2-deploy/index.html">Install Red Hat Edge Manager as Quadlets</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../ch2-deploy/s1-quadlets.html">Red Hat Edge Manager Services and Installation</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../ch2-deploy/s2-install-lab.html">Lab: Install Red Hat Edge Manager on RHEL</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="index.html">Add Edge Devices to Red Hat Edge Manager</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="s1-enroll.html">Enroll Edge Devices in Edge Manager</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="2">
+    <a class="nav-link" href="s2-enroll-lab.html">Lab: Enroll Edge Devices Using Late Binding</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../ch4-manage/index.html">Manage Edge Devices with Red Hat Edge Manager</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../ch4-manage/s1-manage.html">Manage Edge Devices with Red Hat Edge Manager</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../ch4-manage/s2-manage-lab.html">Lab: Configure Edge Devices</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../ch4-manage/s3-update-lab.html">Lab: Update Edge Devices</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../ch5-decomission/index.html">Remove Edge Devices from Red Hat Edge Manager</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../ch5-decomission/s1-delete.html">Decommission and Delete Edge Devices with Edge Manager</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../ch5-decomission/s2-delete-lab.html">Lab: Decommission and Delete Edge Devices</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Deploying Red Hat Edge Manager and Managing Edge Devices</span>
+    <span class="version">1</span>
+  </div>
+  <ul class="components">
+    <li class="component is-current">
+      <a class="title" href="../index.html">Deploying Red Hat Edge Manager and Managing Edge Devices</a>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="../index.html">1</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <a class="title" href="../../../samples/1/index.html">samples</a>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../samples/1/index.html">1</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../index.html">Deploying Red Hat Edge Manager and Managing Edge Devices</a></li>
+    <li><a href="index.html">Add Edge Devices to Red Hat Edge Manager</a></li>
+    <li><a href="s2-enroll-lab.html">Lab: Enroll Edge Devices Using Late Binding</a></li>
+  </ul>
+</nav>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Lab: Enroll Edge Devices Using Late Binding</h1>
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p><em>Estimated reading time: <strong>5 minutes</strong>.</em></p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Objective</dt>
+<dd>
+<p>Provision and enroll devices on Edge Manager from an installation ISO.</p>
+</dd>
+</dl>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_before_you_begin"><a class="anchor" href="#_before_you_begin"></a>Before you begin</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>You need a <em>development machine</em> running RHEL, to which you have unrestricted sudo access, and enough capacity to run a few VMs.
+Your <em>development machine</em> is already registered to Red Hat with a valid Red Hat Device Edge subscription.</p>
+</div>
+<div class="paragraph">
+<p>You also need a <em>server machine</em> running RHEL, to which you also have unrestricted sudo access, which was already configured with Edge Manager by the <a href="../ch2-deploy/s2-install-lab.html" class="xref page">previous lab</a>.</p>
+</div>
+<div class="paragraph">
+<p>Finally, you need a <em>private registry</em> to store bootc container images for your managed edge devices.</p>
+</div>
+<div class="paragraph">
+<p>Your <em>development machine</em> requires internet access to download RPM packages and container images.</p>
+</div>
+<div class="paragraph">
+<p>If you are using the course classroom, your <em>development machine</em> is the <code>workstation</code> VM.
+Log in as the user <code>student</code> with the password <code>student</code>.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_instructions"><a class="anchor" href="#_instructions"></a>Instructions</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>You will build a minimal bootc container image, which contains the Edge Manager agent, and create an installable ISO which contains enrollment credentials.
+Then you will use that ISO to provision a test VM, which stands in for a managed edge device, and verify that it attempts to enroll in your Edge Manager server.
+Finally, you will approve that device enrollment request, and verify that you can use the same ISO, unchanged, to provision additional edge devices.</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Verify that you have the outcomes of previous labs.
+If you do not, go back and complete them, because you need their outcomes to proceed with this lab.</p>
+<div class="olist loweralpha">
+<ol class="loweralpha" type="a">
+<li>
+<p>On your <em>development machine</em>, verify that there is a clone of the course samples repository on your home directory.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>cd</strong>
+$ <strong>ls rhde-rhem-samples</strong>
+LICENSE  README.md  antora.yml  enroll  modules  webapp</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Verify that your unprivileged user can connect using the libvirt session interface.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>virsh uri</strong>
+qemu:///session
+$ <strong>virsh nodeinfo</strong>
+CPU model:           x86_64
+...</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Verify that your <em>development machine</em> is registered to Red Hat, so it can access package repositories of any RHEL version.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>sudo subscription-manager status</strong>
++-------------------------------------------+
+   System Status Details
++-------------------------------------------+
+Overall Status: Registered</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Verify that you can access RHEL containers.
+You may get a different hash for the RHEL base bootc container image because <code>9.6</code> is a floating tag.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>podman login registry.redhat.io</strong>
+...
+Login Succeeded!
+$ <strong>skopeo inspect --format '{{.Digest}}' docker://registry.redhat.io/rhel9/rhel-bootc:9.6</strong>
+sha256:d64013d886f00ff8afd3141918139d6a6789612d7ce4d3b5c4ffc3b98fc9dec1</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Verify that you have access to a private container registry.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>podman login -u student -p redhat registry.lab.example.com:5000</strong>
+Login Succeeded!
+$ <strong>podman search registry.lab.example.com:5000/ubi9</strong>
+NAME                                     DESCRIPTION
+registry.lab.example.com:5000/ubi9/ubi</code></pre>
+</div>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+Later in this lab, you will log in again on both the Red Hat registry and your private registry as the root user, because different Linux users do not share container registry authentication tokens.
+</td>
+</tr>
+</table>
+</div>
+</li>
+<li>
+<p>Verify that you have administrator access to an Edge Manager server.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>flightctl login -u admin -p redhat https://servera.lab.example.com:3443</strong>
+Auto-selected organization: 00000000-0000-0000-0000-000000000000 Default
+Login successful.</code></pre>
+</div>
+</div>
+</li>
+</ol>
+</div>
+</li>
+<li>
+<p>Create a bootc container image, which includes the Edge Manager agent.</p>
+<div class="olist loweralpha">
+<ol class="loweralpha" type="a">
+<li>
+<p>Copy the Containerfile and related files for the enrollment image to a work directory.
+Then make the work directory your current directory.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>cp -r rhde-rhem-samples/enroll temp-enroll</strong>
+$ <strong>cd temp-enroll</strong></code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Review the Containerfile that builds a minimal enrollment image.</p>
+<div class="paragraph">
+<p>It adds a few things over a base RHEL 9 bootc container image.</p>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="olist lowerroman">
+<ol class="lowerroman" type="i">
+<li>
+<p>Installs the Edge Manager agent package.</p>
+</li>
+<li>
+<p>Masks the bootc update time service, so Edge Manager has control system updates.</p>
+</li>
+<li>
+<p>Adds a certificate authority (CA) to the system PKI trust, so that devices provisioned from this bootc container image can fetch system updates without disabling TLS validation.</p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="paragraph">
+<p>Your organization may opt to add more things to that image, for example anti-malware packages and enabling Firewalld.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>less Containerfile</strong>
+FROM registry.redhat.io/rhel9/rhel-bootc:9.6
+RUN dnf -y config-manager --add-repo https://rpm.flightctl.io/flightctl-epel.repo &amp;&amp; \
+    dnf -y install flightctl-agent-1.0.0 &amp;&amp; \
+    dnf clean all &amp;&amp; \
+    systemctl enable flightctl-agent &amp;&amp; \
+    systemctl mask bootc-fetch-apply-updates.timer
+ADD domain.crt /etc/pki/ca-trust/source/anchors/
+RUN update-ca-trust
+# Uncomment the following line to use early binding
+# ADD config.yaml /etc/flightctl</code></pre>
+</div>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+If you want to try with the current latest release of the upstream project, edit your Containerfile to remove the version component <code>-1.0.0</code> from the package <code>flightctl-agent</code>.
+</td>
+</tr>
+</table>
+</div>
+</li>
+<li>
+<p>Copy the CA certificate of the private container registry.
+Notice that the last argument of the <code>scp</code> command is a period, for the current directory.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>scp student@utility:/opt/registry/certs/domain.crt .</strong>
+domain.crt</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Build the bootc container image.
+Notice that the <code>podman build</code> command also finishes with a period.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>podman build -t rhem-enroll .</strong>
+STEP 1/2: FROM registry.redhat.io/rhel9/rhel-bootc:9.6
+...
+Successfully tagged localhost/rhem-enroll:latest
+503f839113b376c55ceee225a8cbfdc9bf1496f3342385ce171f2cf2e01f1333</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Publish the container image in the private registry.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>skopeo copy containers-storage:localhost/rhem-enroll:latest docker://registry.lab.example.com:5000/rhem-enroll:v1.0</strong>
+...
+Writing manifest to image destination</code></pre>
+</div>
+</div>
+</li>
+</ol>
+</div>
+</li>
+<li>
+<p>Create an installable ISO containing the bootc container image from the previous step.</p>
+<div class="olist loweralpha">
+<ol class="loweralpha" type="a">
+<li>
+<p>Pull your bootc container image to the container storage of the root user.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>sudo podman login -u student -p redhat registry.lab.example.com:5000</strong>
+Login Succeeded!
+$ <strong>sudo podman pull registry.lab.example.com:5000/rhem-enroll:v1.0</strong>
+...
+Writing manifest to image destination
+503f839113b376c55ceee225a8cbfdc9bf1496f3342385ce171f2cf2e01f1333</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Review the TOML file, which embeds a kickstart script for unattended installation of RHEL.</p>
+<div class="paragraph">
+<p>That kickstart script contains a <code>%post</code> block that initializes credentials for console and SSH login with the <code>core</code> user and for enrollment in a Edge Manager server.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>less Containerfile</strong>
+[customizations.installer.kickstart]
+contents = """
+lang en_US.UTF-8
+keyboard us
+timezone Etc/UTC --utc
+text
+
+zerombr
+clearpart --all --initlabel
+reqpart --add-boot
+part / --grow --fstype xfs
+
+rootpw --lock
+reboot
+
+network --bootproto=dhcp
+
+%post --log=/var/log/anaconda/post-install.log --erroronfail
+
+# local user for console login and SSH
+useradd -g wheel core
+echo "core:REPLACE_WITH_PASSWD" | chpasswd
+mkdir /home/core/.ssh
+cat &gt; /home/core/.ssh/authorized_keys &lt;&lt; EOFSSH
+REPLACE_WITH_SSH_KEY
+EOFSSH
+# Comment the following command to use early binding
+cat &gt; /etc/flightctl/config.yaml &lt;&lt; EOFRHEM
+REPLACE_WITH_CONFIG_YAML
+EOFRHEM
+echo "enroll" &gt; /etc/hostname
+chmod 644 /etc/hostname
+%end
+"""</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Set the initial user password in your kickstart script.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>sed -i 's/REPLACE_WITH_PASSWD/redhat123/' config.toml</strong></code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Generate an SSH key and embed it in your kickstart script.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>ssh-keygen -N '' -f edge-key -C 'initial key for edge devices'</strong>
+Generating public/private rsa key pair.
+...
+$ <strong>SSH_PUB_KEY=$( cat edge-key.pub )</strong>
+$ <strong>sed -i "s|REPLACE_WITH_SSH_KEY|$SSH_PUB_KEY|" config.toml</strong></code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Retrieve the enrollment configuration and certificate from Edge Manager and embed it in your kickstart script.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>flightctl certificate request --expiration=365d --output=embedded &gt; config.yaml</strong>
+Creating new ECDSA key pair and writing to "client-enrollment.key".
+Submitting certificate signing request "client-enrollment-ddbfd221"... success.
+Waiting for certificate to be approved and issued.... success.
+$ <strong>sed -i -e '/REPLACE_WITH_CONFIG_YAML/r config.yaml' -e '/REPLACE_WITH_CONFIG_YAML/d' config.toml</strong></code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Review your <code>config.toml</code> file to be sure that all <code>REPLACE_WITH</code> markers are gone.</p>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+You can remove the files named <code>ca.crt</code>, <code>client-enrollment.crt</code>, and <code>client-enrollment.key</code>, created by the <code>flightctl certificate request</code> command, because their contents are embedded in the <code>client.yaml</code> file.
+</td>
+</tr>
+</table>
+</div>
+</li>
+<li>
+<p>Create a temporary directory and use the provided script to invoke bootc image builder to produce an installable ISO image.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>sudo podman login registry.redhat.io</strong>
+...
+Login Succeeded!
+$ <strong>mkdir output</strong>
+$ <strong>bash bib-iso.sh</strong>
+...
+Build complete!
+Results saved in .</code></pre>
+</div>
+</div>
+</li>
+</ol>
+</div>
+</li>
+<li>
+<p>Create a test VM using the installable ISO.</p>
+<div class="olist loweralpha">
+<ol class="loweralpha" type="a">
+<li>
+<p>Copy the generated ISO image file to a more recognizable name, outside the temporary directory.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>cp output/bootiso/install.iso rhem-enroll.iso</strong></code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Use the provided script to invoke <code>virt-install</code> to create a local test VM, booting it from the ISO.</p>
+<div class="paragraph">
+<p>The script expects a single digit as an argument, which is used to compose both the name of the VM and the local port to forward to the SSH port of the VM.</p>
+</div>
+<div class="paragraph">
+<p>At the end of the instalation, press <span class="keyseq"><kbd>Ctrl</kbd>+<kbd>]</kbd></span> to leave the text console of the VM and return to your host shell.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>bash virt-install.sh 1</strong>
+Creating VM edge-1, use port 8122 for SSH.
+...
+Domain creation completed.
+Restarting guest.
+Running text console command: virsh --connect qemu:///session console edge-1
+Connected to domain 'edge-1'
+Escape character is ^] (Ctrl + ])</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>If you need to retry creating your test VM, use the following command and return to the step that copies the generated ISO image.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>virsh destry edge-1</strong>
+Domain 'edge-1' destroyed
+$ <strong>virsh undefine edge-1 --remove-all-storage</strong>
+Domain 'edge-1' has been undefined</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Access your test VM using SSH.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>ssh -i edge-key -p 8122 core@127.0.0.1</strong>
+...
+[core@enroll ~]$</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>On your test VM, verify that it&#8217;s booted from a bootc container image and that the <code>flightctl-agent</code> service is active.</p>
+<div class="paragraph">
+<p>Remember that the password set by kickstart for the <code>core</code> user is <code>redhat123</code>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>sudo bootc status</strong>
+● Booted image: registry.lab.example.com:5000/rhem-enroll:v1.0
+...
+$ <strong>sudo systemctl is-active flightctl-agent</strong>
+active</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Notice that, in the beginning of the Edge Manager agent logs, it generates a certificate signing request (CSR) for its own individual enrollment request with the Edge Manager server, and its own unique UUID.</p>
+<div class="paragraph">
+<p>Look for the entry with the message "Bootstrapping device".</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>sudo journalctl -u flightctl-agent | head -n 10</strong>
+Dec 17 21:31:15 enroll systemd[1]: Starting Flight Control management agent...
+Dec 17 21:31:15 enroll flightctl-agent[837]: time="2025-12-17T21:31:15.714433Z" level=info msg="Loaded configuration: {"audit":{"enabled":true},"log-level":"info","pull-retry-steps":6,"pull-timeout":"10m0s","spec-fetch-interval":"1m0s","status-update-interval":"1m0s","system-info":["hostname","kernel","distroName","distroVersion","productName","productUuid","productSerial","netInterfaceDefault","netIpDefault","netMacDefault"],"system-info-timeout":"2m0s","tpm":{"device-path":"/dev/tpm0","storage-file-path":"/var/lib/flightctl/tpm-blob.yaml"}}"
+Dec 17 21:31:15 enroll flightctl-agent[837]: time="2025-12-17T21:31:15.719693Z" level=info msg="Starting agent..."
+Dec 17 21:31:15 enroll flightctl-agent[837]: time="2025-12-17T21:31:15.720372Z" level=info msg="TPM device identity is disabled. Skipping TPM setup."
+Dec 17 21:31:15 enroll flightctl-agent[837]: time="2025-12-17T21:31:15.720527Z" level=info msg="Using file-based identity provider"
+Dec 17 21:31:15 enroll flightctl-agent[837]: time="2025-12-17T21:31:15.721499Z" level=info msg="No persisted CSR found, generating new CSR for enrollment"
+Dec 17 21:31:15 enroll flightctl-agent[837]: time="2025-12-17T21:31:15.738231Z" level=info msg="CSR generated and persisted successfully"
+Dec 17 21:31:15 enroll flightctl-agent[837]: time="2025-12-17T21:31:15.738788Z" level=info msg="OS managed by bootc client"
+Dec 17 21:31:15 enroll flightctl-agent[837]: time="2025-12-17T21:31:15.754107Z" level=info msg="Bootstrapping device: 1u63hvsgtua9tjjbmla9bgh5h2s77cb8esepphnf68m3ocf8qfng"
+Dec 17 21:31:15 enroll flightctl-agent[837]: time="2025-12-17T21:31:15.879142Z" level=info msg="System information: version=v1.0.0-rc2, go-version=go1.25.3 (Red Hat 1.25.3-1.el9_7) X:strictfipsruntime, platform=linux/amd64, git-commit=unknown, podman-version=5.4"</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Also notice that the agent keeps polling the Edge Manager server for its enrollment request to be approved.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>sudo journalctl -u flightctl-agent | tail -n 2</strong>
+Dec 17 21:42:42 enroll flightctl-agent[1163]: time="2025-12-17T21:42:42.141680Z" level=info msg="Waiting for enrollment to be approved"
+Dec 17 21:42:42 enroll flightctl-agent[1163]: time="2025-12-17T21:42:42.143024Z" level=info msg="Enrollment request not yet approved"</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>The agent logs also provide a URL and a QR code (not shown in the output below) which you can use to approve the certificate request for the device.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>sudo journalctl -u flightctl-agent | grep 'QR code' -A1 -B1 | tail -n 3</strong>
+Dec 17 21:44:59 enroll flightctl-agent[1194]: Enroll your device to flightctl by scanning
+Dec 17 21:44:59 enroll flightctl-agent[1194]: the above QR code or following this URL:
+Dec 17 21:44:59 enroll flightctl-agent[1194]: https://servera.lab.example.com:443/enroll/1u63hvsgtua9tjjbmla9bgh5h2s77cb8esepphnf68m3ocf8qfng</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>You can now leave the SSH session and return to your host shell.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>exit</strong></code></pre>
+</div>
+</div>
+</li>
+</ol>
+</div>
+</li>
+<li>
+<p>On your <em>development machine</em>, approve the enrollment request</p>
+<div class="olist loweralpha">
+<ol class="loweralpha" type="a">
+<li>
+<p>Verify that there is an enrollment request with an UUID that corresponds to the one in the logs of your test VM, but no devices.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>flightctl get device</strong>
+NAME                                                    ALIAS   OWNER   SYSTEM  UPDATED APPLICATIONS
+$ <strong>flightctl get enrollmentrequest</strong>
+NAME                                                    APPROVAL        APPROVER        APPROVED LABELS
+1u63hvsgtua9tjjbmla9bgh5h2s77cb8esepphnf68m3ocf8qfng    Pending         &lt;none&gt;</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Approve the enrollment request, setting a few labels on the managed device, especially the <code>alias</code> label which the web UI uses as the display name of managed devices.</p>
+<div class="paragraph">
+<p>Be sure you use the same UUID you got from the previous step to refer to the enrollment request.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>flightctl approve enrollmentrequest <em>1u63hvsgtua9tjjbmla9bgh5h2s77cb8esepphnf68m3ocf8qfng</em> -l alias=edge-1 -l rhel=9.6 -l type=noapps</strong></code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Verify that the enrollment request now is set to approved and there is a managed device.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>flightctl get enrollmentrequest</strong>
+NAME                                                    APPROVAL        APPROVER        APPROVED LABELS
+1u63hvsgtua9tjjbmla9bgh5h2s77cb8esepphnf68m3ocf8qfng    Approved        admin           alias=edge-1,rhel=9.6,type=noapps
+$ <strong>flightctl get device -o wide</strong>
+NAME                                                    ALIAS   OWNER   SYSTEM  UPDATED         APPLICATIONS    LABELS
+1u63hvsgtua9tjjbmla9bgh5h2s77cb8esepphnf68m3ocf8qfng    edge-1  &lt;none&gt;  Online  OutOfDate       NoApplications  alias=edge-1,rhel=9.6,type=noapps</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Wait a few moments while the Edge Manager agent finishes synchronizing the device with the configurations set by Edge Manager.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>flightctl get device -o wide</strong>
+NAME                                                    ALIAS   OWNER   SYSTEM  UPDATED         APPLICATIONS    LABELS
+1u63hvsgtua9tjjbmla9bgh5h2s77cb8esepphnf68m3ocf8qfng    edge-1  &lt;none&gt;  Online  UpToDate        NoApplications  alias=edge-1,rhel=9.6,type=noapp</code></pre>
+</div>
+</div>
+</li>
+</ol>
+</div>
+</li>
+<li>
+<p>Verify that the test VM is now managed by Edge Manager.</p>
+<div class="olist loweralpha">
+<ol class="loweralpha" type="a">
+<li>
+<p>Because the device was just enrolled and it is not a member of a fleet, its configuration is empty, that is, it contains an empty <code>spec</code> field.
+Also notice that its <code>status</code> field reports a good amount of information.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>flightctl get device <em>1u63hvsgtua9tjjbmla9bgh5h2s77cb8esepphnf68m3ocf8qfng</em> -o yaml</strong>
+apiVersion: flightctl.io/v1beta1
+kind: Device
+metadata:
+  annotations:
+    device-controller/renderedSpecHash: 44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a
+    device-controller/renderedVersion: "1"
+  creationTimestamp: "2025-12-17T21:51:56.869947Z"
+  generation: 1
+  labels:
+    alias: edge-1
+    rhel: "9.6"
+    type: noapps
+  name: 1u63hvsgtua9tjjbmla9bgh5h2s77cb8esepphnf68m3ocf8qfng
+  resourceVersion: "10"
+spec: {}
+status:
+  applications: []
+  applicationsSummary:
+    info: Device has not reported any application workloads yet.
+    status: NoApplications
+  conditions:
+  - lastTransitionTime: "2025-12-17T21:54:31.661072107Z"
+    message: 'Updated to desired renderedVersion: 1'
+    reason: Updated
+    status: "False"
+    type: Updating
+  - lastTransitionTime: "2025-12-17T21:51:57.019841739Z"
+    message: ""
+    reason: Valid
+    status: "True"
+    type: SpecValid
+  config:
+    renderedVersion: "1"
+  integrity:
+    deviceIdentity:
+      status: Unsupported
+    info: TPM not present or not enabled on this device
+    status: Unsupported
+    tpm:
+      status: Unsupported
+  lifecycle:
+    status: Enrolled
+  os:
+    image: registry.lab.example.com:5000/rhem-enroll:v1.0
+    imageDigest: sha256:503f839113b376c55ceee225a8cbfdc9bf1496f3342385ce171f2cf2e01f1333
+  resources:
+    cpu: Healthy
+    disk: Healthy
+    memory: Healthy
+  summary:
+    info: Device's system resources are healthy.
+    status: Online
+  systemInfo:
+    agentVersion: v1.0.0-rc2
+    architecture: amd64
+    bootID: 395cd453-412a-4a0b-ac95-49acbad09a51
+    distroName: Red Hat Enterprise Linux
+    distroVersion: 9.6 (Plow)
+    hostname: enroll
+    kernel: 5.14.0-570.62.1.el9_6.x86_64
+    netInterfaceDefault: enp1s0
+    netIpDefault: 172.25.250.9/24
+    netMacDefault: 52:54:00:6a:6d:83
+    operatingSystem: linux
+    productName: KVM
+    productSerial: ""
+    productUuid: c6efb5f1-6136-4411-989d-76979291896a
+  updated:
+    info: Device was updated to the latest device spec.
+    status: UpToDate</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>If you did not set the correct labels, during approval, you can use the following command to edit the device resource and add the three entries under <code>labels:</code> and the previous listing as a guide.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>flightctl edit device 1u63hvsgtua9tjjbmla9bgh5h2s77cb8esepphnf68m3ocf8qfng</strong></code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>The flightctl command does not provide built-in filtering, but you can pipe its JSON output to the <code>jq</code> utility and filter just the information you need, for example:</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>flightctl get device 1u63hvsgtua9tjjbmla9bgh5h2s77cb8esepphnf68m3ocf8qfng -o json | jq -r '.status.resources.cpu'</strong>
+Healthy</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>You can refer to the device alias, instead of its UUID, with the following trick:</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>flightctl get device $( flightctl get device -o name -l alias=edge-1 )</strong>
+NAME                                                    ALIAS   OWNER   SYSTEM  UPDATED         APPLICATIONS
+1u63hvsgtua9tjjbmla9bgh5h2s77cb8esepphnf68m3ocf8qfng    edge-1  &lt;none&gt;  Online  UpToDate        NoApplications</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Use the Edge Manager CLI to get a shell on the managed device.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>flightctl console device $( flightctl get device -o name -l alias=edge-1 )</strong>
+[root@enroll ~]#</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>On the managed device, verify that the logs Edge Manager agent records that the device was enrolled and synchronized, that is, reconciled with its currently empty configuration in the Edge Manager server.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs"># <strong>journalctl -u flightctl-agent | grep -E 'enrolled|reconciliation'</strong>
+Dec 17 21:52:01 enroll flightctl-agent[1271]: Your device is enrolled to flightctl,
+Dec 17 21:54:31 enroll flightctl-agent[1271]: time="2025-12-17T21:54:31.627237Z" level=info msg="Spec reconciliation complete: current version 1"
+Dec 17 22:06:01 enroll flightctl-agent[1271]: time="2025-12-17T22:06:01.661683Z" level=info msg="Spec reconciliation complete: current version 2"</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Create a file on the managed device, so you can easily distinguish it from other managed devices you create during this course.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs"># <strong>echo 'managed #1' &gt; device.txt</strong>
+# <strong>ls</strong>
+anaconda-ks.cfg  buildinfo  device.txt  original-ks.cfg
+# <strong>cat device.txt</strong>
+managed #1</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Return to your host shell.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs"># <strong>exit</strong></code></pre>
+</div>
+</div>
+</li>
+</ol>
+</div>
+</li>
+<li>
+<p>Provision another test VM using the same installable ISO.</p>
+<div class="olist loweralpha">
+<ol class="loweralpha" type="a">
+<li>
+<p>Use the provided script to create a second test VM.
+Remember to give it a different digit from the previous one.</p>
+<div class="paragraph">
+<p>At the end of the instalation, press <span class="keyseq"><kbd>Ctrl</kbd>+<kbd>]</kbd></span> to return to your shell.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>bash virt-install.sh 2</strong>
+Creating VM edge-2, use port 8222 for SSH.
+...
+Domain creation completed.
+Restarting guest.
+Running text console command: virsh --connect qemu:///session console edge-2
+Connected to domain 'edge-2'
+Escape character is ^] (Ctrl + ])</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Access your second test VM and verify it is running a Edge Manager agent.
+Notice it has the same hostname as the first test VM, because that configuration is hardcoded in the kickstart script from the installation ISO.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>ssh -i edge-key -p 8222 core@127.0.0.1</strong>
+...
+[core@enroll ~]$</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>On your second test VM, verify that it generated a different UUID to identify itself to Edge Manager and return to your host shell.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">$ <strong>sudo journalctl -u flightctl-agent | grep -m 1 Bootstrapping</strong>
+Dec 17 22:16:47 enroll flightctl-agent[844]: time="2025-12-17T22:16:47.552079Z" level=info msg="Bootstrapping device: g7ombcqk46tqq458j9uju454441mf1lgt9qqqva8ti0fnvosm57g"
+$ <strong>exit</strong></code></pre>
+</div>
+</div>
+</li>
+</ol>
+</div>
+</li>
+<li>
+<p>Enroll your second test VM on Edge Manager, but this time using its web interface.</p>
+<div class="olist loweralpha">
+<ol class="loweralpha" type="a">
+<li>
+<p>Open a web browser and visit <code>https://servera.lab.example.com</code>.</p>
+</li>
+<li>
+<p>Log in as the <code>admin</code> user with the <code>redhat</code> password.</p>
+</li>
+<li>
+<p>The overview page should indicate that you have one healthy managed device, with no applications.
+You will see one blue circle followed by two green circles.</p>
+</li>
+<li>
+<p>On the left panel, click <b class="menuref">Devices</b>.
+The beginning of the page indicates that there&#8217;s one device pending approval.</p>
+</li>
+<li>
+<p>Verify that the name of that device matches the UUID you got from the logs in your second test VM.</p>
+</li>
+<li>
+<p>Scroll down and verify that the first test VM is listed as a managed device, on the same page.</p>
+</li>
+<li>
+<p>Scroll back to the beginning of the page to approve your second test VM as a managed device.</p>
+<div class="paragraph">
+<p>Click on the <b class="menuref">Untitled</b> link on the <b class="menuref">Alias</b> column.
+You can then see information about the device, such as its MAC address, if you must confirm its identity before approving it.</p>
+</div>
+</li>
+<li>
+<p>Return to the <b class="menuref">Devices</b> page and click on the <b class="menuref">Approve</b> link to the right.</p>
+</li>
+<li>
+<p>Type <code>edge-2</code> as the alias of the device and click <b class="menuref">Add label</b> to show a text field where you will type the key and value for the next label.</p>
+</li>
+<li>
+<p>Type <code>rhel=9.6</code> and press <kbd>Tab</kbd> to display the <b class="menuref">Add label</b> link again.
+Repeat the process to add another label, and type <code>type=noapps</code>.
+Feel free to add more labels, but be sure to include those two.</p>
+</li>
+<li>
+<p>The warning <em>No fleet is matching the selected labels</em> is expected and can be safely ignored.
+Click <b class="menuref">Approve</b>.</p>
+</li>
+<li>
+<p>The <b class="menuref">Devices</b> page now shows no devices pending approval, and shows the new managed device with an <code>Out-of-date</code> status.</p>
+</li>
+<li>
+<p>Wait a few moments until the device synchronizes with Edge Manager and its status changes to <code>Up-to-date</code>.</p>
+</li>
+</ol>
+</div>
+</li>
+<li>
+<p>Verify that, despite being provisioned from the same enrollment request data, each test VM retains its own identity and configuration from Edge Manager.</p>
+<div class="olist loweralpha">
+<ol class="loweralpha" type="a">
+<li>
+<p>On the <b class="menuref">Devices</b> page, click on the <b class="menuref">edge-2</b> alias to enter the managed device details page of your second test VM.</p>
+</li>
+<li>
+<p>Click <b class="menuref">YAML</b> to see the resource manifest of the device, as you would get from the <code>flightctl get device -o yaml</code> command.</p>
+</li>
+<li>
+<p>Click <b class="menuref">Terminal</b> to get a shell on the managed device, as you would get from the <code>flightctl console</code> command.</p>
+</li>
+<li>
+<p>Verify that the second test VM does not contain a <code>device.txt</code> file by using the <code>ls</code> command.</p>
+</li>
+</ol>
+</div>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>You now have two test VMs enrolled in Edge Manager as managed devices.
+You also know how to identify each one and access these devices, to run troubleshooting commands, directly through Edge Manager.
+Finally, you know that you can perform most actions by using either the CLI or the web interface.
+One of the few exceptions, which requires using the CLI, is fetching enrollment request data.</p>
+</div>
+<div class="admonitionblock important">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-important" title="Important"></i>
+</td>
+<td class="content">
+Grab screenshots with the latest RC or the GA release, whatever is the one for this course initial release.
+Not taking screen shots right now to avoid changes to UI, styling, and branding.
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_whats_next"><a class="anchor" href="#_whats_next"></a>What&#8217;s next</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>In the next activity, you will exercise management of edge devices from Edge Manager, by changing and updating their operating system images and system configurations.</p>
+</div>
+</div>
+</div>
+<nav class="pagination">
+  <span class="prev"><a href="s1-enroll.html">Enroll Edge Devices in Edge Manager</a></span>
+  <span class="next"><a href="../ch4-manage/index.html">Manage Edge Devices with Red Hat Edge Manager</a></span>
+</nav>
+</article>
+  </div>
+</main>
+</div>
+<footer class="footer">
+  <img src="../../../_/img/rhl-logo-red.png" height="40px" alt="Red Hat"  href="https://redhat.com" >
+</footer><script id="site-script" src="../../../_/js/site.js" data-ui-root-path="../../../_"></script>
+<script async src="../../../_/js/vendor/highlight.js"></script>
+  </body>
+</html>
