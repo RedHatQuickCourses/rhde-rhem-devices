@@ -50,7 +50,9 @@ This course assumes that you have the following experience:
 * Familiarity with Linux container tools, such as Podman, and technologies compatible with Open Container Initiative (OCI) specifications, such as container registries.
 
 * Familiarity with image mode for RHEL, especially building bootc container images and provisioning and updating image mode systems.
-It's recommended that learners already prossess skills from the https://redhatquickcourses.github.io/rhde-bootc-build/[image mode with Red Hat Device Edge quick course series].
+
+It's recommended that learners already prossess skills from the https://redhatquickcourses.github.io/rhde-bootc-build/[image mode with Red Hat Device Edge quick course series^].
+
 Notice that no prior knowledge of Kubernetes and OpenShift is assumed or required.
 
 == Classroom environment
@@ -101,7 +103,7 @@ Higher subscription tiers offer additional benefits, such as Red Hat Certificati
 
 == Other sources of information about Red Hat Edge Manager
 
-For documentation about Red Hat Edger Manager, see either its https://docs.redhat.com/en/documentation/TBD[product documentation^] or its https://github.com/flightctl/flightctl/tree/main/docs/user[upstream project documentation^].
+For documentation about Red Hat Edger Manager, see either its https://docs.redhat.com/en/documentation/red_hat_edge_manager/1.0[product documentation^] or its https://github.com/flightctl/flightctl/tree/main/docs/user[upstream Flight Control project documentation^].
 
 == Author
 
