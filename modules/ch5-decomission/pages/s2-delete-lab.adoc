@@ -24,6 +24,8 @@ Log in as the user `student` with password `student`.
 
 You will decommission and delete both managed devices you enrolled and configured in previous labs, and you will verify that the configurations set by Edge Manager remain on the devices after they cease to be managed devices.
 
+include::ch1-intro:partial$set-permissive.adoc[]
+
 1. Verify that you have the outcomes of previous labs.
 If you do not, go back and complete them, because you need their outcomes to proceed with this lab.
 +

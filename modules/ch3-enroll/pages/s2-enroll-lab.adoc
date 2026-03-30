@@ -28,6 +28,8 @@ You will build a minimal bootc container image, which contains the Edge Manager 
 Then you will use that ISO to provision a test VM, which stands in for a managed edge device, and verify that it attempts to enroll in your Edge Manager server.
 Finally, you will approve that device enrollment request, and verify that you can use the same ISO, unchanged, to provision additional edge devices.
 
+include::ch1-intro:partial$set-permissive.adoc[]
+
 1. Verify that you have the outcomes of previous labs.
 If you do not, go back and complete them, because you need their outcomes to proceed with this lab.
 

@@ -29,6 +29,8 @@ Log in as the user `student` with password `student`.
 You will configure your managed devices with secrets required to access a private OCI container registry, so they can fetch bootc container images, and update them to use a different image than the one used during enrollment.
 The new bootc container image contains an embedded web application, which you will access to verify that the update completed successfully.
 
+include::ch1-intro:partial$set-permissive.adoc[]
+
 1. Verify that you have the outcomes of previous labs.
 If you do not, go back and complete them, because you need their outcomes to proceed with this lab.
 

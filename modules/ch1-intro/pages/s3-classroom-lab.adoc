@@ -43,6 +43,8 @@ It starts with a checklist of tasks you need to know how to perform on ROL for t
 
 Please check the online documentation available on ROL itself if it is your first time using a ROL classroom.
 
+include::ch1-intro:partial$set-permissive.adoc[]
+
 1. Access the graphical console of your _development machine_.
 
 .. Ensure you can open the virtual console of the `workstation` VM, which should be already logged in.

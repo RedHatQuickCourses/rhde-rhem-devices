@@ -30,6 +30,8 @@ You will remediate this by configuring your managed devices with different SSH k
 
 Then you will exercise Edge Manager's ability to detect and correct configuration drift, by making manual changes to configuration files, and observing that Edge Manager restores the configurations set for each device.
 
+include::ch1-intro:partial$set-permissive.adoc[]
+
 1. Verify that you have the outcomes of previous labs.
 If you do not, go back and complete them, because you need their outcomes to proceed with this lab.
 

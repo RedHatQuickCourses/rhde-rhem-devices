@@ -51,6 +51,8 @@ $ sudo dnf install RHEM-1.0.0/*
 Cannot use the current RHEM artifacts with RHEL 10, their containers fail signature check. Have to keep using Fight Control upstream artifacts or create a classroom with RHEL 9.6 servers (which I also need for MicroShift)
 ////
 
+include::ch1-intro:partial$set-permissive.adoc[]
+
 1. Verify that you have the outcomes of previous labs.
 If you do not, go back and complete them, because you need their outcomes to continue with this course.
 
